@@ -1,0 +1,56 @@
+﻿@using FraoulaPT.DTOs.UserDTOs
+@model ProfileViewDTO
+
+@{
+    ViewBag.Title = "Profilim";
+}
+
+<div class="card shadow-sm p-4 mx-auto" style="max-width: 600px;">
+    <h2 class="mb-4">Kullanıcı Profilim</h2>
+    <dl class="row">
+        <dt class="col-sm-4">Ad Soyad</dt>
+        <dd class="col-sm-8">@Model.FullName</dd>
+
+        <dt class="col-sm-4">E-posta</dt>
+        <dd class="col-sm-8">@Model.Email</dd>
+
+        <dt class="col-sm-4">Cinsiyet</dt>
+        <dd class="col-sm-8">@Model.Gender?.ToString()</dd>
+
+        <dt class="col-sm-4">Doğum Tarihi</dt>
+        <dd class="col-sm-8">@Model.BirthDate?.ToShortDateString()</dd>
+
+        <dt class="col-sm-4">Boy (cm)</dt>
+        <dd class="col-sm-8">@Model.HeightCm</dd>
+
+        <dt class="col-sm-4">Kilo (kg)</dt>
+        <dd class="col-sm-8">@Model.WeightKg</dd>
+
+        <dt class="col-sm-4">Vücut Tipi</dt>
+        <dd class="col-sm-8">@Model.BodyType?.ToString()</dd>
+
+        <dt class="col-sm-4">Kan Grubu</dt>
+        <dd class="col-sm-8">@Model.BloodType</dd>
+
+        <dt class="col-sm-4">Telefon</dt>
+        <dd class="col-sm-8">@Model.PhoneNumber</dd>
+
+        <dt class="col-sm-4">Adres</dt>
+        <dd class="col-sm-8">@Model.Address</dd>
+
+        <dt class="col-sm-4">Acil Durum Kişisi</dt>
+        <dd class="col-sm-8">@Model.EmergencyContactName</dd>
+
+        <dt class="col-sm-4">Acil Durum Tel</dt>
+        <dd class="col-sm-8">@Model.EmergencyContactPhone</dd>
+
+        <!-- Diğer önemli alanlar aşağıya -->
+        <dt class="col-sm-4">Kronik Hastalıklar</dt>
+        <dd class="col-sm-8">@Model.ChronicDiseases</dd>
+
+        <dt class="col-sm-4">Geçmiş Sakatlıklar</dt>
+        <dd class="col-sm-8">@Model.PastInjuries</dd>
+    </dl>
+
+    <a href="@Url.Action("Edit", "Profile")" class="btn btn-primary mt-2">Profili Düzenle</a>
+</div>

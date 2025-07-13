@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - FraoulaPT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f7f9fa;
+            color: #222;
+        }
+
+        .navbar-brand img {
+            width: 46px;
+            margin-right: 10px;
+        }
+
+        .app-navbar {
+            background: linear-gradient(90deg, #536976 0, #292e49 100%);
+        }
+
+            .app-navbar .navbar-brand, .app-navbar .nav-link {
+                color: #fff !important;
+                font-weight: 500;
+            }
+
+                .app-navbar .nav-link.active, .app-navbar .nav-link:hover {
+                    color: #ffd26c !important;
+                }
+
+            .app-navbar .navbar-toggler {
+                border: none;
+            }
+
+        .main-content {
+            min-height: 80vh;
+            padding: 36px 0 0 0;
+        }
+
+        .app-footer {
+            background: #292e49;
+            color: #fff;
+            padding: 24px 0 0 0;
+            font-size: 15px;
+            margin-top: 36px;
+        }
+        /* Responsive tweaks */
+        @@media (max-width: 600px) {
+            .main-content
+
+        {
+            padding: 18px 0 0 0;
+        }
+
+        .navbar-brand img {
+            width: 32px;
+        }
+
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg app-navbar shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="~/images/fraoulapt-logo.png" alt="FraoulaPT Logo" />
+                <span>Fraoula<span style="color:#ffd26c;font-weight:700;">PT</span></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="mainNavbar">
+                <ul class="navbar-nav gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"] as string == "Home" ? "active" : "")" href="/">Ana Sayfa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"] as string == "Package" ? "active" : "")" asp-action="Index" asp-controller="Package">Paketler</a>
+                    </li>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        @* Eğer Admin ise Admin Panel ekle *@
+                        if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-action="Index" asp-controller="Home" asp-area="Admin">Admin Panel</a>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"] as string == "User" ? "active" : "")" asp-action="MyPackage" asp-controller="Profile">Aldığım Paketler</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"] as string == "Profile" ? "active" : "")" asp-action="Index" asp-controller="Profile">Profilim</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-action="SignOut" asp-controller="Account">Çıkış</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"] as string == "Login" ? "active" : "")" asp-action="Login" asp-controller="Account">Giriş Yap</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"] as string == "Register" ? "active" : "")" asp-action="Register" asp-controller="Account">Kayıt Ol</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- Toast Notification Container -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <div id="toast-container"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer text-center">
+        <div class="container">
+            <div class="pb-2">© @DateTime.Now.Year FraoulaPT | Tüm hakları saklıdır.</div>
+            <div style="font-size:13px;opacity:.65;">Sporcu Takip, Kişisel Antrenman ve Online Danışmanlık Platformu</div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", false)
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var message = '@Html.Raw(TempData["message"])';
+            var type = '@(TempData["messageType"] ?? "info")'.toLowerCase();
+
+            if (message) {
+                let toastOptions = {
+                    text: message,
+                    duration: 4300,
+                    gravity: "top",
+                    position: "right",
+                    close: true,
+                    stopOnFocus: true,
+                    style: {
+                        fontSize: "1.07rem",
+                        fontFamily: "Segoe UI, Arial, sans-serif",
+                        borderRadius: "13px",
+                        boxShadow: "0 6px 24px 0 #1112",
+                        padding: "18px 26px",
+                        color: "#fff",
+                        background: ""
+                    },
+                    onClick: function () { }
+                };
+                switch (type) {
+                    case "success":
+                        toastOptions.backgroundColor = "linear-gradient(90deg,#38ef7d 0,#11998e 100%)";
+                        toastOptions.avatar = "https://cdn-icons-png.flaticon.com/128/845/845646.png";
+                        break;
+                    case "error":
+                        toastOptions.backgroundColor = "linear-gradient(90deg,#ff5858 0,#f09819 100%)";
+                        toastOptions.avatar = "https://cdn-icons-png.flaticon.com/128/463/463612.png";
+                        break;
+                    case "warning":
+                        toastOptions.backgroundColor = "linear-gradient(90deg,#f7971e 0,#ffd200 100%)";
+                        toastOptions.avatar = "https://cdn-icons-png.flaticon.com/128/595/595067.png";
+                        break;
+                    default:
+                        toastOptions.backgroundColor = "linear-gradient(90deg,#43cea2 0,#185a9d 100%)";
+                        toastOptions.avatar = "https://cdn-icons-png.flaticon.com/128/456/456212.png";
+                        break;
+                }
+                Toastify(toastOptions).showToast();
+            }
+        });
+    </script>
+</body>
+</html>
