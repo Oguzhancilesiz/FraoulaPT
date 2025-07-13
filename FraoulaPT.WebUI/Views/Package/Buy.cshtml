@@ -1,0 +1,13 @@
+﻿@using FraoulaPT.DTOs.PackageDTO
+@model PackageListDTO
+
+<h2>@Model.Name Satın Al</h2>
+<p>@Model.Description</p>
+<p><b>Fiyat:</b> @Model.Price ₺</p>
+
+<form method="post" asp-action="Buy" asp-controller="Package">
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <!-- Burada ödeme yöntemleri, kredi kartı, havale, vs. seçimleri olacak -->
+    <button type="submit" class="btn btn-success">Ödemeye Geç</button>
+</form>
