@@ -50,20 +50,28 @@
         }
         /* Responsive tweaks */
         @@media (max-width: 600px) {
-            .main-content
+            .main-content {
+                padding: 18px 0 0 0;
+            }
 
-        {
-            padding: 18px 0 0 0;
-        }
-
-        .navbar-brand img {
-            width: 32px;
-        }
-
+            .navbar-brand img {
+                width: 32px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Chat Modal -->
+    <div id="chatModal" style="display:none; position:fixed; bottom:88px; right:32px; z-index:9999; width:400px; max-width:98vw; background:#fff; border-radius:12px; box-shadow:0 2px 16px #0003;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 18px; border-bottom:1px solid #eee;">
+            <span><b>Sohbetlerim</b></span>
+            <button class="btn-close" id="closeChatBtn"></button>
+        </div>
+        <div id="chatCoachList" style="max-height:170px; overflow:auto; border-bottom:1px solid #eee;">
+            <!-- Koç listesi burada dinamik yüklenecek -->
+        </div>
+        <iframe id="chatFrame" src="" style="width:100%; height:450px; border:none; border-radius:0 0 12px 12px;"></iframe>
+    </div>
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg app-navbar shadow-sm">
@@ -100,6 +108,16 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-action="SignOut" asp-controller="Account">Çıkış</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Index", "UserQuestion")">
+                                <i class="fa fa-comments"></i> Soru Cevap
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Chat/Index">
+                                <i class="bi bi-chat"></i> Mesajlarım
+                            </a>
                         </li>
                     }
                     else
@@ -184,6 +202,69 @@
                 Toastify(toastOptions).showToast();
             }
         });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.12/signalr.min.js"></script>
+    <script>
+        // Hub bağlantısı
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chathub")
+            .build();
+
+        // Anlık mesaj geldiğinde ekranı güncelle
+        connection.on("ReceiveMessage", function (message, isMine) {
+            // Mesajı ekrana yaz
+            const msgDiv = document.createElement("div");
+            msgDiv.className = isMine ? "text-end" : "text-start";
+            msgDiv.innerHTML = `<span class="badge bg-light">${message}</span>`;
+            document.getElementById("chatBody").appendChild(msgDiv);
+            // Otomatik scroll
+            document.getElementById("chatBody").scrollTop = document.getElementById("chatBody").scrollHeight;
+        });
+
+        // Bağlan
+        connection.start();
+
+        // Mesaj gönderme
+        document.getElementById("sendBtn").onclick = function() {
+            const msg = document.getElementById("msgInput").value;
+            // Kullanıcı ve koç Id'lerini serverdan veya viewbagden alabilirsin
+            document.getElementById("msgInput").value = "";
+        };
+    </script>
+
+    <script>
+            const openChatBtn = document.getElementById("openChatBtn");
+        const chatModal = document.getElementById("chatModal");
+        const closeChatBtn = document.getElementById("closeChatBtn");
+        const chatFrame = document.getElementById("chatFrame");
+        const chatCoachList = document.getElementById("chatCoachList");
+
+        // Koç listesi açılırken yüklenir
+        openChatBtn.onclick = async function() {
+            chatModal.style.display = "block";
+            chatFrame.src = ""; // ilk açılışta boş
+            // AJAX ile backend’den koç listesini çek
+            let resp = await fetch('/Chat/MyCoaches');
+            let data = await resp.json();
+            chatCoachList.innerHTML = "";
+            data.forEach(c => {
+                let btn = document.createElement("button");
+                btn.className = "list-group-item list-group-item-action";
+                btn.innerHTML = `<img src="${c.coachAvatarUrl || '/default-coach.png'}" style="width:36px; height:36px; border-radius:50%; margin-right:10px;">` +
+                                `<b>${c.coachName}</b> <small> (${c.packageName})</small> <span class="badge bg-info ms-2">${c.remainingMessageCount} mesaj hakkı</span>`;
+                btn.onclick = function() {
+                    // Seçilen koç ile sohbet ekranı aç
+                    chatFrame.src = `/Chat/Conversation?userPackageId=${c.userPackageId}&receiverId=${c.coachId}`;
+                };
+                chatCoachList.appendChild(btn);
+            });
+        };
+
+        closeChatBtn.onclick = function() {
+            chatModal.style.display = "none";
+            chatFrame.src = "";
+        };
+
     </script>
 </body>
 </html>

@@ -10,4 +10,8 @@
     <ProjectReference Include="..\FraoulaPT.Core\FraoulaPT.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ChatMediaDTO\" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,48 @@
+﻿@model List<FraoulaPT.DTOs.UserQuestionDTO.UserQuestionListDTO>
+
+<h2>Soru Sor</h2>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<form asp-action="Ask" method="post" class="mb-4">
+    <textarea name="questionText" class="form-control" rows="3" placeholder="Koça sorunuz..."></textarea>
+    <button type="submit" class="btn btn-primary mt-2">Sor</button>
+</form>
+
+<h3>Geçmiş Sorularınız</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Soru</th>
+            <th>Cevap</th>
+            <th>Cevaplayan Koç</th>
+            <th>Sorulduğu Tarih</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.QuestionText</td>
+                <td>
+                    @if (item.IsAnswered)
+                    {
+                        @item.AnswerText
+                    }
+                    else
+                    {
+                        <i>Henüz cevaplanmadı</i>
+                    }
+                </td>
+                <td>@item.CoachName</td>
+                <td>@item.AskedAt.ToString("dd.MM.yyyy HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>
