@@ -1,4 +1,6 @@
 ﻿using FraoulaPT.Core.Abstracts;
+using FraoulaPT.Core.Enums;
+using FraoulaPT.DTOs.ChatMessageDTO;
 using FraoulaPT.DTOs.UserPackageDTO;
 using FraoulaPT.Entity;
 using FraoulaPT.Services.Abstracts;
@@ -24,6 +26,30 @@ namespace FraoulaPT.Services.Concrete
             _signInManager = signInManager;
             _roleManager = roleManager;
             _unitOfWork = unitOfWork;
+        }
+        public async Task<MyCoachChatDTO> GetMyCoachInfoAsync(Guid userId)
+        {
+            // Sistemdeki ilk (ve tek) koçu bul
+            var allUsers = _userManager.Users.ToList();
+            var coach = allUsers.FirstOrDefault(u => _userManager.IsInRoleAsync(u, "KOC").Result);
+            if (coach == null) throw new Exception("Koç bulunamadı!");
+
+            // Kullanıcının aktif paketini bul
+            var userPackageQuery = await _unitOfWork.Repository<UserPackage>()
+                .GetBy(x => x.AppUserId == userId && x.Status == Status.Active && x.EndDate > DateTime.Now);
+
+            var activePackage = await userPackageQuery.OrderByDescending(x => x.StartDate).FirstOrDefaultAsync();
+
+            int maxMsg = activePackage?.Package?.MaxMessagesPerPeriod ?? 0;
+            int usedMsg = activePackage?.UsedMessages ?? 0;
+
+            return new MyCoachChatDTO
+            {
+                CoachId = coach.Id,
+                CoachFullName = coach.FullName,
+                //CoachAvatarUrl = coach.Profile?.AvatarUrl, // AppUser'da yoksa kaldır
+                RemainingMessageCount = maxMsg - usedMsg
+            };
         }
         public async Task<UserPackageListDTO> GetCurrentActivePackageAsync(Guid userId)
         {

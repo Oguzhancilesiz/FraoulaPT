@@ -26,6 +26,7 @@ namespace FraoulaPT.WebUI
             // IEFContext’i DI Container’a kaydet
             builder.Services.AddScoped<IEFContext>(provider => provider.GetService<BaseContext>());
 
+            builder.Services.AddSignalR();
 
             builder.Services.AddIdentity<AppUser, AppRole>(option =>
             {
@@ -46,6 +47,10 @@ namespace FraoulaPT.WebUI
             builder.Services.AddScoped<IUserProfileService, UserProfileService>();
             builder.Services.AddScoped<IPackageService, PackageService>();
             builder.Services.AddScoped<IUserPackageService, UserPackageService>();
+            builder.Services.AddScoped<IUserQuestionService, UserQuestionService>();
+            builder.Services.AddScoped<IChatMediaService, ChatMediaService>();
+            builder.Services.AddScoped<IChatMessageService, ChatMessageService>();
+
             // ... diðer servislerin kayýtlarý
 
             builder.Services.Configure<PayTROptions>(builder.Configuration.GetSection("PayTR"));
@@ -60,6 +65,7 @@ namespace FraoulaPT.WebUI
                 app.UseHsts();
             }
 
+            app.MapHub<FraoulaPT.WebUI.Hubs.ChatHub>("/chathub");
             app.UseHttpsRedirection();
             app.UseRouting();
 

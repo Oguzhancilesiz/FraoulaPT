@@ -26,8 +26,16 @@ namespace FraoulaPT.DAL
             }
             catch (Exception ex)
             {
-
-                throw new Exception(ex.Message);
+                var inner = ex;
+                string allMsg = "";
+                int level = 0;
+                while (inner != null && level < 10)
+                {
+                    allMsg += $"LEVEL {level}: {inner.Message}\n";
+                    inner = inner.InnerException;
+                    level++;
+                }
+                throw new Exception(allMsg, ex); // InnerException'ı kaybetme!
             }
         }
 
