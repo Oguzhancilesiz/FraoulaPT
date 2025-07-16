@@ -266,5 +266,34 @@
         };
 
     </script>
+
+    <script>
+                document.getElementById("chatForm").onsubmit = async function (e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+            let resp = await fetch('/Chat/Send', { method: 'POST', body: formData });
+            if (resp.ok) {
+                document.getElementById("msgInput").value = "";
+                Toastify({
+                    text: "Mesajınız gönderildi!",
+                    duration: 2500,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(90deg,#38ef7d 0,#11998e 100%)"
+                }).showToast();
+            } else {
+                let data = await resp.json();
+                Toastify({
+                    text: data.error || "Hata oluştu!",
+                    duration: 4000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(90deg,#ff5858 0,#f09819 100%)"
+                }).showToast();
+            }
+        }
+
+    </script>
+
 </body>
 </html>

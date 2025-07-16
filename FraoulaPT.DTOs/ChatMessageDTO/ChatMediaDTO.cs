@@ -8,8 +8,9 @@ namespace FraoulaPT.DTOs.ChatMessageDTO
 {
     public class ChatMediaDTO
     {
+        public Guid Id { get; set; }
         public string MediaUrl { get; set; }
-        public string MediaType { get; set; } // image, video, pdf, doc
+        public string MediaType { get; set; }
         public long FileSize { get; set; }
         public string FileName { get; set; }
     }

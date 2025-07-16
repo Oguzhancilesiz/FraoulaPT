@@ -11,6 +11,7 @@ namespace FraoulaPT.DTOs.ChatMessageDTO
         public Guid Id { get; set; }
         public Guid SenderId { get; set; }
         public Guid ReceiverId { get; set; }
+        public Guid UserPackageId { get; set; }
         public string MessageText { get; set; }
         public DateTime SentAt { get; set; }
         public bool IsRead { get; set; }

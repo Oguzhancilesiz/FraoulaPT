@@ -18,8 +18,6 @@ namespace FraoulaPT.Entity
         public AppUser Receiver { get; set; }
 
         public string MessageText { get; set; }
-        public string MediaUrl { get; set; }    // <-- Foto/video/file url (opsiyonel)
-        public string MediaType { get; set; }   // <-- "image", "video", "file", null (opsiyonel)
         public DateTime SentAt { get; set; }
         public bool IsRead { get; set; }
 
