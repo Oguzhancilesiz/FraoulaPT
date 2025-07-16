@@ -10,11 +10,10 @@ namespace FraoulaPT.Entity
     {
         public string Name { get; set; }
         public Guid? CoachId { get; set; }
-        public AppUser Coach { get; set; } // Koç atayan
+        public virtual AppUser Coach { get; set; }
         public string Description { get; set; }
-        public ICollection<WorkoutDay> WorkoutDays { get; set; }
-        public ICollection<UserWorkoutAssignment> Assignments { get; set; }
-        public ICollection<Media> Media { get; set; } // Program PDF, görsel, video
+        public virtual ICollection<WorkoutDay> WorkoutDays { get; set; }
+        public virtual ICollection<UserWorkoutAssignment> Assignments { get; set; }
+        public virtual ICollection<Media> Media { get; set; }
     }
-
 }

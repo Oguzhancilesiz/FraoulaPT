@@ -5,19 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FraoulaPT.Entity
+namespace FraoulaPT.DTOs.UserDTOs
 {
-    public class UserProfile : BaseEntity
+    public class UserProfileDTO
     {
         public Guid AppUserId { get; set; }
-        public AppUser AppUser { get; set; }
-
+        public string FullName { get; set; }
         public Gender? Gender { get; set; }
         public DateTime? BirthDate { get; set; }
         public double? HeightCm { get; set; }
         public double? WeightKg { get; set; }
         public BodyType? BodyType { get; set; }
-        public BloodType? BloodType { get; set; }
+        public BloodType BloodType { get; set; }
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
         public string EmergencyContactName { get; set; }
@@ -29,13 +28,12 @@ namespace FraoulaPT.Entity
         public string PastInjuries { get; set; }
         public string CurrentPain { get; set; }
         public bool? PregnancyStatus { get; set; }
-        public string LastCheckResults { get; set; } // JSON/text
+        public string LastCheckResults { get; set; }
         public string SmokingAlcohol { get; set; }
         public string Occupation { get; set; }
-        public ExperienceLevel? ExperienceLevel { get; set; }
+        public ExperienceLevel ExperienceLevel { get; set; }
         public string FavoriteSports { get; set; }
         public string Notes { get; set; }
-        public DietType? DietType { get; set; }
+        public DietType DietType { get; set; }
     }
-
 }

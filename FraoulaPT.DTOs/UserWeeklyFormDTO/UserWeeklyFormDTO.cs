@@ -1,16 +1,16 @@
 ﻿using FraoulaPT.Core.Enums;
+using FraoulaPT.DTOs.MediaDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FraoulaPT.Entity
+namespace FraoulaPT.DTOs.UserWeeklyFormDTO
 {
-    public class UserWeeklyForm : BaseEntity
+    public class UserWeeklyFormDTO
     {
-        public Guid UserPackageId { get; set; }
-        public virtual UserPackage UserPackage { get; set; }
+        public Guid Id { get; set; }
         public DateTime FormDate { get; set; }
         public double? Weight { get; set; }
         public double? FatPercent { get; set; }
@@ -20,14 +20,10 @@ namespace FraoulaPT.Entity
         public double? Chest { get; set; }
         public double? Arm { get; set; }
         public double? Leg { get; set; }
-        public double? RestingPulse { get; set; }
-        public double? BloodPressure { get; set; }
-        public double? Vo2Max { get; set; }
         public string FlexibilityNotes { get; set; }
         public string UserNote { get; set; }
         public string CoachFeedback { get; set; }
         public FormStatus Status { get; set; }
-        // Çoklu progress foto desteği
-        public virtual ICollection<Media> ProgressPhotos { get; set; }
+        public List<MediaDTO> ProgressPhotos { get; set; }
     }
 }

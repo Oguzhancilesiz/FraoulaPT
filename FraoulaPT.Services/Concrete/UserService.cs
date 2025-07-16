@@ -66,34 +66,35 @@ namespace FraoulaPT.Services.Concrete
                 Status = Status.Active,
                 CreatedDate = DateTime.Now,
                 ModifiedDate = DateTime.Now,
-                Gender = 0, // veya Gender? ise null
-                BirthDate = DateTime.Now, // veya null geçilebilir
-                HeightCm = 0,
-                WeightKg = 0,
-                BodyType = 0, // veya BodyType? ise null
-                BloodType = "",
-                PhoneNumber = "",
-                Address = "",
-                EmergencyContactName = "",
-                EmergencyContactPhone = "",
-                MedicalHistory = "",
-                ChronicDiseases = "",
-                CurrentMedications = "",
-                Allergies = "",
-                PastInjuries = "",
-                CurrentPain = "",
-                PregnancyStatus = false,
-                LastCheckResults = "",
-                SmokingAlcohol = "",
-                Occupation = "",
-                ExperienceLevel = "",
-                FavoriteSports = "",
-                Notes = "",
-                DietType = "",
+                Gender = null,                   // Nullable olarak başlatılıyor
+                BirthDate = null,                // Kullanıcıdan alınana kadar null
+                HeightCm = null,                 // double? olarak nullable
+                WeightKg = null,                 // double? olarak nullable
+                BodyType = null,                 // Nullable enum
+                BloodType = BloodType.None,                // Nullable enum
+                PhoneNumber = string.Empty,
+                Address = string.Empty,
+                EmergencyContactName = string.Empty,
+                EmergencyContactPhone = string.Empty,
+                MedicalHistory = string.Empty,
+                ChronicDiseases = string.Empty,
+                CurrentMedications = string.Empty,
+                Allergies = string.Empty,
+                PastInjuries = string.Empty,
+                CurrentPain = string.Empty,
+                PregnancyStatus = null,          // Nullable bool
+                LastCheckResults = string.Empty,
+                SmokingAlcohol = string.Empty,
+                Occupation = string.Empty,
+                ExperienceLevel = ExperienceLevel.None,          // Nullable enum
+                FavoriteSports = string.Empty,
+                Notes = string.Empty,
+                DietType = DietType.None,                 // Nullable enum
                 CreatedByUserId = user.Id,
                 UpdatedByUserId = user.Id,
                 AutoID = 0
             };
+
             await _unitOfWork.Repository<UserProfile>().AddAsync(userProfile);
             await _unitOfWork.SaveChangesAsync();
         }
