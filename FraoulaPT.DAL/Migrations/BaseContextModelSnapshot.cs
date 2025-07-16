@@ -304,10 +304,15 @@ namespace FraoulaPT.DAL.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
+                    b.Property<Guid?>("UserWeeklyFormId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("WorkoutProgramId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserWeeklyFormId");
 
                     b.HasIndex("WorkoutProgramId");
 
@@ -493,10 +498,9 @@ namespace FraoulaPT.DAL.Migrations
                     b.Property<DateTime?>("BirthDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("BloodType")
-                        .IsRequired()
+                    b.Property<int?>("BloodType")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("int");
 
                     b.Property<int?>("BodyType")
                         .HasColumnType("int");
@@ -519,9 +523,8 @@ namespace FraoulaPT.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DietType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("DietType")
+                        .HasColumnType("int");
 
                     b.Property<string>("EmergencyContactName")
                         .IsRequired()
@@ -531,9 +534,8 @@ namespace FraoulaPT.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ExperienceLevel")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("ExperienceLevel")
+                        .HasColumnType("int");
 
                     b.Property<string>("FavoriteSports")
                         .IsRequired()
@@ -714,11 +716,6 @@ namespace FraoulaPT.DAL.Migrations
 
                     b.Property<double?>("MuscleMass")
                         .HasColumnType("float");
-
-                    b.Property<string>("ProgressPhotoPath")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
 
                     b.Property<double?>("RestingPulse")
                         .HasColumnType("float");
@@ -1094,6 +1091,10 @@ namespace FraoulaPT.DAL.Migrations
 
             modelBuilder.Entity("FraoulaPT.Entity.Media", b =>
                 {
+                    b.HasOne("FraoulaPT.Entity.UserWeeklyForm", null)
+                        .WithMany("ProgressPhotos")
+                        .HasForeignKey("UserWeeklyFormId");
+
                     b.HasOne("FraoulaPT.Entity.WorkoutProgram", null)
                         .WithMany("Media")
                         .HasForeignKey("WorkoutProgramId");
@@ -1311,6 +1312,11 @@ namespace FraoulaPT.DAL.Migrations
                     b.Navigation("WeeklyForms");
 
                     b.Navigation("WorkoutAssignments");
+                });
+
+            modelBuilder.Entity("FraoulaPT.Entity.UserWeeklyForm", b =>
+                {
+                    b.Navigation("ProgressPhotos");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.WorkoutDay", b =>

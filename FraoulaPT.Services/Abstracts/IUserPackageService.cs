@@ -12,5 +12,7 @@ namespace FraoulaPT.Services.Abstracts
     {
         Task<UserPackageListDTO> GetCurrentActivePackageAsync(Guid userId);
         Task<MyCoachChatDTO> GetMyCoachInfoAsync(Guid userId);
+        Task<Guid?> GetActiveUserPackageIdAsync(Guid userId);
+
     }
 }

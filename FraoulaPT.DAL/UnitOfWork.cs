@@ -35,7 +35,8 @@ namespace FraoulaPT.DAL
                     inner = inner.InnerException;
                     level++;
                 }
-                throw new Exception(allMsg, ex); // InnerException'ı kaybetme!
+                Console.WriteLine(ex.ToString()); // Tüm zinciri loglar!
+                throw new Exception("LEVEL 0: " + ex.ToString(), ex);
             }
         }
 

@@ -26,7 +26,7 @@ namespace FraoulaPT.Entity
         public string FlexibilityNotes { get; set; }
         public string UserNote { get; set; }
         public string CoachFeedback { get; set; }
-        public FormStatus Status { get; set; }
+        public Status Status { get; set; }
         // Çoklu progress foto desteği
         public virtual ICollection<Media> ProgressPhotos { get; set; }
     }

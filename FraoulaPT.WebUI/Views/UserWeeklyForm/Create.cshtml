@@ -1,0 +1,86 @@
+﻿@model FraoulaPT.DTOs.UserWeeklyFormDTO.UserWeeklyFormCreateDTO
+
+@{
+    ViewData["Title"] = "Yeni Form Ekle";
+}
+
+<div class="container mt-4">
+    <h3 class="fw-bold mb-4">Yeni Aylık/Haftalık Form</h3>
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="row g-3 needs-validation" novalidate>
+        <div class="col-md-4">
+            <label asp-for="FormDate" class="form-label">Tarih</label>
+            <input asp-for="FormDate" type="date" class="form-control" required />
+            <span asp-validation-for="FormDate" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Weight" class="form-label">Kilo (kg)</label>
+            <input asp-for="Weight" class="form-control" type="number" step="0.1" min="20" max="300" required />
+            <span asp-validation-for="Weight" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="FatPercent" class="form-label">Yağ Oranı (%)</label>
+            <input asp-for="FatPercent" class="form-control" type="number" step="0.1" min="0" max="80" />
+            <span asp-validation-for="FatPercent" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-2">
+            <label asp-for="MuscleMass" class="form-label">Kas (kg)</label>
+            <input asp-for="MuscleMass" class="form-control" type="number" step="0.1" />
+            <span asp-validation-for="MuscleMass" class="text-danger"></span>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="Waist" class="form-label">Bel (cm)</label>
+            <input asp-for="Waist" class="form-control" type="number" step="0.1" />
+            <span asp-validation-for="Waist" class="text-danger"></span>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="Hip" class="form-label">Kalça (cm)</label>
+            <input asp-for="Hip" class="form-control" type="number" step="0.1" />
+            <span asp-validation-for="Hip" class="text-danger"></span>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="Chest" class="form-label">Göğüs (cm)</label>
+            <input asp-for="Chest" class="form-control" type="number" step="0.1" />
+            <span asp-validation-for="Chest" class="text-danger"></span>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="Arm" class="form-label">Kol (cm)</label>
+            <input asp-for="Arm" class="form-control" type="number" step="0.1" />
+            <span asp-validation-for="Arm" class="text-danger"></span>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="Leg" class="form-label">Bacak (cm)</label>
+            <input asp-for="Leg" class="form-control" type="number" step="0.1" />
+            <span asp-validation-for="Leg" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="FlexibilityNotes" class="form-label">Esneklik/Gözlem Notları</label>
+            <textarea asp-for="FlexibilityNotes" class="form-control" rows="2"></textarea>
+            <span asp-validation-for="FlexibilityNotes" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="UserNote" class="form-label">Ek Notun (Hedef, süreç, motivasyon...)</label>
+            <textarea asp-for="UserNote" class="form-control" rows="2"></textarea>
+            <span asp-validation-for="UserNote" class="text-danger"></span>
+        </div>
+
+        <div class="col-12">
+            <label class="form-label">Progress Fotoğraf(lar)ı <span class="text-muted">(Birden fazla seçebilirsin)</span></label>
+            <input asp-for="ProgressPhotoFiles" class="form-control" type="file" multiple accept="image/*" />
+            <span asp-validation-for="ProgressPhotoFiles" class="text-danger"></span>
+        </div>
+
+        <div class="col-12 d-flex justify-content-end">
+            <a asp-action="Index" class="btn btn-outline-secondary me-2">İptal</a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Formu Kaydet
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
