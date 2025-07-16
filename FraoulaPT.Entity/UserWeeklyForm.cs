@@ -10,8 +10,7 @@ namespace FraoulaPT.Entity
     public class UserWeeklyForm : BaseEntity
     {
         public Guid UserPackageId { get; set; }
-        public UserPackage UserPackage { get; set; }
-
+        public virtual UserPackage UserPackage { get; set; }
         public DateTime FormDate { get; set; }
         public double? Weight { get; set; }
         public double? FatPercent { get; set; }
@@ -25,10 +24,10 @@ namespace FraoulaPT.Entity
         public double? BloodPressure { get; set; }
         public double? Vo2Max { get; set; }
         public string FlexibilityNotes { get; set; }
-        public string ProgressPhotoPath { get; set; } // MediaId de olabilir
         public string UserNote { get; set; }
         public string CoachFeedback { get; set; }
         public FormStatus Status { get; set; }
+        // Çoklu progress foto desteği
+        public virtual ICollection<Media> ProgressPhotos { get; set; }
     }
-
 }

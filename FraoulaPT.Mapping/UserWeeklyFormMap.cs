@@ -17,7 +17,6 @@ namespace FraoulaPT.Mapping
             builder.Property(f => f.FormDate).IsRequired();
             builder.Property(f => f.UserNote).HasMaxLength(500);
             builder.Property(f => f.CoachFeedback).HasMaxLength(500);
-            builder.Property(f => f.ProgressPhotoPath).HasMaxLength(250);
         }
     }
 }

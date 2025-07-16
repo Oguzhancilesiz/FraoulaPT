@@ -17,7 +17,7 @@ namespace FraoulaPT.Entity
         public double? HeightCm { get; set; }
         public double? WeightKg { get; set; }
         public BodyType? BodyType { get; set; }
-        public string BloodType { get; set; }
+        public BloodType? BloodType { get; set; }
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
         public string EmergencyContactName { get; set; }
@@ -32,10 +32,10 @@ namespace FraoulaPT.Entity
         public string LastCheckResults { get; set; } // JSON/text
         public string SmokingAlcohol { get; set; }
         public string Occupation { get; set; }
-        public string ExperienceLevel { get; set; }
+        public ExperienceLevel? ExperienceLevel { get; set; }
         public string FavoriteSports { get; set; }
         public string Notes { get; set; }
-        public string DietType { get; set; }
+        public DietType? DietType { get; set; }
     }
 
 }

@@ -1,16 +1,12 @@
 ﻿using FraoulaPT.Core.Enums;
 using System;
-using System.Collections.Generic;
+using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FraoulaPT.DTOs.UserDTOs
 {
     public class ProfileEditDTO
     {
-        // Anahtar
         public Guid Id { get; set; }
 
         [Required(ErrorMessage = "Cinsiyet seçimi zorunludur")]
@@ -32,8 +28,7 @@ namespace FraoulaPT.DTOs.UserDTOs
         public BodyType? BodyType { get; set; }
 
         [Display(Name = "Kan Grubu")]
-        [StringLength(10)]
-        public string BloodType { get; set; }
+        public BloodType? BloodType { get; set; } // Enum
 
         [Display(Name = "Telefon")]
         [StringLength(20)]
@@ -80,7 +75,7 @@ namespace FraoulaPT.DTOs.UserDTOs
         public string Occupation { get; set; }
 
         [Display(Name = "Egzersiz/Deneyim Seviyesi")]
-        public string ExperienceLevel { get; set; }
+        public ExperienceLevel? ExperienceLevel { get; set; } // Enum
 
         [Display(Name = "En Sevdiği Sporlar")]
         public string FavoriteSports { get; set; }
@@ -89,6 +84,6 @@ namespace FraoulaPT.DTOs.UserDTOs
         public string Notes { get; set; }
 
         [Display(Name = "Beslenme Tipi")]
-        public string DietType { get; set; }
+        public DietType? DietType { get; set; } // Enum
     }
 }
