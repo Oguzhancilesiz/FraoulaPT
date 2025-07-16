@@ -6,5 +6,13 @@ using System.Threading.Tasks;
 
 namespace FraoulaPT.Core.Enums
 {
-    public enum MediaType { Image, Video }
+    public enum MediaType {
+
+        Image = 1,
+        Video = 2,
+        Audio = 3,
+        Document = 4,
+        Pdf = 5,
+        Other = 6
+    }
 }

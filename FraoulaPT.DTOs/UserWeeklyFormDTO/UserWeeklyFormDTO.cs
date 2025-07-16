@@ -23,7 +23,7 @@ namespace FraoulaPT.DTOs.UserWeeklyFormDTO
         public string FlexibilityNotes { get; set; }
         public string UserNote { get; set; }
         public string CoachFeedback { get; set; }
-        public FormStatus Status { get; set; }
+        public Status Status { get; set; }
         public List<MediaDTO> ProgressPhotos { get; set; }
     }
 }

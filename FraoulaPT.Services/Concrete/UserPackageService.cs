@@ -27,6 +27,22 @@ namespace FraoulaPT.Services.Concrete
             _roleManager = roleManager;
             _unitOfWork = unitOfWork;
         }
+
+        public async Task<Guid?> GetActiveUserPackageIdAsync(Guid userId)
+        {
+            var repo = _unitOfWork.Repository<UserPackage>();
+            var query = await repo.GetBy(x => x.AppUserId == userId && x.IsActive && x.Status == Status.Active);
+
+            var entity = await query
+                .OrderByDescending(x => x.StartDate)
+                .FirstOrDefaultAsync();
+
+            if (entity == null)
+                return null;
+
+            return entity.Id;
+        }
+
         public async Task<MyCoachChatDTO> GetMyCoachInfoAsync(Guid userId)
         {
             // Sistemdeki ilk (ve tek) koçu bul

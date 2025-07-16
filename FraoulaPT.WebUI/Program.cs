@@ -49,6 +49,8 @@ namespace FraoulaPT.WebUI
             builder.Services.AddScoped<IPackageService, PackageService>();
             builder.Services.AddScoped<IUserPackageService, UserPackageService>();
             builder.Services.AddScoped<IUserQuestionService, UserQuestionService>();
+            builder.Services.AddScoped<IUserWeeklyFormService, UserWeeklyFormService>();
+            builder.Services.AddScoped<IMediaService, MediaService>();
             builder.Services.AddScoped<IChatMediaService>(provider =>
             {
                 var env = provider.GetRequiredService<IWebHostEnvironment>();
