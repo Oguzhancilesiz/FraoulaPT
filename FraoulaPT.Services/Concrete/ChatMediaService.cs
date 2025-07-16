@@ -1,22 +1,16 @@
 ﻿using FraoulaPT.Services.Abstracts;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using FraoulaPT.Entity;
 
 namespace FraoulaPT.Services.Concrete
 {
     public class ChatMediaService : IChatMediaService
     {
-        private readonly IWebHostEnvironment _env;
+        private readonly string _uploadRoot;
 
-        public ChatMediaService(IWebHostEnvironment env)
+        public ChatMediaService(string uploadRoot)
         {
-            _env = env;
+            _uploadRoot = uploadRoot;
         }
 
         public async Task<List<ChatMedia>> SaveMediaAsync(List<IFormFile> mediaFiles)
@@ -25,9 +19,8 @@ namespace FraoulaPT.Services.Concrete
             if (mediaFiles == null || mediaFiles.Count == 0)
                 return savedMedia;
 
-            var uploadRoot = Path.Combine(_env.WebRootPath, "uploads", "chat");
-            if (!Directory.Exists(uploadRoot))
-                Directory.CreateDirectory(uploadRoot);
+            if (!Directory.Exists(_uploadRoot))
+                Directory.CreateDirectory(_uploadRoot);
 
             foreach (var file in mediaFiles)
             {
@@ -40,7 +33,7 @@ namespace FraoulaPT.Services.Concrete
                     throw new Exception($"'{file.FileName}' uzantısına izin verilmiyor.");
 
                 var uniqueName = Guid.NewGuid().ToString() + extension;
-                var filePath = Path.Combine(uploadRoot, uniqueName);
+                var filePath = Path.Combine(_uploadRoot, uniqueName);
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);

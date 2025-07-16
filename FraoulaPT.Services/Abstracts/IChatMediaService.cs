@@ -1,5 +1,4 @@
-﻿using FraoulaPT.DTOs.ChatMediaDTO;
-using FraoulaPT.Entity;
+﻿using FraoulaPT.Entity;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;

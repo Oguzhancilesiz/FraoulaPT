@@ -5,6 +5,7 @@ using FraoulaPT.Entity;
 using FraoulaPT.Mapping;
 using FraoulaPT.Services.Abstracts;
 using FraoulaPT.Services.Concrete;
+using FraoulaPT.WebUI.Hubs;
 using Microsoft.EntityFrameworkCore;
 using System.Configuration;
 
@@ -48,7 +49,13 @@ namespace FraoulaPT.WebUI
             builder.Services.AddScoped<IPackageService, PackageService>();
             builder.Services.AddScoped<IUserPackageService, UserPackageService>();
             builder.Services.AddScoped<IUserQuestionService, UserQuestionService>();
-            builder.Services.AddScoped<IChatMediaService, ChatMediaService>();
+            builder.Services.AddScoped<IChatMediaService>(provider =>
+            {
+                var env = provider.GetRequiredService<IWebHostEnvironment>();
+                var uploadRoot = Path.Combine(env.WebRootPath, "uploads", "chat");
+                return new ChatMediaService(uploadRoot);
+            });
+
             builder.Services.AddScoped<IChatMessageService, ChatMessageService>();
 
             // ... diðer servislerin kayýtlarý
@@ -65,7 +72,7 @@ namespace FraoulaPT.WebUI
                 app.UseHsts();
             }
 
-            app.MapHub<FraoulaPT.WebUI.Hubs.ChatHub>("/chathub");
+            app.MapHub<ChatHub>("/chathub");
             app.UseHttpsRedirection();
             app.UseRouting();
 

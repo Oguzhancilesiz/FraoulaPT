@@ -152,6 +152,55 @@ namespace FraoulaPT.DAL.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("FraoulaPT.Entity.ChatMedia", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AutoID")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ChatMessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("MediaType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MediaUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatMessageId");
+
+                    b.ToTable("ChatMedia");
+                });
+
             modelBuilder.Entity("FraoulaPT.Entity.ChatMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1005,6 +1054,17 @@ namespace FraoulaPT.DAL.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("FraoulaPT.Entity.ChatMedia", b =>
+                {
+                    b.HasOne("FraoulaPT.Entity.ChatMessage", "ChatMessage")
+                        .WithMany("MediaFiles")
+                        .HasForeignKey("ChatMessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChatMessage");
+                });
+
             modelBuilder.Entity("FraoulaPT.Entity.ChatMessage", b =>
                 {
                     b.HasOne("FraoulaPT.Entity.AppUser", "Receiver")
@@ -1230,6 +1290,11 @@ namespace FraoulaPT.DAL.Migrations
                     b.Navigation("SentMessages");
 
                     b.Navigation("UserPackages");
+                });
+
+            modelBuilder.Entity("FraoulaPT.Entity.ChatMessage", b =>
+                {
+                    b.Navigation("MediaFiles");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.Package", b =>
