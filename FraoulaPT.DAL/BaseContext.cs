@@ -60,28 +60,25 @@ namespace FraoulaPT.DAL
             }
             return rowCount;
         }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Mapping İşlemleri
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(BaseMap<IEntity>).Assembly);
-
-
             base.OnModelCreating(modelBuilder);
         }
-
-
-        public DbSet<UserProfile> UserProfiles { get; set; }
+        public DbSet<ChatMedia> ChatMedias { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<Exercise> Exercises { get; set; }
+        public DbSet<Media> Medias { get; set; }
         public DbSet<Package> Packages { get; set; }
         public DbSet<UserPackage> UserPackages { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
+        public DbSet<UserQuestion> UserQuestions { get; set; }
         public DbSet<UserWeeklyForm> UserWeeklyForms { get; set; }
-        public DbSet<WorkoutProgram> WorkoutPrograms { get; set; }
+        public DbSet<UserWorkoutAssignment> UserWorkoutAssignments { get; set; }
         public DbSet<WorkoutDay> WorkoutDays { get; set; }
         public DbSet<WorkoutExercise> WorkoutExercises { get; set; }
-        public DbSet<Media> Media { get; set; }
-        public DbSet<UserWorkoutAssignment> UserWorkoutAssignments { get; set; }
-        public DbSet<UserQuestion> UserQuestions { get; set; }
-        public DbSet<ChatMessage> ChatMessages { get; set; }
-
+        public DbSet<WorkoutExerciseLog> WorkoutExerciseLogs { get; set; }
+        public DbSet<WorkoutProgram> WorkoutPrograms { get; set; }
     }
 }

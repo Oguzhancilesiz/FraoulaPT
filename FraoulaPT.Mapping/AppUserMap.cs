@@ -46,10 +46,6 @@ namespace FraoulaPT.Mapping
                 .HasForeignKey(q => q.AnsweredByCoachId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(u => u.AuthoredPrograms)
-                .WithOne(p => p.Coach)
-                .HasForeignKey(p => p.CoachId)
-                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

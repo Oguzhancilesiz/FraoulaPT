@@ -9,8 +9,7 @@ namespace FraoulaPT.Entity
     public class WorkoutDay : BaseEntity
     {
         public Guid WorkoutProgramId { get; set; }
-        public virtual WorkoutProgram WorkoutProgram { get; set; }
-        public int DayOfWeek { get; set; } // Pazartesi=1...
+        public int DayOfWeek { get; set; }
         public virtual ICollection<WorkoutExercise> Exercises { get; set; }
     }
 

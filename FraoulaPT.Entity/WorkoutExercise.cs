@@ -9,13 +9,13 @@ namespace FraoulaPT.Entity
     public class WorkoutExercise : BaseEntity
     {
         public Guid WorkoutDayId { get; set; }
-        public virtual WorkoutDay WorkoutDay { get; set; }
-        public string ExerciseName { get; set; }
+        public Guid ExerciseId { get; set; } // Seçilen hareket!
+        public virtual Exercise Exercise { get; set; }
+
         public int SetCount { get; set; }
-        public int RepCount { get; set; }
-        public int? DurationSeconds { get; set; }
-        public string Notes { get; set; }
-        public Guid? ExerciseMediaId { get; set; }
-        public virtual Media ExerciseMedia { get; set; }
+        public int RepetitionCount { get; set; }
+        public double? Weight { get; set; } // Planlanan kilo
+        public string CoachNote { get; set; }
+        public virtual ICollection<WorkoutExerciseLog> Logs { get; set; }
     }
 }

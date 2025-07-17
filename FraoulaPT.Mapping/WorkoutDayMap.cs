@@ -15,9 +15,7 @@ namespace FraoulaPT.Mapping
             base.Configure(builder);
 
             builder.Property(d => d.DayOfWeek).IsRequired();
-            builder.HasMany(d => d.Exercises)
-                .WithOne(e => e.WorkoutDay)
-                .HasForeignKey(e => e.WorkoutDayId);
+       
         }
     }
 }
