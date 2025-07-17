@@ -14,15 +14,6 @@ namespace FraoulaPT.Mapping
         {
             base.Configure(builder);
 
-            builder.Property(p => p.Name).HasMaxLength(100).IsRequired();
-            builder.Property(p => p.Description).HasMaxLength(500);
-            builder.HasMany(p => p.WorkoutDays)
-                .WithOne(d => d.WorkoutProgram)
-                .HasForeignKey(d => d.WorkoutProgramId);
-
-            builder.HasMany(p => p.Assignments)
-                .WithOne(a => a.WorkoutProgram)
-                .HasForeignKey(a => a.WorkoutProgramId);
         }
     }
 }

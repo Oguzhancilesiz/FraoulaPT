@@ -4,6 +4,7 @@ using FraoulaPT.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FraoulaPT.DAL.Migrations
 {
     [DbContext(typeof(BaseContext))]
-    partial class BaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250716181651_v9")]
+    partial class v9
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -198,7 +201,7 @@ namespace FraoulaPT.DAL.Migrations
 
                     b.HasIndex("ChatMessageId");
 
-                    b.ToTable("ChatMedias");
+                    b.ToTable("ChatMedia");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.ChatMessage", b =>
@@ -356,7 +359,7 @@ namespace FraoulaPT.DAL.Migrations
 
                     b.HasIndex("UserWeeklyFormId");
 
-                    b.ToTable("Medias");
+                    b.ToTable("Media");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.Package", b =>

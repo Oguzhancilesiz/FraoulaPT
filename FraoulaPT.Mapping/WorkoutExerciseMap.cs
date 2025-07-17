@@ -14,11 +14,6 @@ namespace FraoulaPT.Mapping
         {
             base.Configure(builder);
 
-            builder.Property(e => e.ExerciseName).HasMaxLength(100).IsRequired();
-            builder.Property(e => e.SetCount).IsRequired();
-            builder.Property(e => e.RepCount).IsRequired();
-            builder.Property(e => e.DurationSeconds).IsRequired(false);
-            builder.Property(e => e.Notes).HasMaxLength(500);
         }
     }
 }
