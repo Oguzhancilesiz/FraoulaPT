@@ -7,6 +7,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -124,6 +127,12 @@
                                 <i class="bi bi-journal-check"></i> Formlarım
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="WorkoutProgram" asp-action="MyPrograms">
+                                <i class="bi bi-list-task"></i> Antrenman Programlarım
+                            </a>
+                        </li>
+
                     }
                     else
                     {
@@ -158,6 +167,7 @@
             <div style="font-size:13px;opacity:.65;">Sporcu Takip, Kişisel Antrenman ve Online Danışmanlık Platformu</div>
         </div>
     </footer>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

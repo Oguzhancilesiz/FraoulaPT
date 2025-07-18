@@ -9,6 +9,7 @@ namespace FraoulaPT.Entity
     public class WorkoutExercise : BaseEntity
     {
         public Guid WorkoutDayId { get; set; }
+        public virtual WorkoutDay WorkoutDay { get; set; }
         public Guid ExerciseId { get; set; } // Seçilen hareket!
         public virtual Exercise Exercise { get; set; }
 
