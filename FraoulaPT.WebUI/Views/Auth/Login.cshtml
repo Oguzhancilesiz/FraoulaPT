@@ -1,0 +1,20 @@
+﻿@using FraoulaPT.DTOs.AuthDTOs
+@model UserLoginDTO
+@{
+    ViewData["Title"] = "Giriş Yap";
+}
+<h2>Giriş Yap</h2>
+<form asp-action="Login" method="post">
+    <div asp-validation-summary="All"></div>
+    <div>
+        <label>Kullanıcı Adı veya Email</label>
+        <input asp-for="UserNameOrEmail" />
+    </div>
+    <div>
+        <label>Şifre</label>
+        <input asp-for="Password" type="password" />
+    </div>
+    <button type="submit">Giriş Yap</button>
+    <a asp-action="Register">Kayıt Ol</a>
+    <a asp-action="ForgotPassword">Şifremi Unuttum</a>
+</form>

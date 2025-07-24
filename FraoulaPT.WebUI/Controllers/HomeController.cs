@@ -1,31 +1,13 @@
-using System.Diagnostics;
+﻿using FraoulaPT.WebUI.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
-using FraoulaPT.WebUI.Models;
 
-namespace FraoulaPT.WebUI.Controllers;
-
-public class HomeController : Controller
+namespace FraoulaPT.WebUI.Controllers
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
+    public class HomeController : BaseController
     {
-        _logger = logger;
-    }
-
-    public IActionResult Index()
-    {
-        return View();
-    }
-
-    public IActionResult Privacy()
-    {
-        return View();
-    }
-
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        public IActionResult Index()
+        {
+            return View();
+        }
     }
 }

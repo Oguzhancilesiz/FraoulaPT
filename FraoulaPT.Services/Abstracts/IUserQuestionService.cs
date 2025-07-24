@@ -1,4 +1,4 @@
-﻿using FraoulaPT.DTOs.UserQuestionDTO;
+﻿using FraoulaPT.DTOs.UserQuestionDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 
 namespace FraoulaPT.Services.Abstracts
 {
-    public interface IUserQuestionService
-    {
-        Task<bool> AskQuestionAsync(Guid userId, string questionText);
-        Task<List<UserQuestionListDTO>> GetMyQuestionsAsync(Guid userId);
-    }
+    public interface IUserQuestionService : IBaseService<
+      UserQuestionListDTO,
+      UserQuestionDetailDTO,
+      UserQuestionCreateDTO,
+      UserQuestionUpdateDTO>
+    { }
+
 }

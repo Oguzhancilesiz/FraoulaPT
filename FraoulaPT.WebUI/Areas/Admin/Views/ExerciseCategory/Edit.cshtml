@@ -1,0 +1,31 @@
+﻿@using FraoulaPT.DTOs.ExerciseCategoryDTOs
+
+@model ExerciseCategoryUpdateDTO
+@{
+    ViewData["Title"] = "Kategori Düzenle";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning bg-gradient text-white">
+                <h5 class="mb-0"><i class="bi bi-pencil"></i> Kategori Düzenle</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">Kategori Adı</label>
+                        <input asp-for="Name" class="form-control" maxlength="40" required />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-save"></i> Kaydet
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary ms-2">Vazgeç</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

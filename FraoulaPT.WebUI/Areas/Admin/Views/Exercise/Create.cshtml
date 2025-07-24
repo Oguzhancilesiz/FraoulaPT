@@ -1,0 +1,67 @@
+﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.ExerciseViewModels
+@model ExerciseCreateVM
+
+@{
+    ViewData["Title"] = "Egzersiz Ekle";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-md-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Yeni Egzersiz Ekle</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" enctype="multipart/form-data" method="post" autocomplete="off">
+                    <div class="mb-3">
+                        <label asp-for="Exercise.Name" class="form-label">Adı</label>
+                        <input asp-for="Exercise.Name" class="form-control" required maxlength="80" />
+                        <span asp-validation-for="Exercise.Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Exercise.CategoryId" class="form-label">Kategori</label>
+                        <select asp-for="Exercise.CategoryId" class="form-select" required>
+                            <option value="">Seçiniz</option>
+                            @foreach (var cat in Model.Categories)
+                            {
+                                <option value="@cat.Id">@cat.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Exercise.CategoryId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Exercise.Description" class="form-label">Açıklama</label>
+                        <textarea asp-for="Exercise.Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Exercise.Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Exercise.VideoUrl" class="form-label">Video Linki (YouTube, Drive vs.)</label>
+                        <input asp-for="Exercise.VideoUrl" class="form-control" />
+                        <span asp-validation-for="Exercise.VideoUrl" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Egzersiz Görseli</label>
+                        <input type="file" asp-for="ImageFile" accept="image/*" class="form-control" required />
+                        <span asp-validation-for="ImageFile" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="submit" class="btn btn-success px-4">
+                            <i class="bi bi-check-circle"></i> Kaydet
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary ms-2">Vazgeç</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

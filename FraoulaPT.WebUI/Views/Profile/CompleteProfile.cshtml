@@ -1,0 +1,132 @@
+﻿@model FraoulaPT.DTOs.UserProfileDTOs.UserProfileCreateDTO
+
+@{
+    ViewData["Title"] = "Profilini Tamamla";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Profilini Tamamla</h2>
+<form asp-action="CompleteProfile" method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary" name="action" value="save">Kaydet</button>
+        <button type="submit" class="btn btn-secondary" name="action" value="skip">Daha Sonra</button>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Profil Fotoğrafı</label>
+        <input type="file" name="ProfilePhotoUrl" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Instagram</label>
+        <input asp-for="Instagram" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Cinsiyet</label>
+        <select asp-for="Gender" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.Gender>()">
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Doğum Tarihi</label>
+        <input asp-for="BirthDate" type="date" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Boy (cm)</label>
+        <input asp-for="HeightCm" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Kilo (kg)</label>
+        <input asp-for="WeightKg" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Vücut Tipi</label>
+        <select asp-for="BodyType" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.BodyType>()">
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Kan Grubu</label>
+        <select asp-for="BloodType" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.BloodType>()">
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Telefon</label>
+        <input asp-for="PhoneNumber" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Adres</label>
+        <input asp-for="Address" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Acil Durum Kişisi</label>
+        <input asp-for="EmergencyContactName" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Acil Durum Telefon</label>
+        <input asp-for="EmergencyContactPhone" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Medikal Geçmiş</label>
+        <input asp-for="MedicalHistory" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Kronik Hastalıklar</label>
+        <input asp-for="ChronicDiseases" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Kullandığı İlaçlar</label>
+        <input asp-for="CurrentMedications" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Alerjiler</label>
+        <input asp-for="Allergies" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Geçmiş Yaralanmalar</label>
+        <input asp-for="PastInjuries" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Mevcut Ağrı</label>
+        <input asp-for="CurrentPain" class="form-control" />
+    </div>
+    <div class="mb-3 form-check">
+        <input type="hidden" name="PregnancyStatus" value="" />
+        <input type="checkbox"
+               class="form-check-input"
+               id="PregnancyStatus"
+               name="PregnancyStatus"
+               value="true"
+        @(Model.PregnancyStatus == true ? "checked" : "") />
+        <label class="form-check-label" for="PregnancyStatus">Hamilelik Durumu</label>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Son Sağlık Kontrolü</label>
+        <input asp-for="LastCheckResults" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Sigara/Alkol</label>
+        <input asp-for="SmokingAlcohol" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Meslek</label>
+        <input asp-for="Occupation" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Spor Deneyimi</label>
+        <select asp-for="ExperienceLevel" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.ExperienceLevel>()">
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Favori Sporlar</label>
+        <input asp-for="FavoriteSports" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Ek Notlar</label>
+        <input asp-for="Notes" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Beslenme Tipi</label>
+        <select asp-for="DietType" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.DietType>()">
+        </select>
+    </div>
+
+   
+</form>

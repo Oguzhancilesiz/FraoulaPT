@@ -13,7 +13,7 @@ namespace FraoulaPT.Entity
         public Guid Id { get; set; }
         public Status Status { get; set; }
         public DateTime CreatedDate { get; set; }
-        public DateTime ModifiedDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
         public Guid? CreatedByUserId { get; set; }
         public Guid? UpdatedByUserId { get; set; }
         public int AutoID { get; set; }
