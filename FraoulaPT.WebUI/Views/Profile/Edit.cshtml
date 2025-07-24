@@ -1,162 +1,157 @@
-﻿@using FraoulaPT.DTOs.UserDTOs
-@model ProfileEditDTO
+﻿@model FraoulaPT.DTOs.UserProfileDTOs.UserProfileUpdateDTO
+
 @{
-    ViewBag.Title = "Profilimi Düzenle";
+    ViewData["Title"] = "Profilini Düzenle";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<h2>Profil Bilgileri</h2>
-<hr />
-<form asp-action="Edit" method="post" class="row g-3">
+
+<h2>Profilini Düzenle</h2>
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="All" class="text-danger"></div>
 
-    <div class="col-md-4">
-        <label asp-for="Gender" class="form-label"></label>
-        <select asp-for="Gender" class="form-select">
-            <option value="">Seçiniz</option>
-            @foreach (var gender in Enum.GetValues(typeof(FraoulaPT.Core.Enums.Gender)))
-            {
-                <option value="@((int)gender)" selected="@(Model.Gender == (FraoulaPT.Core.Enums.Gender?)gender ? "selected" : null)">
-                    @gender
-                </option>
-            }
-        </select>
+    <div class="mb-3 text-center">
+        <label class="form-label fw-semibold">Profil Fotoğrafı</label>
+        <div>
+            <img id="photoPreview"
+                 src="@(!string.IsNullOrWhiteSpace(Model.ProfilePhotoUrl) ? Model.ProfilePhotoUrl : "/uploads/user-default.jpg")"
+                 class="rounded-circle border shadow"
+                 style="object-fit:cover;width:150px;height:150px;background:#f7f7f7;" />
+        </div>
+        <input type="file" name="profilePhoto" id="profilePhoto" class="form-control mt-2" accept="image/*" onchange="previewPhoto(event)" />
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Instagram</label>
+            <input asp-for="Instagram" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Cinsiyet</label>
+            <select asp-for="Gender" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.Gender>()">
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Doğum Tarihi</label>
+            <input asp-for="BirthDate" type="date" class="form-control"
+                   value="@(Model.BirthDate.HasValue ? Model.BirthDate.Value.ToString("yyyy-MM-dd") : "")" />
 
-        <span asp-validation-for="Gender" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Boy (cm)</label>
+            <input asp-for="HeightCm" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Kilo (kg)</label>
+            <input asp-for="WeightKg" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Vücut Tipi</label>
+            <select asp-for="BodyType" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.BodyType>()">
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Kan Grubu</label>
+            <select asp-for="BloodType" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.BloodType>()">
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Telefon</label>
+            <input asp-for="PhoneNumber" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Adres</label>
+            <input asp-for="Address" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Acil Durum Kişisi</label>
+            <input asp-for="EmergencyContactName" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Acil Durum Telefonu</label>
+            <input asp-for="EmergencyContactPhone" class="form-control" />
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">Medikal Geçmiş</label>
+            <input asp-for="MedicalHistory" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Kronik Hastalıklar</label>
+            <input asp-for="ChronicDiseases" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Kullandığı İlaçlar</label>
+            <input asp-for="CurrentMedications" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Alerjiler</label>
+            <input asp-for="Allergies" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Geçmiş Yaralanmalar</label>
+            <input asp-for="PastInjuries" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Mevcut Ağrı</label>
+            <input asp-for="CurrentPain" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Hamilelik Durumu</label>
+            <select asp-for="PregnancyStatus" class="form-select">
+                <option value="true">Evet</option>
+                <option value="false">Hayır</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Son Tetkik Sonuçları</label>
+            <input asp-for="LastCheckResults" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Sigara/Alkol</label>
+            <input asp-for="SmokingAlcohol" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Meslek</label>
+            <input asp-for="Occupation" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Deneyim Seviyesi</label>
+            <select asp-for="ExperienceLevel" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.ExperienceLevel>()">
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Favori Sporlar</label>
+            <input asp-for="FavoriteSports" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Diyet Tipi</label>
+            <select asp-for="DietType" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.DietType>()">
+            </select>
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">Ek Notlar</label>
+            <input asp-for="Notes" class="form-control" />
+        </div>
     </div>
-
-    <div class="col-md-4">
-        <label asp-for="BirthDate" class="form-label"></label>
-        <input asp-for="BirthDate" type="date" class="form-control" />
-        <span asp-validation-for="BirthDate" class="text-danger"></span>
-    </div>
-    <div class="col-md-4">
-        <label asp-for="HeightCm" class="form-label"></label>
-        <input asp-for="HeightCm" type="number" step="0.1" min="50" max="250" class="form-control" />
-        <span asp-validation-for="HeightCm" class="text-danger"></span>
-    </div>
-    <div class="col-md-4">
-        <label asp-for="WeightKg" class="form-label"></label>
-        <input asp-for="WeightKg" type="number" step="0.1" min="20" max="300" class="form-control" />
-        <span asp-validation-for="WeightKg" class="text-danger"></span>
-    </div>
-    <div class="col-md-4">
-        <label asp-for="BodyType" class="form-label"></label>
-        <select asp-for="BodyType" class="form-select">
-            <option value="">Seçiniz</option>
-            @foreach (var type in Enum.GetValues(typeof(FraoulaPT.Core.Enums.BodyType)))
-            {
-                var isSelected = Model.BodyType == (FraoulaPT.Core.Enums.BodyType?)type ? "selected" : "";
-                <option value="@((int)type)" isSelected>@type</option>
-            }
-        </select>
-        <span asp-validation-for="BodyType" class="text-danger"></span>
-    </div>
-    <div class="col-md-4">
-        <label asp-for="BloodType" class="form-label"></label>
-        <input asp-for="BloodType" class="form-control" maxlength="10" />
-        <span asp-validation-for="BloodType" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="PhoneNumber" class="form-label"></label>
-        <input asp-for="PhoneNumber" class="form-control" maxlength="20" />
-        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="Address" class="form-label"></label>
-        <input asp-for="Address" class="form-control" maxlength="250" />
-        <span asp-validation-for="Address" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="EmergencyContactName" class="form-label"></label>
-        <input asp-for="EmergencyContactName" class="form-control" />
-        <span asp-validation-for="EmergencyContactName" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="EmergencyContactPhone" class="form-label"></label>
-        <input asp-for="EmergencyContactPhone" class="form-control" />
-        <span asp-validation-for="EmergencyContactPhone" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="MedicalHistory" class="form-label"></label>
-        <input asp-for="MedicalHistory" class="form-control" />
-        <span asp-validation-for="MedicalHistory" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="ChronicDiseases" class="form-label"></label>
-        <input asp-for="ChronicDiseases" class="form-control" />
-        <span asp-validation-for="ChronicDiseases" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="CurrentMedications" class="form-label"></label>
-        <input asp-for="CurrentMedications" class="form-control" />
-        <span asp-validation-for="CurrentMedications" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="Allergies" class="form-label"></label>
-        <input asp-for="Allergies" class="form-control" />
-        <span asp-validation-for="Allergies" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="PastInjuries" class="form-label"></label>
-        <input asp-for="PastInjuries" class="form-control" />
-        <span asp-validation-for="PastInjuries" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="CurrentPain" class="form-label"></label>
-        <input asp-for="CurrentPain" class="form-control" />
-        <span asp-validation-for="CurrentPain" class="text-danger"></span>
-    </div>
-    <div class="col-md-4">
-        <label asp-for="PregnancyStatus" class="form-label"></label>
-        <select asp-for="PregnancyStatus" class="form-select">
-            <option value="">Seçiniz</option>
-            <option value="false">Hayır</option>
-            <option value="true">Evet</option>
-        </select>
-        <span asp-validation-for="PregnancyStatus" class="text-danger"></span>
-    </div>
-
-    <div class="col-md-8">
-        <label asp-for="LastCheckResults" class="form-label"></label>
-        <input asp-for="LastCheckResults" class="form-control" />
-        <span asp-validation-for="LastCheckResults" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="SmokingAlcohol" class="form-label"></label>
-        <input asp-for="SmokingAlcohol" class="form-control" />
-        <span asp-validation-for="SmokingAlcohol" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="Occupation" class="form-label"></label>
-        <input asp-for="Occupation" class="form-control" />
-        <span asp-validation-for="Occupation" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="ExperienceLevel" class="form-label"></label>
-        <input asp-for="ExperienceLevel" class="form-control" />
-        <span asp-validation-for="ExperienceLevel" class="text-danger"></span>
-    </div>
-    <div class="col-md-6">
-        <label asp-for="FavoriteSports" class="form-label"></label>
-        <input asp-for="FavoriteSports" class="form-control" />
-        <span asp-validation-for="FavoriteSports" class="text-danger"></span>
-    </div>
-    <div class="col-12">
-        <label asp-for="Notes" class="form-label"></label>
-        <textarea asp-for="Notes" rows="3" class="form-control"></textarea>
-        <span asp-validation-for="Notes" class="text-danger"></span>
-    </div>
-    <div class="col-12">
-        <label asp-for="DietType" class="form-label"></label>
-        <input asp-for="DietType" class="form-control" />
-        <span asp-validation-for="DietType" class="text-danger"></span>
-    </div>
-
-    <div class="col-12">
-        <button type="submit" class="btn btn-primary px-4">Kaydet</button>
+    <div class="mt-4 text-end">
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-save"></i> Kaydet
+        </button>
+        <a asp-action="Detail" class="btn btn-outline-secondary ms-2">İptal</a>
     </div>
 </form>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewPhoto(event) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('photoPreview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 }

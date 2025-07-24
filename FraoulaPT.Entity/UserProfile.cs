@@ -11,6 +11,8 @@ namespace FraoulaPT.Entity
     {
         public Guid AppUserId { get; set; }
         public AppUser AppUser { get; set; }
+        public string ProfilePhotoUrl { get; set; }
+        public string? Instagram { get; set; }
 
         public Gender? Gender { get; set; }
         public DateTime? BirthDate { get; set; }

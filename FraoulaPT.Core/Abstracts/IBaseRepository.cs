@@ -11,6 +11,7 @@ namespace FraoulaPT.Core.Abstracts
 {
     public interface IBaseRepository<TEntity> where TEntity : IEntity
     {
+        IQueryable<TEntity> Query();
         Task<TEntity> GetById(Guid id, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
             Expression<Func<TEntity, bool>> predicate = null, bool ignoreQueryFilter = false);
         Task<List<TEntity>> GetAll();

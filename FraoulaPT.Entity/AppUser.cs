@@ -14,9 +14,8 @@ namespace FraoulaPT.Entity
         public string FullName { get; set; }
         public Status Status { get; set; }
         public DateTime CreatedDate { get; set; }
-        public DateTime ModifiedDate { get; set; }
+        public DateTime? ModifiedDate { get; set; }
         public int AutoID { get; set; }
-
         public UserProfile Profile { get; set; }
         public ICollection<UserPackage> UserPackages { get; set; }
         public ICollection<ChatMessage> SentMessages { get; set; }

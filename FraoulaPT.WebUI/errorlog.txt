@@ -1,0 +1,8 @@
+***** HATA ZİNCİRİ BAŞLANGIÇ *****
+LEVEL 0: System.Exception
+MESAJ: An error occurred while saving the entity changes. See the inner exception for details.
+STACKTRACE:
+   at FraoulaPT.DAL.BaseContext.FraoulaPT.Core.Abstracts.IEFContext.SaveChangesAsync(CancellationToken cancellationToken) in C:\Users\Oğuzhan ÇİLESİZ\Desktop\aaaaa\FraoulaPT.DAL\BaseContext.cs:line 59
+   at FraoulaPT.DAL.UnitOfWork.SaveChangesAsync() in C:\Users\Oğuzhan ÇİLESİZ\Desktop\aaaaa\FraoulaPT.DAL\UnitOfWork.cs:line 25
+
+***** HATA ZİNCİRİ SONU *****

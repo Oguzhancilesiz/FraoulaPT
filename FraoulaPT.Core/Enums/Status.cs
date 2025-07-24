@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,28 +10,30 @@ namespace FraoulaPT.Core.Enums
 {
     public enum Status
     {
-        [Description("None")]
+        [Display(Name = "Seçiniz")]
         None = 0,
-        [Description("Aktif")]
+        [Display(Name = "Aktif")]
         Active = 1,
-        [Description("Pasif")]
+        [Display(Name = "Pasif")]
         DeActive = 2,
-        [Description("Onaylı")]
+        [Display(Name = "Reddedildi")]
         Approved = 6,
-        [Description("Silindi")]
+        [Display(Name = "Silindi")]
         Deleted = 4,
-        [Description("Onay Bekliyor")]
+        [Display(Name = "Onay Bekliyor")]
         UnApproved = 3,
-        [Description("İptal Edildi")]
+        [Display(Name = "İptal Edildi")]
         Cancel = 7,
-        [Description("Beklemede")]
+        [Display(Name = "Beklemede")]
         Pending = 8,
-        [Description("Okundu")]
+        [Display(Name = "Okundu")]
         Read = 9,
-        [Description("İşlemde")]
+        [Display(Name = "Güncellendi")]
+        Updated,
+        [Display(Name = "İşlemde")]
         Commit = 14
 
 
-        
+
     }
 }

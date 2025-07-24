@@ -2,11 +2,12 @@ using FraoulaPT.Core.Abstracts;
 using FraoulaPT.Core.Tokens;
 using FraoulaPT.DAL;
 using FraoulaPT.Entity;
-using FraoulaPT.Mapping;
 using FraoulaPT.Services.Abstracts;
 using FraoulaPT.Services.Concrete;
-using FraoulaPT.WebUI.Hubs;
+using Mapster;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Configuration;
 
 namespace FraoulaPT.WebUI
@@ -17,10 +18,9 @@ namespace FraoulaPT.WebUI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            // DI registration (Program.cs veya Startup.cs)
+
             builder.Services.AddDbContext<BaseContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -36,37 +36,39 @@ namespace FraoulaPT.WebUI
                 option.Password.RequireDigit = false;
                 option.Password.RequiredUniqueChars = 0;
                 option.Password.RequireUppercase = false;
+                option.SignIn.RequireConfirmedEmail = true;
                 option.Password.RequireNonAlphanumeric = false;
                 option.Password.RequireLowercase = false;
-            }).AddEntityFrameworkStores<BaseContext>();
+            }).AddEntityFrameworkStores<BaseContext>().AddDefaultTokenProviders();
 
-            //IOC -> Razor View Engine Dependency Injection yapmak için hangi interface hangi classla eþleþiyor buradan bilgi alýyor.
-            builder.Services.AddScoped<IRoleService, RoleService>();
-            builder.Services.AddScoped<IUserService, UserService>();
-            builder.Services.AddScoped<IEFContext, BaseContext>();
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-            builder.Services.AddScoped<IUserProfileService, UserProfileService>();
-            builder.Services.AddScoped<IPackageService, PackageService>();
-            builder.Services.AddScoped<IUserPackageService, UserPackageService>();
-            builder.Services.AddScoped<IUserQuestionService, UserQuestionService>();
-            builder.Services.AddScoped<IUserWeeklyFormService, UserWeeklyFormService>();
-            builder.Services.AddScoped<IMediaService, MediaService>();
-            builder.Services.AddScoped<IWorkoutProgramService, WorkoutProgramService>();
-            builder.Services.AddScoped<IWorkoutExerciseLogService, WorkoutExerciseLogService>();
-
-
-            builder.Services.AddScoped<IChatMediaService>(provider =>
+            builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
             {
-                var env = provider.GetRequiredService<IWebHostEnvironment>();
-                var uploadRoot = Path.Combine(env.WebRootPath, "uploads", "chat");
-                return new ChatMediaService(uploadRoot);
+                options.TokenLifespan = TimeSpan.FromMinutes(2); // 2 dakika
             });
 
+            //IOC -> Razor View Engine Dependency Injection yapmak için hangi interface hangi classla eþleþiyor buradan bilgi alýyor.
+            builder.Services.AddScoped<IEFContext, BaseContext>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // Application Service Registration
+            builder.Services.AddScoped<IAppRoleService, AppRoleService>();
+            builder.Services.AddScoped<IAppUserService, AppUserService>();
+            builder.Services.AddScoped<IChatMediaService, ChatMediaService>();
             builder.Services.AddScoped<IChatMessageService, ChatMessageService>();
-
-            // ... diðer servislerin kayýtlarý
-
-            builder.Services.Configure<PayTROptions>(builder.Configuration.GetSection("PayTR"));
+            builder.Services.AddScoped<IExerciseService, ExerciseService>();
+            builder.Services.AddScoped<IExerciseCategoryService, ExerciseCategoryService>();
+            builder.Services.AddScoped<IMediaService, MediaService>();
+            builder.Services.AddScoped<IPackageService, PackageService>();
+            builder.Services.AddScoped<IUserPackageService, UserPackageService>();
+            builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+            builder.Services.AddScoped<IUserQuestionService, UserQuestionService>();
+            builder.Services.AddScoped<IUserWeeklyFormService, UserWeeklyFormService>();
+            builder.Services.AddScoped<IUserWorkoutAssignmentService, UserWorkoutAssignmentService>();
+            builder.Services.AddScoped<IWorkoutDayService, WorkoutDayService>();
+            builder.Services.AddScoped<IWorkoutExerciseService, WorkoutExerciseService>();
+            builder.Services.AddScoped<IWorkoutExerciseLogService, WorkoutExerciseLogService>();
+            builder.Services.AddScoped<IWorkoutProgramService, WorkoutProgramService>();
+            builder.Services.AddScoped<IMailService, MailService>();
 
             var app = builder.Build();
 
@@ -74,11 +76,9 @@ namespace FraoulaPT.WebUI
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
-            app.MapHub<ChatHub>("/chathub");
             app.UseHttpsRedirection();
             app.UseRouting();
 

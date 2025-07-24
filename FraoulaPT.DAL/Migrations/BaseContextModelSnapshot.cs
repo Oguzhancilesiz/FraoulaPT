@@ -185,7 +185,7 @@ namespace FraoulaPT.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ModifiedDate")
+                    b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
@@ -268,6 +268,9 @@ namespace FraoulaPT.DAL.Migrations
                     b.Property<int>("AutoID")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -282,7 +285,7 @@ namespace FraoulaPT.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("ModifiedDate")
+                    b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
@@ -301,7 +304,42 @@ namespace FraoulaPT.DAL.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.ToTable("Exercises");
+                });
+
+            modelBuilder.Entity("FraoulaPT.Entity.ExerciseCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AutoID")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExerciseCategory");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.Media", b =>
@@ -587,6 +625,9 @@ namespace FraoulaPT.DAL.Migrations
                     b.Property<double?>("HeightCm")
                         .HasColumnType("float");
 
+                    b.Property<string>("Instagram")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("LastCheckResults")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -618,6 +659,10 @@ namespace FraoulaPT.DAL.Migrations
 
                     b.Property<bool?>("PregnancyStatus")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ProfilePhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SmokingAlcohol")
                         .IsRequired()
@@ -968,7 +1013,7 @@ namespace FraoulaPT.DAL.Migrations
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("ModifiedDate")
+                    b.Property<DateTime?>("ModifiedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
@@ -1186,6 +1231,17 @@ namespace FraoulaPT.DAL.Migrations
                     b.Navigation("UserPackage");
                 });
 
+            modelBuilder.Entity("FraoulaPT.Entity.Exercise", b =>
+                {
+                    b.HasOne("FraoulaPT.Entity.ExerciseCategory", "Category")
+                        .WithMany("Exercises")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("FraoulaPT.Entity.Media", b =>
                 {
                     b.HasOne("FraoulaPT.Entity.UserWeeklyForm", null)
@@ -1296,22 +1352,26 @@ namespace FraoulaPT.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FraoulaPT.Entity.WorkoutDay", null)
+                    b.HasOne("FraoulaPT.Entity.WorkoutDay", "WorkoutDay")
                         .WithMany("Exercises")
                         .HasForeignKey("WorkoutDayId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Exercise");
+
+                    b.Navigation("WorkoutDay");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.WorkoutExerciseLog", b =>
                 {
-                    b.HasOne("FraoulaPT.Entity.WorkoutExercise", null)
+                    b.HasOne("FraoulaPT.Entity.WorkoutExercise", "WorkoutExercise")
                         .WithMany("Logs")
                         .HasForeignKey("WorkoutExerciseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("WorkoutExercise");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.WorkoutProgram", b =>
@@ -1398,6 +1458,11 @@ namespace FraoulaPT.DAL.Migrations
             modelBuilder.Entity("FraoulaPT.Entity.Exercise", b =>
                 {
                     b.Navigation("WorkoutExercises");
+                });
+
+            modelBuilder.Entity("FraoulaPT.Entity.ExerciseCategory", b =>
+                {
+                    b.Navigation("Exercises");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.Package", b =>

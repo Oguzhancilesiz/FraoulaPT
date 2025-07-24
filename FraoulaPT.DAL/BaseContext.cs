@@ -24,7 +24,7 @@ namespace FraoulaPT.DAL
             return base.Set<TEntity>();
         }
 
-
+        
         async Task<int> IEFContext.SaveChangesAsync(CancellationToken cancellationToken)
         {
             string id = Guid.NewGuid().ToString().Replace("-", "") + DateTime.Now.ToBinary();//Log veritabanları için genelde kullanılan işlemID(proccessId) kolonuna eklenecek veriyi temsil eder.
@@ -80,5 +80,9 @@ namespace FraoulaPT.DAL
         public DbSet<WorkoutExercise> WorkoutExercises { get; set; }
         public DbSet<WorkoutExerciseLog> WorkoutExerciseLogs { get; set; }
         public DbSet<WorkoutProgram> WorkoutPrograms { get; set; }
+
+
+
+
     }
 }

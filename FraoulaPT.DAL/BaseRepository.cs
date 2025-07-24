@@ -317,5 +317,10 @@ namespace FraoulaPT.DAL
                 throw new Exception(ex.Message);
             }
         }
+
+        public IQueryable<T> Query()
+        {
+           return _context.Set<T>().AsQueryable();
+        }
     }
 }

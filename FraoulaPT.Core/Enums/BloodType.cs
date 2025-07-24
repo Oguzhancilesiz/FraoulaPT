@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,23 +10,23 @@ namespace FraoulaPT.Core.Enums
 {
     public enum BloodType
     {
-        [Description("Seçiniz")]
+        [Display(Name = "Seçiniz")]
         None = 0,
-        [Description("A+")]
+        [Display(Name = "A+")]
         APlus = 1,
-        [Description("A-")]
+        [Display(Name = "A-")]
         AMinus = 2,
-        [Description("B+")]
+        [Display(Name = "B+")]
         BPlus = 3,
-        [Description("B-")]
+        [Display(Name = "B-")]
         BMinus = 4,
-        [Description("AB+")]
+        [Display(Name = "AB+")]
         ABPlus = 5,
-        [Description("AB-")]
+        [Display(Name = "AB-")]
         ABMinus = 6,
-        [Description("O+")]
+        [Display(Name = "O+")]
         OPlus = 7,
-        [Description("O-")]
+        [Display(Name = "O-")]
         OMinus = 8
     }
 }

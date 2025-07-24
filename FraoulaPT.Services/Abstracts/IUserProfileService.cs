@@ -1,4 +1,4 @@
-﻿using FraoulaPT.DTOs.UserDTOs;
+﻿using FraoulaPT.DTOs.UserProfileDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +7,14 @@ using System.Threading.Tasks;
 
 namespace FraoulaPT.Services.Abstracts
 {
-    public interface IUserProfileService
+    public interface IUserProfileService : IBaseService<
+     UserProfileListDTO,
+     UserProfileDetailDTO,
+     UserProfileCreateDTO,
+     UserProfileUpdateDTO>
     {
-        Task<ProfileViewDTO> GetProfileAsync(Guid appUserId);
-        Task<ProfileEditDTO> GetProfileForEditAsync(Guid appUserId);
-        Task UpdateProfileAsync(Guid appUserId, ProfileEditDTO dto);
+
+        Task<UserProfileDetailDTO> GetByAppUserIdAsync(Guid appUserId);
+
     }
 }

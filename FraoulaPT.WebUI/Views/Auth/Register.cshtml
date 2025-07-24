@@ -1,0 +1,31 @@
+﻿@using FraoulaPT.DTOs.AuthDTOs
+@model UserRegisterDTO
+@{
+    ViewData["Title"] = "Kayıt Ol";
+}
+<h2>Kayıt Ol</h2>
+<form asp-action="Register" method="post">
+    <div asp-validation-summary="All"></div>
+    <div>
+        <label>Ad Soyad</label>
+        <input asp-for="FullName" />
+    </div>
+    <div>
+        <label>Kullanıcı Adı</label>
+        <input asp-for="UserName" />
+    </div>
+    <div>
+        <label>Email</label>
+        <input asp-for="Email" />
+    </div>
+    <div>
+        <label>Şifre</label>
+        <input asp-for="Password" type="password" />
+    </div>
+    <div>
+        <label>Şifre Tekrar</label>
+        <input asp-for="ConfirmPassword" type="password" />
+    </div>
+    <button type="submit">Kayıt Ol</button>
+    <a asp-action="Login">Giriş Yap</a>
+</form>

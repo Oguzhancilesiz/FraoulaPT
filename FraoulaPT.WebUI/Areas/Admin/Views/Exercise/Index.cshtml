@@ -1,0 +1,146 @@
+﻿@model FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.ExerciseViewModels.ExerciseListVM
+@using FraoulaPT.Core.Enums
+
+@{
+    ViewData["Title"] = "Egzersizler";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0"><i class="bi bi-bicycle"></i> Egzersizler</h3>
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Yeni Egzersiz Ekle
+    </a>
+</div>
+
+<div class="row mb-3 g-2 align-items-end">
+    <div class="col-md-4">
+        <input id="searchInput" class="form-control" placeholder="Egzersiz adına göre ara..." />
+    </div>
+    <div class="col-md-3">
+        <select id="categoryFilter" class="form-select">
+            <option value="">Tüm Kategoriler</option>
+            @foreach (var cat in Model.Categories)
+            {
+                <option value="@cat.Id">@cat.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select id="statusFilter" class="form-select">
+            <option value="">Tüm Durumlar</option>
+            @foreach (var status in Enum.GetValues(typeof(Status)).Cast<Status>())
+            {
+                <option value="@((int)status)">@status.ToString()</option>
+            }
+        </select>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover shadow-sm bg-white rounded align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Görsel</th>
+                <th>Adı</th>
+                <th>Kategori</th>
+                <th>Açıklama</th>
+                <th>Video</th>
+                <th>Durum</th>
+                <th style="width:140px;">İşlemler</th>
+            </tr>
+        </thead>
+        <tbody id="exerciseTableBody">
+            @foreach (var egzersiz in Model.Exercises)
+            {
+                <tr>
+                    <td>@(Model.Exercises.IndexOf(egzersiz) + 1)</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(egzersiz.ImageUrl))
+                        {
+                            <img src="@egzersiz.ImageUrl" alt="görsel" style="width:48px;height:48px;object-fit:cover;border-radius:7px;box-shadow:0 2px 10px #292e4922;">
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </td>
+                    <td class="fw-bold">@egzersiz.Name</td>
+                    <td>@egzersiz.CategoryName</td>
+                    <td>@egzersiz.Description</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(egzersiz.VideoUrl))
+                        {
+                            <a href="@egzersiz.VideoUrl" class="btn btn-outline-primary btn-sm" target="_blank">
+                                <i class="bi bi-play-btn"></i> İzle
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Yok</span>
+                        }
+                    </td>
+                    <td>
+                        @if (egzersiz.Status == Status.Active)
+                        {
+                            <span class="badge bg-success">Aktif</span>
+                        }
+                        else if (egzersiz.Status == Status.DeActive)
+                        {
+                            <span class="badge bg-secondary">Pasif</span>
+                        }
+                        else if (egzersiz.Status == Status.Deleted)
+                        {
+                            <span class="badge bg-danger">Silindi</span>
+                        }
+                        else if (egzersiz.Status == Status.Updated)
+                        {
+                            <span class="badge bg-warning text-dark">Güncellendi</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Bilinmiyor</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@egzersiz.Id" class="btn btn-warning btn-sm me-1">
+                            <i class="bi bi-pencil"></i> Düzenle
+                        </a>
+                        <form asp-action="Delete" asp-route-id="@egzersiz.Id" method="post" class="d-inline" onsubmit="return confirm('Silmek istediğine emin misin?');">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="bi bi-trash"></i> Sil
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        function loadExercises() {
+            var search = $("#searchInput").val();
+            var categoryId = $("#categoryFilter").val();
+            var status = $("#statusFilter").val();
+
+            $.ajax({
+                url: '@Url.Action("AjaxFilter")',
+                data: { search: search, categoryId: categoryId, status: status },
+                type: "GET",
+                success: function (data) {
+                    $("#exerciseTableBody").html(data);
+                }
+            });
+        }
+
+        $("#searchInput, #categoryFilter, #statusFilter").on("input change", function () {
+            loadExercises();
+        });
+
+        // Sayfa açıldığında da bir kere yükle
+        $(function () { loadExercises(); });
+    </script>
+}

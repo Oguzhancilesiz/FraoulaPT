@@ -1,5 +1,4 @@
-﻿using FraoulaPT.Entity;
-using Microsoft.AspNetCore.Http;
+﻿using FraoulaPT.DTOs.ChatMediaDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +7,11 @@ using System.Threading.Tasks;
 
 namespace FraoulaPT.Services.Abstracts
 {
-    public interface IChatMediaService
-    {
-        Task<List<ChatMedia>> SaveMediaAsync(List<IFormFile> mediaFiles);
-    }
+    public interface IChatMediaService : IBaseService<
+     ChatMediaListDTO,
+     ChatMediaDetailDTO,
+     ChatMediaCreateDTO,
+     ChatMediaUpdateDTO>
+    { }
+
 }

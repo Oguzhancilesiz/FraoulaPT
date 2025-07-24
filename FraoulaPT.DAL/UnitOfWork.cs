@@ -26,17 +26,28 @@ namespace FraoulaPT.DAL
             }
             catch (Exception ex)
             {
-                var inner = ex;
-                string allMsg = "";
+                var sb = new StringBuilder();
+                sb.AppendLine("***** HATA ZİNCİRİ BAŞLANGIÇ *****");
+
                 int level = 0;
-                while (inner != null && level < 10)
+                Exception? inner = ex;
+                while (inner != null)
                 {
-                    allMsg += $"LEVEL {level}: {inner.Message}\n";
+                    sb.AppendLine($"LEVEL {level}: {inner.GetType().FullName}");
+                    sb.AppendLine($"MESAJ: {inner.Message}");
+                    sb.AppendLine($"STACKTRACE:\n{inner.StackTrace}\n");
                     inner = inner.InnerException;
                     level++;
                 }
-                Console.WriteLine(ex.ToString()); // Tüm zinciri loglar!
-                throw new Exception("LEVEL 0: " + ex.ToString(), ex);
+
+                sb.AppendLine("***** HATA ZİNCİRİ SONU *****");
+
+                // Hem console'a hem dosyaya yazdırabilirsin:
+                Console.WriteLine(sb.ToString());
+                Console.WriteLine("ex.ToString():");
+                Console.WriteLine(ex.ToString());
+                // İyice zorlamak için Exception'u dışa fırlat
+                throw new Exception(sb.ToString(), ex);
             }
         }
 

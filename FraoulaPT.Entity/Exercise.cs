@@ -12,6 +12,10 @@ namespace FraoulaPT.Entity
         public string Description { get; set; }
         public string VideoUrl { get; set; } // Opsiyonel, Youtube/Drive vs.
         public string ImageUrl { get; set; } // Hareketi gösteren resim
+                                             // Kategori ilişkisi
+        public Guid CategoryId { get; set; }
+        public virtual ExerciseCategory Category { get; set; }
+
         public virtual ICollection<WorkoutExercise> WorkoutExercises { get; set; }
     }
 }
