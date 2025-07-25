@@ -1,0 +1,78 @@
+﻿@model FraoulaPT.DTOs.WorkoutProgramDTOs.WorkoutProgramDetailDTO
+
+@{
+    ViewData["Title"] = "Program Detayı";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        🏋️‍♀️ @Model.ProgramName
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Koç Notu:</h5>
+        <p class="card-text">@Model.CoachNote</p>
+        <p><strong>Form Tarihi:</strong> @Model.AssignedDate.ToString("dd.MM.yyyy")</p>
+        <p><strong>Kullanıcı:</strong> @Model.ProgramName</p>
+    </div>
+</div>
+
+@foreach (var day in Model.Days.OrderBy(d => d.DayOfWeek))
+{
+    <div class="card mb-3 border-dark">
+        @functions {
+        public string GetDayName(int dayOfWeek)
+        {
+            return dayOfWeek switch
+            {
+                1 => "Pazartesi",
+                2 => "Salı",
+                3 => "Çarşamba",
+                4 => "Perşembe",
+                5 => "Cuma",
+                6 => "Cumartesi",
+                7 => "Pazar",
+                _ => "Bilinmeyen"
+            };
+        }
+    }
+    <div class="card-header bg-dark text-white">
+        <strong>@GetDayName(day.DayOfWeek)</strong> - @day.Description
+    </div>
+
+        <div class="card-body">
+            @if (day.Exercises.Any())
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Egzersiz</th>
+                            <th>Set</th>
+                            <th>Tekrar</th>
+                            <th>Ağırlık (kg)</th>
+                            <th>Dinlenme (sn)</th>
+                            <th>Koç Notu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ex in day.Exercises)
+                        {
+                            <tr>
+                                <td>@ex.ExerciseName</td>
+                                <td>@ex.SetCount</td>
+                                <td>@ex.Repetition</td>
+                                <td>@(ex.Weight ?? 0)</td>
+                                <td>@(ex.RestDurationInSeconds ?? 0)</td>
+                                <td>@ex.Note</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>Bu gün için egzersiz tanımlanmamış.</p>
+            }
+        </div>
+    </div>
+}

@@ -9,13 +9,9 @@ namespace FraoulaPT.DTOs.WorkoutProgramDTOs
 {
     public class WorkoutProgramCreateDTO
     {
+        public string ProgramName { get; set; }
+        public string CoachNote { get; set; }    // ← Eksik olan
         public Guid UserWeeklyFormId { get; set; }
-        public string Title { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public string CoachNote { get; set; }
-
-        public List<WorkoutDayCreateDTO> Days { get; set; } // eksikti
+        public List<WorkoutDayCreateDTO> Days { get; set; }
     }
-
 }

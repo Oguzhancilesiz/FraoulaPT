@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FraoulaPT.DTOs.WorkoutExerciseLogDTOs
+namespace FraoulaPT.DTOs.UserWeeklyFormDTOs
 {
-    public class WorkoutExerciseLogUpdateDTO : WorkoutExerciseLogCreateDTO
+    public class CoachFeedbackUpdateDTO
     {
         public Guid Id { get; set; }
+        public string Feedback { get; set; }
     }
-
 }

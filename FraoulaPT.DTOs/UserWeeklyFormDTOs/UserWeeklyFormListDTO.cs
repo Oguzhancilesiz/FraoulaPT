@@ -22,6 +22,8 @@ namespace FraoulaPT.DTOs.UserWeeklyFormDTOs
         public Status  Status { get; set; }
         public string? CoachFeedback { get; set; }
 
+        public bool HasWorkoutProgram { get; set; }
+        public Guid? WorkoutProgramId { get; set; }
         public List<string> ProgressPhotoUrls { get; set; } = new();
     }
 }

@@ -78,7 +78,7 @@ namespace FraoulaPT.DAL
         public DbSet<UserWorkoutAssignment> UserWorkoutAssignments { get; set; }
         public DbSet<WorkoutDay> WorkoutDays { get; set; }
         public DbSet<WorkoutExercise> WorkoutExercises { get; set; }
-        public DbSet<WorkoutExerciseLog> WorkoutExerciseLogs { get; set; }
+        public DbSet<WorkoutFeedback> WorkoutFeedbacks { get; set; }
         public DbSet<WorkoutProgram> WorkoutPrograms { get; set; }
 
 

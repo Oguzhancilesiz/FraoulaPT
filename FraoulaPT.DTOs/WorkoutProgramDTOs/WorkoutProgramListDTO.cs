@@ -9,9 +9,9 @@ namespace FraoulaPT.DTOs.WorkoutProgramDTOs
     public class WorkoutProgramListDTO
     {
         public Guid Id { get; set; }
-        public string Title { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public string ProgramName { get; set; }
+        public Guid UserWeeklyFormId { get; set; }
+        public DateTime AssignedDate { get; set; }
     }
 
 }

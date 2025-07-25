@@ -1,0 +1,87 @@
+﻿@model List<FraoulaPT.DTOs.UserWeeklyFormDTOs.UserWeeklyFormListDTO>
+@{
+    ViewData["Title"] = "Kullanıcı Formları";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var userName = ViewBag.UserName as string ?? "Kullanıcı";
+}
+
+<h2 class="mb-4">@userName - Tüm Formları</h2>
+
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Tarih</th>
+            <th>Kilo</th>
+            <th>Yağ Oranı</th>
+            <th>Kas Kütlesi</th>
+            <th>Koç Yorumu</th>
+            <th>Durum</th>
+            <th>Detay</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var form in Model)
+        {
+            var dayDiff = (DateTime.Today - form.FormDate.Date).Days;
+
+            <tr>
+                <td>
+                    @form.FormDate.ToString("dd.MM.yyyy")
+                    <br />
+                    <small class="text-muted">(@dayDiff gün önce)</small>
+                </td>
+                <td>@form.Weight kg</td>
+                <td>@form.FatPercent %</td>
+                <td>@form.MuscleMass kg</td>
+                <td>@form.CoachFeedback</td>
+                <td>
+                    @if (form.Status == FraoulaPT.Core.Enums.Status.Pending)
+                    {
+                        <span class="badge bg-warning text-dark">Cevap Bekleniyor</span>
+                    }
+                    else if (form.Status == FraoulaPT.Core.Enums.Status.Active)
+                    {
+                        <span class="badge bg-success">Aktif</span>
+                    }
+                    else if (form.Status == FraoulaPT.Core.Enums.Status.Commit)
+                    {
+                        <span class="badge bg-success">Not Eklendi, program Eklenecek</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Pasif</span>
+                    }
+                </td>
+                <td>
+                    <a asp-area="Admin"
+                       asp-controller="UserWeeklyForm"
+                       asp-action="Detail"
+                       asp-route-id="@form.Id"
+                       class="btn btn-sm btn-outline-info">
+                        Detay
+                    </a>
+                    @if (form.HasWorkoutProgram)
+                    {
+                        <a asp-area="Admin"
+                           asp-controller="WorkoutProgram"
+                           asp-action="Detail"
+                           asp-route-id="@form.WorkoutProgramId"
+                           class="btn btn-primary mb-3">
+                            📄 Programı Görüntüle
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area="Admin"
+                           asp-controller="WorkoutProgram"
+                           asp-action="Create"
+                           asp-route-formId="@form.Id"
+                           class="btn btn-success mb-3">
+                            🏋️‍♂️ Bu Forma Program Oluştur
+                        </a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

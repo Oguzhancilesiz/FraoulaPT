@@ -17,6 +17,8 @@ namespace FraoulaPT.Services.Abstracts
         Task<UserWeeklyFormDetailDTO> GetDetailWithPhotosByIdAsync(Guid id);
 
         Task<UserWeeklyFormListDTO> GetLastFormByUserIdAsync(Guid userId);
+        Task<List<UserWeeklyFormAdminListDTO>> GetAllForAdminAsync();
+
 
     }
 }
