@@ -26,16 +26,49 @@ namespace FraoulaPT.Services.Concrete
         {
             _mediaRepo = unitOfWork.Repository<Media>();
         }
+        public async Task<List<UserWeeklyFormAdminListDTO>> GetAllForAdminAsync()
+        {
+            var query = await _repository.GetBy(x => x.Status != Core.Enums.Status.Deleted);
+            var list = await query
+                .Include(x => x.AppUser)
+                .Include(x => x.ProgressPhotos)
+                .OrderByDescending(x => x.FormDate)
+                .ToListAsync();
+
+            var result = list.Select(x => new UserWeeklyFormAdminListDTO
+            {
+                Id = x.Id,
+                AppUserId = x.AppUserId,
+                FormDate = x.FormDate,
+                Weight = x.Weight,
+                FatPercent = x.FatPercent,
+                MuscleMass = x.MuscleMass,
+                CoachFeedback = x.CoachFeedback,
+                UserFullName = x.AppUser?.FullName,
+                UserEmail = x.AppUser?.Email,
+                Status = x.Status,
+                ProgressPhotoUrls = x.ProgressPhotos?
+                    .Where(p => p.Status == Core.Enums.Status.Active)
+                    .Select(p => p.Url)
+                    .ToList() ?? new List<string>()
+            }).ToList();
+
+            return result;
+        }
+
 
         public async Task<List<UserWeeklyFormListDTO>> GetListByUserAsync(Guid userId)
         {
             var query = await _repository.GetBy(x => x.AppUserId == userId);
             var list = await query
                 .Include(x => x.ProgressPhotos)
+                .Include(x => x.WorkoutProgram)
                 .Include(x => x.AppUser)
                 .ToListAsync();
 
-            var result = list.Select(x => new UserWeeklyFormListDTO
+            var result = list
+                    .DistinctBy(x => x.Id) // id ye göre eşsizleştir
+                .Select(x => new UserWeeklyFormListDTO
             {
                 Id = x.Id,
                 FormDate = x.FormDate,
@@ -52,7 +85,9 @@ namespace FraoulaPT.Services.Concrete
                         .Where(p => p.Status == Core.Enums.Status.Active)
                         .Select(p => p.Url)
                         .ToList()
-                    : new List<string>()
+                    : new List<string>(),
+                HasWorkoutProgram = x.WorkoutProgram != null,
+                WorkoutProgramId = x.WorkoutProgram?.Id
             }).ToList();
 
             return result;

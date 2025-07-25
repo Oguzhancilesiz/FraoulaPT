@@ -8,12 +8,12 @@ namespace FraoulaPT.Entity
 {
     public class WorkoutProgram : BaseEntity
     {
-        public Guid AppUserId { get; set; }
-        public virtual AppUser AppUser { get; set; }
-        public string Title { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public string CoachNote { get; set; }
+        public Guid UserWeeklyFormId { get; set; }
+        public virtual UserWeeklyForm UserWeeklyForm { get; set; }
+
+        public string ProgramTitle { get; set; } // Opsiyonel başlık
+        public string CoachNote { get; set; } // Genel açıklama
+
         public virtual ICollection<WorkoutDay> Days { get; set; }
     }
 }

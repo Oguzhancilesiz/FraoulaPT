@@ -29,5 +29,7 @@ namespace FraoulaPT.Entity
         public Status Status { get; set; }
         // Çoklu progress foto desteği
         public virtual ICollection<Media> ProgressPhotos { get; set; }
+        public virtual WorkoutProgram WorkoutProgram { get; set; }
+
     }
 }

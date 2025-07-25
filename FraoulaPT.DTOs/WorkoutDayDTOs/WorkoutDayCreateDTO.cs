@@ -12,4 +12,5 @@ namespace FraoulaPT.DTOs.WorkoutDayDTOs
         public int DayOfWeek { get; set; }
         public List<WorkoutExerciseCreateDTO> Exercises { get; set; }
     }
+
 }

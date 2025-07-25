@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Form Listesi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+@model List<FraoulaPT.DTOs.UserWeeklyFormDTOs.UserWeeklyFormAdminListDTO>
+
+<h2 class="mb-4">Kullanıcı Haftalık Formları</h2>
+
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Kullanıcı</th>
+            <th>Tarih</th>
+            <th>Kilo</th>
+            <th>Yağ Oranı</th>
+            <th>Koç Yorumu</th>
+            <th>Durum</th>
+            <th>İşlemler</th> <!-- Buton kolonu -->
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var dayDiff = (DateTime.Today - item.FormDate.Date).Days;
+
+            <tr>
+                <td>@item.UserFullName</td>
+                <td>
+                    @item.FormDate.ToString("dd.MM.yyyy")
+                    <br />
+                    <small class="text-muted">(@dayDiff gün önce)</small>
+                </td>
+                <td>@item.Weight kg</td>
+                <td>@item.FatPercent %</td>
+                <td>@item.CoachFeedback</td>
+                <td>
+                    @if (item.Status == FraoulaPT.Core.Enums.Status.Pending)
+                    {
+                        <span class="badge bg-warning text-dark">Cevap Bekleniyor</span>
+                    }
+                    else if (item.Status == FraoulaPT.Core.Enums.Status.Active)
+                    {
+                        <span class="badge bg-success">Aktif</span>
+                    }
+                    else if (item.Status == FraoulaPT.Core.Enums.Status.Commit)
+                    {
+                        <span class="badge bg-success">Not Eklendi, program Eklenecek</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">@item.Status</span>
+                    }
+                </td>
+                <td>
+                    <a asp-area="Admin"
+                       asp-controller="UserWeeklyForm"
+                       asp-action="UserForms"
+                       asp-route-userId="@item.AppUserId"
+                       class="btn btn-sm btn-outline-primary">
+                        Tüm Formları Gör
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

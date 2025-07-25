@@ -66,7 +66,6 @@ namespace FraoulaPT.WebUI
             builder.Services.AddScoped<IUserWorkoutAssignmentService, UserWorkoutAssignmentService>();
             builder.Services.AddScoped<IWorkoutDayService, WorkoutDayService>();
             builder.Services.AddScoped<IWorkoutExerciseService, WorkoutExerciseService>();
-            builder.Services.AddScoped<IWorkoutExerciseLogService, WorkoutExerciseLogService>();
             builder.Services.AddScoped<IWorkoutProgramService, WorkoutProgramService>();
             builder.Services.AddScoped<IMailService, MailService>();
 

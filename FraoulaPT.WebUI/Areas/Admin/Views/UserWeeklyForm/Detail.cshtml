@@ -1,0 +1,117 @@
+﻿
+@model FraoulaPT.DTOs.UserWeeklyFormDTOs.UserWeeklyFormDetailDTO
+@{
+    ViewData["Title"] = "Form Detayı";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>Form Detayı - @Model.FormDate.ToString("dd.MM.yyyy")</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <ul class="list-group">
+            <li class="list-group-item"><strong>Kilo:</strong> @Model.Weight kg</li>
+            <li class="list-group-item"><strong>Yağ Oranı:</strong> @Model.FatPercent %</li>
+            <li class="list-group-item"><strong>Kas Kütlesi:</strong> @Model.MuscleMass kg</li>
+            <li class="list-group-item"><strong>Bel:</strong> @Model.Waist cm</li>
+            <li class="list-group-item"><strong>Kalça:</strong> @Model.Hip cm</li>
+            <li class="list-group-item"><strong>Göğüs:</strong> @Model.Chest cm</li>
+            <li class="list-group-item"><strong>Kol:</strong> @Model.Arm cm</li>
+            <li class="list-group-item"><strong>Bacak:</strong> @Model.Leg cm</li>
+            <li class="list-group-item"><strong>Dinlenme Nabzı:</strong> @Model.RestingPulse bpm</li>
+            <li class="list-group-item"><strong>Tansiyon:</strong> @Model.BloodPressure</li>
+            <li class="list-group-item"><strong>Vo2 Max:</strong> @Model.Vo2Max</li>
+        </ul>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header">Esneklik Notları</div>
+            <div class="card-body">
+                <p>@Model.FlexibilityNotes</p>
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">Kullanıcı Notu</div>
+            <div class="card-body">
+                <p>@Model.UserNote</p>
+            </div>
+        </div>
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-chat-left-dots-fill me-2"></i>Koç Geri Bildirimi</h5>
+            </div>
+            <div class="card-body">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="formId" value="@Model.Id" />
+
+                <div class="mb-3">
+                    <label for="coachFeedbackInput" class="form-label">Yorumunuzu buraya yazın:</label>
+                    <textarea class="form-control" id="coachFeedbackInput" rows="5" placeholder="Koç geri bildiriminizi girin...">@Model.CoachFeedback</textarea>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button id="updateFeedbackBtn" class="btn btn-success px-4">
+                        <i class="bi bi-send-check-fill me-1"></i> Güncelle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.ProgressPhotoUrls != null && Model.ProgressPhotoUrls.Any())
+{
+    <h4>İlerleme Fotoğrafları</h4>
+    <div class="row">
+        @foreach (var url in Model.ProgressPhotoUrls)
+        {
+            <div class="col-md-3 mb-3">
+                <img src="@url" class="img-thumbnail" />
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.getElementById("updateFeedbackBtn").addEventListener("click", function () {
+            const formId = document.getElementById("formId").value;
+            const feedback = document.getElementById("coachFeedbackInput").value;
+
+            Swal.fire({
+                title: "Emin misiniz?",
+                text: "Koç notu güncellenecek. Devam etmek istiyor musunuz?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Evet, güncelle!",
+                cancelButtonText: "İptal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch("/Admin/UserWeeklyForm/UpdateCoachFeedback", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: JSON.stringify({
+                            id: formId,
+                            feedback: feedback
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error("Sunucu hatası");
+                        return response.json(); // boşsa JSON dönmeyecekse .text() kullan
+                    })
+                    .then(() => {
+                        Swal.fire("Başarılı!", "Koç notu güncellendi.", "success");
+                    })
+                    .catch(error => {
+                        Swal.fire("Hata!", "Bir hata oluştu: " + error.message, "error");
+                    });
+                }
+            });
+        });
+    </script>
+}

@@ -13,7 +13,6 @@ using FraoulaPT.DTOs.UserWeeklyFormDTOs;
 using FraoulaPT.DTOs.UserWorkoutAssignmentDTOs;
 using FraoulaPT.DTOs.WorkoutDayDTOs;
 using FraoulaPT.DTOs.WorkoutExerciseDTOs;
-using FraoulaPT.DTOs.WorkoutExerciseLogDTOs;
 using FraoulaPT.DTOs.WorkoutProgramDTOs;
 using FraoulaPT.Entity;
 using Mapster;
@@ -263,21 +262,6 @@ namespace FraoulaPT.Services.MapsterMap
             config.NewConfig<WorkoutExercise, WorkoutExerciseDetailDTO>();
             config.NewConfig<WorkoutExerciseDetailDTO, WorkoutExercise>();
 
-            // WorkoutExerciseLog
-            config.NewConfig<WorkoutExerciseLog, WorkoutExerciseLogCreateDTO>().Ignore(dest => dest.WorkoutExerciseId);
-            config.NewConfig<WorkoutExerciseLogCreateDTO, WorkoutExerciseLog>();
-
-            config.NewConfig<WorkoutExerciseLog, WorkoutExerciseLogUpdateDTO>();
-            config.NewConfig<WorkoutExerciseLogUpdateDTO, WorkoutExerciseLog>();
-
-            config.NewConfig<WorkoutExerciseLog, WorkoutExerciseLogDeleteDTO>();
-            config.NewConfig<WorkoutExerciseLogDeleteDTO, WorkoutExerciseLog>();
-
-            config.NewConfig<WorkoutExerciseLog, WorkoutExerciseLogListDTO>();
-            config.NewConfig<WorkoutExerciseLogListDTO, WorkoutExerciseLog>();
-
-            config.NewConfig<WorkoutExerciseLog, WorkoutExerciseLogDetailDTO>();
-            config.NewConfig<WorkoutExerciseLogDetailDTO, WorkoutExerciseLog>();
 
             // WorkoutProgram
             config.NewConfig<WorkoutProgram, WorkoutProgramCreateDTO>().Ignore(dest => dest.UserWeeklyFormId);

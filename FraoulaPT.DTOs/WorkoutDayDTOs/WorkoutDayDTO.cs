@@ -7,10 +7,9 @@ using System.Threading.Tasks;
 
 namespace FraoulaPT.DTOs.WorkoutDayDTOs
 {
-    public class WorkoutDayDetailDTO
+    public class WorkoutDayDTO
     {
-        public int DayOfWeek { get; set; }
-        public string Description { get; set; }
-        public List<WorkoutExerciseDetailDTO> Exercises { get; set; }
+        public int DayOfWeek { get; set; } // 0 = Pazartesi
+        public List<WorkoutExerciseDTO> Exercises { get; set; }
     }
 }

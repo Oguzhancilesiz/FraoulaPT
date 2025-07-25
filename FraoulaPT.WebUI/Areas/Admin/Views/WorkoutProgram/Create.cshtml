@@ -1,0 +1,117 @@
+﻿@model FraoulaPT.DTOs.WorkoutProgramDTOs.WorkoutProgramCreateDTO
+@{
+    ViewData["Title"] = "Program Oluştur";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>Program Oluştur</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="UserWeeklyFormId" />
+
+    <div class="mb-3">
+        <label asp-for="ProgramName" class="form-label">Program Başlığı</label>
+        <input asp-for="ProgramName" class="form-control" />
+        <span asp-validation-for="ProgramName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CoachNote" class="form-label">Genel Not</label>
+        <textarea asp-for="CoachNote" class="form-control"></textarea>
+        <span asp-validation-for="CoachNote" class="text-danger"></span>
+    </div>
+
+    <hr />
+    <h4>Günlük Egzersizler</h4>
+    <div id="daysContainer">
+        <!-- Günler buraya eklenecek -->
+    </div>
+
+    <button type="button" class="btn btn-outline-primary mb-3" onclick="addDay()">+ Gün Ekle</button>
+
+    <button type="submit" class="btn btn-success">Programı Kaydet</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        let dayIndex = 0;
+
+        function addDay() {
+            const container = document.getElementById("daysContainer");
+
+            const dayHtml = `
+                <div class="card mb-3 day-block">
+                    <div class="card-body">
+                        <h5>Gün</h5>
+                        <div class="mb-2">
+                            <label>Haftanın Günü</label>
+                            <select name="Days[${dayIndex}].DayOfWeek" class="form-select">
+                                <option value="1">Pazartesi</option>
+                                <option value="2">Salı</option>
+                                <option value="3">Çarşamba</option>
+                                <option value="4">Perşembe</option>
+                                <option value="5">Cuma</option>
+                                <option value="6">Cumartesi</option>
+                                <option value="0">Pazar</option>
+                            </select>
+                        </div>
+
+                        <div class="exercise-list" id="exerciseList-${dayIndex}"></div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addExercise(${dayIndex})">+ Egzersiz Ekle</button>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML("beforeend", dayHtml);
+            dayIndex++;
+        }
+
+        function addExercise(dayIdx) {
+            const container = document.getElementById(`exerciseList-${dayIdx}`);
+
+            const exIdx = container.querySelectorAll('.exercise-block').length;
+
+            const exHtml = `
+                <div class="exercise-block border p-3 mb-2 rounded bg-light">
+                    <div class="mb-2">
+                        <label>Egzersiz</label>
+                        <select name="Days[${dayIdx}].Exercises[${exIdx}].ExerciseId" class="form-select">
+        @* Bu kısım controllerdan ViewBag.Exercises ile dolu gelmeli *@
+        @foreach (var ex in ViewBag.Exercises as List<SelectListItem>)
+        {
+                                    <option value="@ex.Value">@ex.Text</option>
+        }
+                        </select>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col">
+                            <label>Set</label>
+                            <input name="Days[${dayIdx}].Exercises[${exIdx}].SetCount" type="number" class="form-control" />
+                        </div>
+                        <div class="col">
+                            <label>Tekrar</label>
+                            <input name="Days[${dayIdx}].Exercises[${exIdx}].Repetition" type="number" class="form-control" />
+                        </div>
+                        <div class="col">
+                            <label>Kilo (kg)</label>
+                            <input name="Days[${dayIdx}].Exercises[${exIdx}].Weight" type="number" class="form-control" />
+                        </div>
+                        <div class="col">
+                            <label>Dinlenme (sn)</label>
+                            <input name="Days[${dayIdx}].Exercises[${exIdx}].RestDurationInSeconds" type="number" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <label>Not</label>
+                        <textarea name="Days[${dayIdx}].Exercises[${exIdx}].Note" class="form-control"></textarea>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML("beforeend", exHtml);
+        }
+    </script>
+}

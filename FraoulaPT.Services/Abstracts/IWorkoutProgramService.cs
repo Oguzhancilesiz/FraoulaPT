@@ -12,6 +12,9 @@ namespace FraoulaPT.Services.Abstracts
     WorkoutProgramDetailDTO,
     WorkoutProgramCreateDTO,
     WorkoutProgramUpdateDTO>
-    { }
+    {
+        Task<Guid> CreateAsync(WorkoutProgramCreateDTO dto, Guid coachId);
+        Task<WorkoutProgramDetailDTO> GetWorkoutProgramDetailByIdAsync(Guid id);
+    }
 
 }

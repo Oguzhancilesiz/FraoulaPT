@@ -4,11 +4,11 @@ namespace FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.WorkoutProgramViewModels
 {
     public class WorkoutProgramCreateVM
     {
-        public Guid UserId { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public Guid UserWeeklyFormId { get; set; }
+
+        public string ProgramName { get; set; }
+
+        // Gün gün program
         public List<WorkoutDayVM> Days { get; set; } = new();
     }
 }
