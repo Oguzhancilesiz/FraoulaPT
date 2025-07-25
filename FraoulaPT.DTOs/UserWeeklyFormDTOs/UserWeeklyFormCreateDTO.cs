@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,8 +9,8 @@ namespace FraoulaPT.DTOs.UserWeeklyFormDTOs
 {
     public class UserWeeklyFormCreateDTO
     {
-        public Guid UserPackageId { get; set; }
-        public DateTime FormDate { get; set; }
+        public DateTime FormDate { get; set; } = DateTime.Today;
+
         public double? Weight { get; set; }
         public double? FatPercent { get; set; }
         public double? MuscleMass { get; set; }
@@ -21,9 +22,11 @@ namespace FraoulaPT.DTOs.UserWeeklyFormDTOs
         public double? RestingPulse { get; set; }
         public double? BloodPressure { get; set; }
         public double? Vo2Max { get; set; }
-        public string FlexibilityNotes { get; set; }
-        public string UserNote { get; set; }
-        public string CoachFeedback { get; set; }
-    }
 
+        public string? FlexibilityNotes { get; set; }
+        public string? UserNote { get; set; }
+
+        // Fotoğraf yükleme
+        public List<IFormFile>? ProgressPhotos { get; set; }
+    }
 }

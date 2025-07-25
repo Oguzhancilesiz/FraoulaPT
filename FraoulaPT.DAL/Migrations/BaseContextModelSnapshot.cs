@@ -754,6 +754,9 @@ namespace FraoulaPT.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("AppUserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<double?>("Arm")
                         .HasColumnType("float");
 
@@ -816,9 +819,6 @@ namespace FraoulaPT.DAL.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<Guid>("UserPackageId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<double?>("Vo2Max")
                         .HasColumnType("float");
 
@@ -830,7 +830,7 @@ namespace FraoulaPT.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserPackageId");
+                    b.HasIndex("AppUserId");
 
                     b.ToTable("UserWeeklyForms");
                 });
@@ -903,6 +903,13 @@ namespace FraoulaPT.DAL.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime");
 
+                    b.Property<DateTime?>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DayNote")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("DayOfWeek")
                         .HasColumnType("int");
 
@@ -937,10 +944,6 @@ namespace FraoulaPT.DAL.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AutoID"));
 
-                    b.Property<string>("CoachNote")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -952,6 +955,10 @@ namespace FraoulaPT.DAL.Migrations
 
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RepetitionCount")
                         .HasColumnType("int");
@@ -965,8 +972,8 @@ namespace FraoulaPT.DAL.Migrations
                     b.Property<Guid?>("UpdatedByUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<double?>("Weight")
-                        .HasColumnType("float");
+                    b.Property<decimal>("WeightKg")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<Guid>("WorkoutDayId")
                         .HasColumnType("uniqueidentifier");
@@ -1042,7 +1049,7 @@ namespace FraoulaPT.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AppUserId")
+                    b.Property<Guid>("AppUserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("AutoID")
@@ -1078,9 +1085,6 @@ namespace FraoulaPT.DAL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("UpdatedByUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserWeeklyFormId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -1307,19 +1311,19 @@ namespace FraoulaPT.DAL.Migrations
 
             modelBuilder.Entity("FraoulaPT.Entity.UserWeeklyForm", b =>
                 {
-                    b.HasOne("FraoulaPT.Entity.UserPackage", "UserPackage")
-                        .WithMany("WeeklyForms")
-                        .HasForeignKey("UserPackageId")
+                    b.HasOne("FraoulaPT.Entity.AppUser", "AppUser")
+                        .WithMany()
+                        .HasForeignKey("AppUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("UserPackage");
+                    b.Navigation("AppUser");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.UserWorkoutAssignment", b =>
                 {
                     b.HasOne("FraoulaPT.Entity.UserPackage", "UserPackage")
-                        .WithMany("WorkoutAssignments")
+                        .WithMany()
                         .HasForeignKey("UserPackageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1337,11 +1341,13 @@ namespace FraoulaPT.DAL.Migrations
 
             modelBuilder.Entity("FraoulaPT.Entity.WorkoutDay", b =>
                 {
-                    b.HasOne("FraoulaPT.Entity.WorkoutProgram", null)
+                    b.HasOne("FraoulaPT.Entity.WorkoutProgram", "WorkoutProgram")
                         .WithMany("Days")
                         .HasForeignKey("WorkoutProgramId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("WorkoutProgram");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.WorkoutExercise", b =>
@@ -1376,9 +1382,13 @@ namespace FraoulaPT.DAL.Migrations
 
             modelBuilder.Entity("FraoulaPT.Entity.WorkoutProgram", b =>
                 {
-                    b.HasOne("FraoulaPT.Entity.AppUser", null)
+                    b.HasOne("FraoulaPT.Entity.AppUser", "AppUser")
                         .WithMany("AuthoredPrograms")
-                        .HasForeignKey("AppUserId");
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -1475,10 +1485,6 @@ namespace FraoulaPT.DAL.Migrations
                     b.Navigation("ChatMessages");
 
                     b.Navigation("UserQuestions");
-
-                    b.Navigation("WeeklyForms");
-
-                    b.Navigation("WorkoutAssignments");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.UserWeeklyForm", b =>

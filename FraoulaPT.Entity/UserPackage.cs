@@ -28,9 +28,7 @@ namespace FraoulaPT.Entity
         public bool IsRenewable { get; set; } // Otomatik yenileme
 
         // Navigation’lar (diğer ilişkiler)
-        public ICollection<UserWeeklyForm> WeeklyForms { get; set; }
         public ICollection<UserQuestion> UserQuestions { get; set; }
         public ICollection<ChatMessage> ChatMessages { get; set; }
-        public ICollection<UserWorkoutAssignment> WorkoutAssignments { get; set; }
     }
 }

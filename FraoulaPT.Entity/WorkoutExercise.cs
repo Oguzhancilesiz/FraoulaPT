@@ -10,13 +10,12 @@ namespace FraoulaPT.Entity
     {
         public Guid WorkoutDayId { get; set; }
         public virtual WorkoutDay WorkoutDay { get; set; }
-        public Guid ExerciseId { get; set; } // Seçilen hareket!
+        public Guid ExerciseId { get; set; }
         public virtual Exercise Exercise { get; set; }
-
         public int SetCount { get; set; }
         public int RepetitionCount { get; set; }
-        public double? Weight { get; set; } // Planlanan kilo
-        public string CoachNote { get; set; }
+        public decimal WeightKg { get; set; }
+        public string Note { get; set; }
         public virtual ICollection<WorkoutExerciseLog> Logs { get; set; }
     }
 }

@@ -1,0 +1,90 @@
+﻿@{
+    ViewData["Title"] = "Formlarım";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model List<FraoulaPT.DTOs.UserWeeklyFormDTOs.UserWeeklyFormListDTO>
+
+
+<h2>Haftalık Formlarım</h2>
+
+<a asp-action="Create" class="btn btn-success mb-3">+ Yeni Form Ekle</a>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">Henüz form gönderilmedi.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>Durum</th>
+                    <th>Tarih</th>
+                    <th>Kilo (kg)</th>
+                    <th>Yağ (%)</th>
+                    <th>Kas (kg)</th>
+                    <th>Koç Notu</th>
+                    <th>Görseller</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var form in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (form.Status == FraoulaPT.Core.Enums.Status.Pending)
+                            {
+                                <span class="badge bg-warning text-dark">Cevap Bekleniyor</span>
+                            }
+                            else if (form.Status == FraoulaPT.Core.Enums.Status.Active)
+                            {
+                                <span class="badge bg-primary">Aktif</span>
+                            }
+                            else if (form.Status == FraoulaPT.Core.Enums.Status.Deleted)
+                            {
+                                <span class="badge bg-danger">Silinmiş</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@form.Status</span>
+                            }
+                        </td>
+
+                        <td>
+                            @form.FormDate.ToString("dd.MM.yyyy")
+                            <small class="text-muted ms-2">(@(Math.Abs((DateTime.Now - form.FormDate).Days)) gün önce)</small>
+                        </td>
+                        <td>@form.Weight</td>
+                        <td>@form.FatPercent</td>
+                        <td>@form.MuscleMass</td>
+                        <td>@form.CoachFeedback</td>
+                        <td>
+                            @if (form.ProgressPhotoUrls != null && form.ProgressPhotoUrls.Any())
+                            {
+                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    @foreach (var url in form.ProgressPhotoUrls.Take(3))  // En fazla 3 görsel göster
+                                    {
+                                        <img src="@url" width="60" height="60" style="object-fit: cover; border-radius: 5px;" />
+                                    }
+                                    @if (form.ProgressPhotoUrls.Count > 3)
+                                    {
+                                        <span class="badge bg-secondary">+@((form.ProgressPhotoUrls.Count - 3))</span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Yok</span>
+                            }
+                        </td>
+                        <td>
+                            <a asp-action="Detail" asp-route-id="@form.Id" class="btn btn-sm btn-info">Detay</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -8,7 +8,8 @@ namespace FraoulaPT.Entity
 {
     public class WorkoutProgram : BaseEntity
     {
-        public Guid UserWeeklyFormId { get; set; }
+        public Guid AppUserId { get; set; }
+        public virtual AppUser AppUser { get; set; }
         public string Title { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }

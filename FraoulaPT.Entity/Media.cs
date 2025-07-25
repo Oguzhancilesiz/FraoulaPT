@@ -13,6 +13,10 @@ namespace FraoulaPT.Entity
         public string AltText { get; set; }
         public MediaType MediaType { get; set; }
         public string ThumbnailUrl { get; set; }
+
+        public Guid? UserWeeklyFormId { get; set; }
+        public virtual UserWeeklyForm UserWeeklyForm { get; set; }
+
     }
 
 }
