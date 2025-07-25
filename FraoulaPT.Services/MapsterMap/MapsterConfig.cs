@@ -203,14 +203,11 @@ namespace FraoulaPT.Services.MapsterMap
             config.NewConfig<UserQuestionDetailDTO, UserQuestion>();
 
             // UserWeeklyForm
-            config.NewConfig<UserWeeklyForm, UserWeeklyFormCreateDTO>().Ignore(dest => dest.UserPackageId);
+            config.NewConfig<UserWeeklyForm, UserWeeklyFormCreateDTO>();
             config.NewConfig<UserWeeklyFormCreateDTO, UserWeeklyForm>();
 
             config.NewConfig<UserWeeklyForm, UserWeeklyFormUpdateDTO>();
             config.NewConfig<UserWeeklyFormUpdateDTO, UserWeeklyForm>();
-
-            config.NewConfig<UserWeeklyForm, UserWeeklyFormDeleteDTO>();
-            config.NewConfig<UserWeeklyFormDeleteDTO, UserWeeklyForm>();
 
             config.NewConfig<UserWeeklyForm, UserWeeklyFormListDTO>();
             config.NewConfig<UserWeeklyFormListDTO, UserWeeklyForm>();
@@ -235,7 +232,7 @@ namespace FraoulaPT.Services.MapsterMap
             config.NewConfig<UserWorkoutAssignmentDetailDTO, UserWorkoutAssignment>();
 
             // WorkoutDay
-            config.NewConfig<WorkoutDay, WorkoutDayCreateDTO>().Ignore(dest => dest.WorkoutProgramId);
+            config.NewConfig<WorkoutDay, WorkoutDayCreateDTO>();
             config.NewConfig<WorkoutDayCreateDTO, WorkoutDay>();
 
             config.NewConfig<WorkoutDay, WorkoutDayUpdateDTO>();
@@ -299,6 +296,25 @@ namespace FraoulaPT.Services.MapsterMap
             config.NewConfig<WorkoutProgramDetailDTO, WorkoutProgram>();
 
 
+            // WorkoutProgram → WorkoutProgramDetailDTO
+            config.NewConfig<WorkoutProgram, WorkoutProgramDetailDTO>();
+            config.NewConfig<WorkoutProgramDetailDTO, WorkoutProgram>();
+
+            // --- EKLENEN KISIM ---
+
+            // Media → MediaDTO
+            config.NewConfig<Media, MediaDTO>();
+
+            // UserWeeklyForm → UserWeeklyFormListDTO (ProgressPhotoUrls)
+            config.NewConfig<UserWeeklyForm, UserWeeklyFormListDTO>()
+                .Map(dest => dest.ProgressPhotoUrls, src =>
+                    src.ProgressPhotos != null
+                        ? src.ProgressPhotos.Select(m => m.Url).ToList()
+                        : new List<string>());
+
+            // UserWeeklyForm → UserWeeklyFormDetailDTO
+            config.NewConfig<UserWeeklyForm, UserWeeklyFormDetailDTO>()
+                .Map(dest => dest.ProgressPhotoUrls, src => src.ProgressPhotos);
         }
     }
 }

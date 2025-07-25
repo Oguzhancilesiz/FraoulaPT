@@ -1,0 +1,83 @@
+﻿@{
+    ViewData["Title"] = "Form Detayı";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Gün farkı hesaplama (gönderilen tarihten itibaren 30 gün geçmiş mi?)
+    var kalanGun = 30 - (DateTime.UtcNow - Model.FormDate).Days;
+    kalanGun = kalanGun < 0 ? 0 : kalanGun;
+
+    var statusBadgeClass = Model.Status == FraoulaPT.Core.Enums.Status.Active ? "success" :
+                           Model.Status == FraoulaPT.Core.Enums.Status.Pending ? "secondary" :
+                           "danger";
+}
+@model FraoulaPT.DTOs.UserWeeklyFormDTOs.UserWeeklyFormDetailDTO
+
+<h2>
+    Form Detayı - @Model.FormDate.ToShortDateString()
+    <span class="badge bg-@statusBadgeClass ms-2">@Model.Status</span>
+</h2>
+
+@if (kalanGun > 0)
+{
+    <div class="alert alert-warning mt-2">
+        Yeni form gönderebilmeniz için <strong>@kalanGun gün</strong> kaldı.
+    </div>
+}
+else
+{
+    <div class="alert alert-success mt-2">
+        Yeni form gönderebilirsiniz! 📝
+    </div>
+}
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <ul class="list-group">
+            <li class="list-group-item"><strong>Kilo:</strong> @Model.Weight kg</li>
+            <li class="list-group-item"><strong>Yağ Oranı:</strong> @Model.FatPercent %</li>
+            <li class="list-group-item"><strong>Kas Kütlesi:</strong> @Model.MuscleMass kg</li>
+            <li class="list-group-item"><strong>Bel:</strong> @Model.Waist cm</li>
+            <li class="list-group-item"><strong>Kalça:</strong> @Model.Hip cm</li>
+            <li class="list-group-item"><strong>Göğüs:</strong> @Model.Chest cm</li>
+            <li class="list-group-item"><strong>Kol:</strong> @Model.Arm cm</li>
+            <li class="list-group-item"><strong>Bacak:</strong> @Model.Leg cm</li>
+            <li class="list-group-item"><strong>Dinlenme Nabzı:</strong> @Model.RestingPulse bpm</li>
+            <li class="list-group-item"><strong>Tansiyon:</strong> @Model.BloodPressure</li>
+            <li class="list-group-item"><strong>Vo2 Max:</strong> @Model.Vo2Max</li>
+        </ul>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header">Esneklik Notları</div>
+            <div class="card-body">
+                <p>@Model.FlexibilityNotes</p>
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">Kullanıcı Notu</div>
+            <div class="card-body">
+                <p>@Model.UserNote</p>
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">Koç Geri Bildirimi</div>
+            <div class="card-body">
+                <p>@Model.CoachFeedback</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.ProgressPhotoUrls != null && Model.ProgressPhotoUrls.Any())
+{
+    <h4>İlerleme Fotoğrafları</h4>
+    <div class="row">
+        @foreach (var url in Model.ProgressPhotoUrls)
+        {
+            <div class="col-md-3 mb-3">
+                <img src="@url" class="img-thumbnail" />
+            </div>
+        }
+    </div>
+}

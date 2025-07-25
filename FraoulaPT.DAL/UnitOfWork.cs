@@ -26,28 +26,27 @@ namespace FraoulaPT.DAL
             }
             catch (Exception ex)
             {
-                var sb = new StringBuilder();
-                sb.AppendLine("***** HATA ZİNCİRİ BAŞLANGIÇ *****");
+                var fullMessage = new StringBuilder();
+                fullMessage.AppendLine("***** HATA ZİNCİRİ BAŞLANGIÇ *****");
+                fullMessage.AppendLine($"LEVEL 0: {ex.GetType().FullName}");
+                fullMessage.AppendLine($"MESAJ: {ex.Message}");
+                fullMessage.AppendLine($"STACKTRACE:\n{ex.StackTrace}\n");
 
-                int level = 0;
-                Exception? inner = ex;
+                var inner = ex.InnerException;
+                int level = 1;
                 while (inner != null)
                 {
-                    sb.AppendLine($"LEVEL {level}: {inner.GetType().FullName}");
-                    sb.AppendLine($"MESAJ: {inner.Message}");
-                    sb.AppendLine($"STACKTRACE:\n{inner.StackTrace}\n");
+                    fullMessage.AppendLine($"LEVEL {level}: {inner.GetType().FullName}");
+                    fullMessage.AppendLine($"MESAJ: {inner.Message}");
+                    fullMessage.AppendLine($"STACKTRACE:\n{inner.StackTrace}\n");
                     inner = inner.InnerException;
                     level++;
                 }
 
-                sb.AppendLine("***** HATA ZİNCİRİ SONU *****");
+                fullMessage.AppendLine("***** HATA ZİNCİRİ SONU *****");
 
-                // Hem console'a hem dosyaya yazdırabilirsin:
-                Console.WriteLine(sb.ToString());
-                Console.WriteLine("ex.ToString():");
-                Console.WriteLine(ex.ToString());
-                // İyice zorlamak için Exception'u dışa fırlat
-                throw new Exception(sb.ToString(), ex);
+                throw new Exception(fullMessage.ToString(), ex);
+
             }
         }
 

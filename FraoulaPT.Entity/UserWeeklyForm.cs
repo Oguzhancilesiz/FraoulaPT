@@ -9,8 +9,8 @@ namespace FraoulaPT.Entity
 {
     public class UserWeeklyForm : BaseEntity
     {
-        public Guid UserPackageId { get; set; }
-        public virtual UserPackage UserPackage { get; set; }
+        public Guid AppUserId { get; set; }
+        public virtual AppUser AppUser { get; set; }
         public DateTime FormDate { get; set; }
         public double? Weight { get; set; }
         public double? FatPercent { get; set; }

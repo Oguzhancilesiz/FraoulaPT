@@ -8,12 +8,11 @@ namespace FraoulaPT.DTOs.WorkoutExerciseDTOs
 {
     public class WorkoutExerciseCreateDTO
     {
-        public Guid WorkoutDayId { get; set; }
         public Guid ExerciseId { get; set; }
         public int SetCount { get; set; }
         public int RepetitionCount { get; set; }
-        public double? Weight { get; set; }
-        public string CoachNote { get; set; }
+        public decimal WeightKg { get; set; }
+        public string Note { get; set; }
     }
 
 }

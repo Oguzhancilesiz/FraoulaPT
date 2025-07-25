@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FraoulaPT.DTOs.WorkoutDayDTOs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,8 @@ namespace FraoulaPT.DTOs.WorkoutProgramDTOs
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string CoachNote { get; set; }
+
+        public List<WorkoutDayCreateDTO> Days { get; set; } // eksikti
     }
 
 }
