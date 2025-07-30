@@ -16,6 +16,8 @@ namespace FraoulaPT.DTOs.UserPackageDTOs
         public string PaymentId { get; set; }
         public DateTime? LastPaymentDate { get; set; }
         public bool IsRenewable { get; set; }
+        public int? TotalQuestions { get; set; } // Paket + ek paket toplamı
+        public int? TotalMessages { get; set; }
     }
 
 }

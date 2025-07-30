@@ -4,67 +4,57 @@
 }
 @model FraoulaPT.DTOs.UserProfileDTOs.UserProfileDetailDTO
 
-<div class="container mt-5">
-    <div class="card shadow-lg mx-auto" style="max-width: 800px;">
+<div class="container py-5">
+    <div class="card shadow border-0">
         <div class="card-body">
-            <div class="d-flex align-items-center mb-4">
+            <div class="text-center mb-4">
                 <img src="@(!string.IsNullOrWhiteSpace(Model.ProfilePhotoUrl) ? Model.ProfilePhotoUrl : "/uploads/user-default.jpg")"
                      alt="Profil Fotoğrafı"
                      class="rounded-circle shadow"
-                     width="120" height="120"
-                     style="object-fit:cover; background:#f7f7f7; border:4px solid #ff8800;" />
-                <div class="ms-4">
-                    @* <h2 class="mb-1">@Model.FullName</h2> *@
-                    @if (!string.IsNullOrWhiteSpace(Model.Instagram))
-                    {
-                        <a href="https://instagram.com/@Model.Instagram" target="_blank" class="text-secondary">
-                            <i class="bi bi-instagram"></i> @Model.Instagram
-                        </a>
-                    }
-                </div>
+                     width="140" height="140"
+                     style="object-fit: cover; background:#f5f5f5; border:5px solid #ff8800;" />
+                <h3 class="mt-3 fw-semibold">Ad Soyad Gelecek</h3>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Instagram))
+                {
+                    <a href="https://instagram.com/@Model.Instagram" target="_blank" class="text-muted d-inline-block mt-1 text-decoration-none">
+                        <i class="bi bi-instagram"></i> @Model.Instagram
+                    </a>
+                }
             </div>
 
-            <hr />
+            <hr class="mb-4" />
 
             <dl class="row">
+                <dt class="col-md-4 col-sm-6">Cinsiyet</dt>
+                <dd class="col-md-8 col-sm-6">@Model.Gender</dd>
 
-                <dt class="col-sm-4">Cinsiyet</dt>
-                <dd class="col-sm-8">@Model.Gender</dd>
+                <dt class="col-md-4 col-sm-6">Doğum Tarihi</dt>
+                <dd class="col-md-8 col-sm-6">@Model.BirthDate?.ToString("dd.MM.yyyy") ?? "-"</dd>
 
-                <dt class="col-sm-4">Doğum Tarihi</dt>
-                <dd class="col-sm-8">@(Model.BirthDate.HasValue ? Model.BirthDate.Value.ToString("dd.MM.yyyy") : "-")</dd>
-
-                <dt class="col-sm-4">Boy / Kilo</dt>
-                <dd class="col-sm-8">
-                    @(Model.HeightCm.HasValue ? $"{Model.HeightCm.Value:0.##} cm" : "-") /
-                    @(Model.WeightKg.HasValue ? $"{Model.WeightKg.Value:0.##} kg" : "-")
+                <dt class="col-md-4 col-sm-6">Boy / Kilo</dt>
+                <dd class="col-md-8 col-sm-6">
+                    @(Model.HeightCm.HasValue ? $"{Model.HeightCm.Value} cm" : "-") /
+                    @(Model.WeightKg.HasValue ? $"{Model.WeightKg.Value} kg" : "-")
                 </dd>
 
-                <dt class="col-sm-4">Vücut Tipi</dt>
-                <dd class="col-sm-8">@Model.BodyType</dd>
+                <dt class="col-md-4 col-sm-6">Vücut Tipi</dt>
+                <dd class="col-md-8 col-sm-6">@Model.BodyType</dd>
 
-                <dt class="col-sm-4">Kan Grubu</dt>
-                <dd class="col-sm-8">@Model.BloodType</dd>
+                <dt class="col-md-4 col-sm-6">Kan Grubu</dt>
+                <dd class="col-md-8 col-sm-6">@Model.BloodType</dd>
 
-                <dt class="col-sm-4">Telefon</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.PhoneNumber) ? Model.PhoneNumber : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Telefon</dt>
+                <dd class="col-md-8 col-sm-6">@Model.PhoneNumber ?? "-"</dd>
 
-                <dt class="col-sm-4">Adres</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.Address) ? Model.Address : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Adres</dt>
+                <dd class="col-md-8 col-sm-6">@Model.Address ?? "-"</dd>
 
-                <dt class="col-sm-4">Acil Durum Kişisi</dt>
-                <dd class="col-sm-8">
-                    @if (!string.IsNullOrWhiteSpace(Model.EmergencyContactName) && !string.IsNullOrWhiteSpace(Model.EmergencyContactPhone))
+                <dt class="col-md-4 col-sm-6">Acil Durum Kişisi</dt>
+                <dd class="col-md-8 col-sm-6">
+                    @if (!string.IsNullOrWhiteSpace(Model.EmergencyContactName) || !string.IsNullOrWhiteSpace(Model.EmergencyContactPhone))
                     {
-                        @($"{Model.EmergencyContactName} ({Model.EmergencyContactPhone})")
-                    }
-                    else if (!string.IsNullOrWhiteSpace(Model.EmergencyContactName))
-                    {
-                        @Model.EmergencyContactName
-                    }
-                    else if (!string.IsNullOrWhiteSpace(Model.EmergencyContactPhone))
-                    {
-                        @Model.EmergencyContactPhone
+                        @(Model.EmergencyContactName + " " + Model.EmergencyContactPhone)
                     }
                     else
                     {
@@ -72,58 +62,58 @@
                     }
                 </dd>
 
-                <dt class="col-sm-4">Tıbbi Geçmiş</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.MedicalHistory) ? Model.MedicalHistory : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Medikal Geçmiş</dt>
+                <dd class="col-md-8 col-sm-6">@Model.MedicalHistory ?? "-"</dd>
 
-                <dt class="col-sm-4">Kronik Hastalıklar</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.ChronicDiseases) ? Model.ChronicDiseases : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Kronik Hastalıklar</dt>
+                <dd class="col-md-8 col-sm-6">@Model.ChronicDiseases ?? "-"</dd>
 
-                <dt class="col-sm-4">Sürekli Kullanılan İlaçlar</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.CurrentMedications) ? Model.CurrentMedications : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Sürekli İlaçlar</dt>
+                <dd class="col-md-8 col-sm-6">@Model.CurrentMedications ?? "-"</dd>
 
-                <dt class="col-sm-4">Alerjiler</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.Allergies) ? Model.Allergies : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Alerjiler</dt>
+                <dd class="col-md-8 col-sm-6">@Model.Allergies ?? "-"</dd>
 
-                <dt class="col-sm-4">Geçmiş Yaralanmalar</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.PastInjuries) ? Model.PastInjuries : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Geçmiş Yaralanmalar</dt>
+                <dd class="col-md-8 col-sm-6">@Model.PastInjuries ?? "-"</dd>
 
-                <dt class="col-sm-4">Mevcut Ağrılar</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.CurrentPain) ? Model.CurrentPain : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Mevcut Ağrılar</dt>
+                <dd class="col-md-8 col-sm-6">@Model.CurrentPain ?? "-"</dd>
 
-                <dt class="col-sm-4">Hamilelik Durumu</dt>
-                <dd class="col-sm-8">
-                    @(Model.PregnancyStatus == true ? "Evet"
-                        : Model.PregnancyStatus == false ? "Hayır"
-                        : "-")
+                <dt class="col-md-4 col-sm-6">Hamilelik Durumu</dt>
+                <dd class="col-md-8 col-sm-6">
+                    @(Model.PregnancyStatus == true ? "Evet" :
+                        Model.PregnancyStatus == false ? "Hayır" : "-")
                 </dd>
 
-                <dt class="col-sm-4">Son Tetkik Sonuçları</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.LastCheckResults) ? Model.LastCheckResults : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Sağlık Kontrolü</dt>
+                <dd class="col-md-8 col-sm-6">@Model.LastCheckResults ?? "-"</dd>
 
-                <dt class="col-sm-4">Sigara/Alkol Kullanımı</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.SmokingAlcohol) ? Model.SmokingAlcohol : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Sigara / Alkol</dt>
+                <dd class="col-md-8 col-sm-6">@Model.SmokingAlcohol ?? "-"</dd>
 
-                <dt class="col-sm-4">Meslek</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.Occupation) ? Model.Occupation : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Meslek</dt>
+                <dd class="col-md-8 col-sm-6">@Model.Occupation ?? "-"</dd>
 
-                <dt class="col-sm-4">Deneyim Seviyesi</dt>
-                <dd class="col-sm-8">@Model.ExperienceLevel</dd>
+                <dt class="col-md-4 col-sm-6">Deneyim</dt>
+                <dd class="col-md-8 col-sm-6">@Model.ExperienceLevel</dd>
 
-                <dt class="col-sm-4">Favori Sporlar</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.FavoriteSports) ? Model.FavoriteSports : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Favori Sporlar</dt>
+                <dd class="col-md-8 col-sm-6">@Model.FavoriteSports ?? "-"</dd>
 
-                <dt class="col-sm-4">Notlar</dt>
-                <dd class="col-sm-8">@(!string.IsNullOrWhiteSpace(Model.Notes) ? Model.Notes : "-")</dd>
+                <dt class="col-md-4 col-sm-6">Notlar</dt>
+                <dd class="col-md-8 col-sm-6">@Model.Notes ?? "-"</dd>
 
-                <dt class="col-sm-4">Diyet Türü</dt>
-                <dd class="col-sm-8">@Model.DietType</dd>
+                <dt class="col-md-4 col-sm-6">Diyet Tipi</dt>
+                <dd class="col-md-8 col-sm-6">@Model.DietType</dd>
 
-                <dt class="col-sm-4">Oluşturulma Tarihi</dt>
-                <dd class="col-sm-8">@Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</dd>
+                <dt class="col-md-4 col-sm-6">Oluşturulma Tarihi</dt>
+                <dd class="col-md-8 col-sm-6">@Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</dd>
             </dl>
+
             <div class="mt-4 text-end">
-                <a asp-action="Edit" asp-controller="Profile" class="btn btn-warning">
-                    <i class="bi bi-pencil-square"></i> Profili Düzenle
+                <a asp-action="Edit" asp-controller="Profile" class="btn btn-warning px-4">
+                    <i class="bi bi-pencil-square me-1"></i> Profili Düzenle
                 </a>
             </div>
         </div>

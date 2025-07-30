@@ -1,29 +1,25 @@
 ﻿using FraoulaPT.Core.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using FraoulaPT.Entity;
 
-namespace FraoulaPT.Entity
+public class Package : BaseEntity
 {
-    public class Package : BaseEntity
-    {
-        public string Name { get; set; } // Gold, Pro, Platinum, vb.
-        public PackageType PackageType { get; set; } // Enum: Gold, Pro, ...
-        public SubscriptionPeriod SubscriptionPeriod { get; set; } // Enum: Monthly, Yearly
-        public int MaxQuestionsPerPeriod { get; set; }
-        public int MaxMessagesPerPeriod { get; set; }
-        public decimal Price { get; set; }
-        public string Description { get; set; }
-        public bool IsActive { get; set; }
+    public string Name { get; set; } // Gold, Pro, Platinum, vb.
+    public PackageType PackageType { get; set; } // Enum: Gold, Pro, ...
+    public SubscriptionPeriod SubscriptionPeriod { get; set; } // Enum: Monthly, Yearly, etc.
 
-        // Opsiyonel
-        public string Features { get; set; } // JSON/text, ek haklar (isteğe bağlı)
-        public string ImageUrl { get; set; } // Paket görseli (isteğe bağlı)
-        public int Order { get; set; } // Sıralama için
-        public string HighlightColor { get; set; } // Vitrin rengi vs.
+    public int MaxQuestionsPerPeriod { get; set; } = 0;
+    public int MaxMessagesPerPeriod { get; set; } = 0;
 
-        public ICollection<UserPackage> UserPackages { get; set; }
-    }
+    public decimal Price { get; set; }
+
+    public string Description { get; set; }
+    public string Features { get; set; } // JSON / Markdown destekli açıklamalar
+    public string ImageUrl { get; set; }
+    public string HighlightColor { get; set; }
+
+    public int Order { get; set; } = 0;
+    public bool IsActive { get; set; } = true;
+
+    // ⬇️ Navigation
+    public ICollection<UserPackage> UserPackages { get; set; }
 }

@@ -2,12 +2,14 @@
 using FraoulaPT.Entity;
 using FraoulaPT.Services.Abstracts;
 using FraoulaPT.Services.Concrete;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FraoulaPT.WebUI.Controllers
 {
-    public class UserWeeklyFormController : Controller
+    [Authorize]
+    public class UserWeeklyFormController : BaseController
     {
         private readonly IUserWeeklyFormService _service;
         private readonly IWebHostEnvironment _env;
@@ -69,6 +71,11 @@ namespace FraoulaPT.WebUI.Controllers
         [HttpGet]
         public async Task<IActionResult> Detail(Guid id)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if(user == null)
+            {
+                ShowAlert("Bilgi", "Kullanıcı bulunamadı", Core.Enums.AlertType.info);
+            }
             var form = await _service.GetDetailWithPhotosByIdAsync(id); // ← Yeni metot
             if (form == null)
                 return NotFound();

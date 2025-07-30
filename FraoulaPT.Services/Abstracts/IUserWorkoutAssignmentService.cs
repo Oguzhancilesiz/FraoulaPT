@@ -12,6 +12,9 @@ namespace FraoulaPT.Services.Abstracts
     UserWorkoutAssignmentDetailDTO,
     UserWorkoutAssignmentCreateDTO,
     UserWorkoutAssignmentUpdateDTO>
-    { }
+    {
+        //Task<List</*WorkoutAssignmentListViewModel*/>> GetAssignmentsAsync();
+
+    }
 
 }

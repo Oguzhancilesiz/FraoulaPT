@@ -1,4 +1,5 @@
-﻿using FraoulaPT.WebUI.Models.Enums;
+﻿using FraoulaPT.Core.Enums;
+using FraoulaPT.WebUI.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FraoulaPT.WebUI.Controllers
@@ -9,6 +10,12 @@ namespace FraoulaPT.WebUI.Controllers
         {
             TempData["messageType"] = messageType.ToString();
             TempData["message"] = message;
+        }
+        protected void ShowAlert(string title, string message, AlertType icon = AlertType.success)
+        {
+            TempData["AlertTitle"] = title;
+            TempData["AlertMessage"] = message;
+            TempData["AlertIcon"] = icon; // success, error, warning, info, question
         }
     }
 }

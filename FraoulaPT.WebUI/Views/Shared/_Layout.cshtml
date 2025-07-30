@@ -1,6 +1,7 @@
 ﻿@{
     string fullName = User.FindFirst("FullName")?.Value ?? "Kullanıcı";
     string profilePhoto = User.FindFirst("ProfilePhotoUrl")?.Value ?? "/uploads/user-default.jpg";
+    string currentController = ViewContext.RouteData.Values["controller"]?.ToString();
 }
 
 <!DOCTYPE html>
@@ -9,240 +10,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - FraoulaPT</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+
     <style>
-        :root {
-            --pt-orange: #ff8800;
-            --pt-orange-dark: #d37000;
-            --pt-bg: #f7f9fa;
-            --pt-darknavy: #292e49;
+        .text-orange {
+            color: #ff8800 !important;
         }
 
-        body {
-            background: var(--pt-bg);
+        .bg-dark-gradient {
+            background: linear-gradient(90deg, #000000, #333333);
         }
 
-        /* Yeni Modern Desktop Navbar */
-        .app-navbar {
-            background: linear-gradient(90deg, #536976 0, #292e49 100%);
-            min-height: 68px;
-            box-shadow: 0 3px 24px #292e4922;
-            border-bottom-left-radius: 22px;
-            border-bottom-right-radius: 22px;
-        }
-
-            .app-navbar .navbar-brand {
-                font-size: 1.5rem;
-                font-weight: 600;
-                letter-spacing: 0.02em;
-                color: #fff;
-                display: flex;
-                align-items: center;
-                gap: 14px;
-                padding-right: 28px;
-            }
-
-        .navbar-brand img {
-            width: 48px !important;
-            margin-right: 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px #0001;
-        }
-
-        .navbar-nav {
-            gap: 24px;
-        }
-
-            .navbar-nav .nav-item {
-                display: flex;
-                align-items: center;
-            }
-
-            .navbar-nav .nav-link {
-                color: #fff !important;
-                font-weight: 500;
-                padding: 10px 18px !important;
-                border-radius: 14px;
-                font-size: 1.08rem;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                transition: all .2s cubic-bezier(.55,.1,.65,.92);
-                position: relative;
-                background: none !important;
-                box-shadow: none;
-            }
-
-                .navbar-nav .nav-link.active,
-                .navbar-nav .nav-link:focus,
-                .navbar-nav .nav-link:hover {
-                    color: var(--pt-orange) !important;
-                    background: rgba(255,136,0,0.07) !important;
-                }
-
-                    .navbar-nav .nav-link.active:after,
-                    .navbar-nav .nav-link:hover:after {
-                        content: '';
-                        position: absolute;
-                        left: 18px;
-                        right: 18px;
-                        bottom: 2px;
-                        height: 3px;
-                        border-radius: 2px;
-                        background: linear-gradient(90deg, var(--pt-orange) 30%, #ffd26c 100%);
-                        opacity: .9;
-                        transition: all .19s cubic-bezier(.55,.1,.65,.92);
-                    }
-
-                .navbar-nav .nav-link .bi {
-                    font-size: 1.23rem;
-                    margin-right: 6px;
-                }
-        media (max-width:1200px) {
-            .navbar-nav
-
-        {
-            gap: 10px;
-        }
-
-        .app-navbar {
-            border-radius: 0;
-        }
-
-        }
-        media (max-width:991px) {
-            .app-navbar
-
-        {
-            display: none !important;
-        }
-
-        }
-        /* Footer */
-        .app-footer {
-            background: #292e49;
-            color: #fff;
-            padding: 22px 0 10px 0;
-            font-size: 15px;
-            margin-top: 44px;
-        }
-        /* Bottom Nav (Mobile) */
-        media (max-width: 991.98px) {
-            .bottom-nav
-
-        {
-            display: flex !important;
-        }
-
-        .app-navbar {
-            display: none !important;
-        }
-
-        }
-        media (min-width: 992px) {
-            .bottom-nav
-
-        {
-            display: none !important;
-        }
-
-        }
-
-        .bottom-nav {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 1030;
-            background: linear-gradient(90deg, #ffd26c, var(--pt-orange) 80%);
-            border-top: 2px solid #ffe5bb;
-            box-shadow: 0 -4px 20px #ffdfae44;
-            height: 60px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-
-            .bottom-nav a {
-                flex: 1 1 auto;
-                text-align: center;
-                color: #292e49;
-                font-size: 1.62rem;
-                padding: 4px 0 2px 0;
-                transition: color 0.17s;
-                position: relative;
-            }
-
-                .bottom-nav a.active,
-                .bottom-nav a:hover {
-                    color: var(--pt-orange-dark);
-                }
-
-                .bottom-nav a span {
-                    display: block;
-                    font-size: 11px;
-                    line-height: 1.1;
-                    color: #333;
-                }
-        /* Toastify override */
-        .toastify {
-            font-size: 1.05rem;
+        footer {
+            background-color: #000;
+            color: white;
         }
     </style>
 </head>
-<body>
-    <!-- Desktop Navbar -->
-    <nav class="navbar navbar-expand-lg app-navbar shadow-sm sticky-top">
+<body class="bg-light">
+
+    <!-- Üst Navbar (Sadece büyük ekranlarda) -->
+    <nav class="navbar navbar-expand-lg bg-dark-gradient d-none d-lg-flex">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="~/images/fraoulapt-logo.png" alt="FraoulaPT Logo" />
-                <span>Fraoula<span style="color:var(--pt-orange);font-weight:700;">PT</span></span>
+            <a class="navbar-brand text-white fw-bold d-flex align-items-center" href="/">
+                <img src="~/images/fraoulapt-logo.png" alt="Logo" width="40" class="me-2 rounded">
+                Fraoula<span class="text-orange">PT</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="mainNavbar">
-                <ul class="navbar-nav align-items-center">
+            <div class="collapse navbar-collapse justify-content-end">
+                <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["controller"] as string == "Dashboard" ? "active" : "")" href="/">
+                        <a class="nav-link @(currentController == "Dashboard" ? "text-orange" : "text-white")" href="/">
                             <i class="bi bi-house-door"></i> Ana Sayfa
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link @(ViewContext.RouteData.Values["controller"] as string == "Package" ? "active" : "")" asp-action="Index" asp-controller="Package">
+                        <a class="nav-link @(currentController == "Package" ? "text-orange" : "text-white")" asp-controller="Package" asp-action="Index">
                             <i class="bi bi-box2-heart"></i> Paketler
                         </a>
                     </li>
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <li class="nav-item dropdown ms-2">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding-right:16px;">
-                                <img src="@profilePhoto" alt="@fullName" width="33" height="33" style="object-fit:cover;border-radius:50%;border:2px solid #ff8800;">
-                                <span style="font-weight:500;letter-spacing:.02em;color:#fff;">@fullName</span>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">
+                                <img src="@profilePhoto" alt="@fullName" width="30" height="30" class="rounded-circle me-2"> @fullName
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
-                                <li><a class="dropdown-item" asp-controller="Profile" asp-action="Detail"><i class="bi bi-person"></i> Profilim</a></li>
-                                <li><a class="dropdown-item" asp-controller="Profile" asp-action="MyPackage"><i class="bi bi-bag-check"></i> Paketlerim</a></li>
-                                <li><a class="dropdown-item" asp-controller="UserWeeklyForm" asp-action="Index"><i class="bi bi-list-task"></i> Formlarım</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" asp-controller="Profile" asp-action="Detail">Profilim</a></li>
+                                <li><a class="dropdown-item" asp-controller="Package" asp-action="MyPackages">Tüm Paketlerim</a></li>
+                                <li><a class="dropdown-item" asp-controller="UserWeeklyForm" asp-action="Index">Vücut Ölçülerim</a></li>
+                                <li><a class="dropdown-item" asp-controller="Workout" asp-action="MyWorkout">Antrenmanım</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" asp-controller="Auth" asp-action="Logout"><i class="bi bi-box-arrow-right"></i> Çıkış</a></li>
+                                <li><a class="dropdown-item text-danger" asp-controller="Auth" asp-action="Logout">Çıkış</a></li>
                             </ul>
                         </li>
-
                     }
-
                     else
                     {
                         <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["action"] as string == "Login" ? "active" : "")" asp-action="Login" asp-controller="Account">
-                                <i class="bi bi-door-open"></i> Giriş Yap
-                            </a>
+                            <a class="nav-link text-white" asp-controller="Auth" asp-action="Login">Giriş Yap</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["action"] as string == "Register" ? "active" : "")" asp-action="Register" asp-controller="Account">
-                                <i class="bi bi-person-plus"></i> Kayıt Ol
-                            </a>
+                            <a class="nav-link text-white" asp-controller="Auth" asp-action="Register">Kayıt Ol</a>
                         </li>
                     }
                 </ul>
@@ -250,90 +82,97 @@
         </div>
     </nav>
 
-    <!-- Mobile Bottom Nav -->
-    <nav class="bottom-nav d-lg-none">
-        <a href="/" title="Ana Sayfa" class="@(ViewContext.RouteData.Values["controller"] as string == "Dashboard" ? "active" : "")">
-            <i class="bi bi-house-door"></i>
-            <span>Ana Sayfa</span>
+    <!-- Mobil Alt Navbar -->
+    <nav class="navbar navbar-light bg-white border-top fixed-bottom d-flex d-lg-none justify-content-around">
+        <a href="/" class="nav-link @(currentController == "Dashboard" ? "text-orange" : "text-dark")">
+            <i class="bi bi-house-door fs-4"></i>
         </a>
-        <a asp-action="Index" asp-controller="Package" title="Paketler" class="@(ViewContext.RouteData.Values["controller"] as string == "Package" ? "active" : "")">
-            <i class="bi bi-box2-heart"></i>
-            <span>Paketler</span>
+        <a asp-controller="Package" asp-action="Index" class="nav-link @(currentController == "Package" ? "text-orange" : "text-dark")">
+            <i class="bi bi-box2-heart fs-4"></i>
         </a>
-        <a asp-controller="UserWeeklyForm" asp-action="Index" title="Formlarım" class="@(ViewContext.RouteData.Values["controller"] as string == "UserWeeklyForm" ? "active" : "")">
-            <i class="bi bi-journal-check"></i>
-            <span>Formlarım</span>
+        <a asp-controller="UserWeeklyForm" asp-action="Index" class="nav-link @(currentController == "UserWeeklyForm" ? "text-orange" : "text-dark")">
+            <i class="bi bi-journal-check fs-4"></i>
         </a>
-        <a asp-controller="WorkoutProgram" asp-action="MyPrograms" title="Antrenmanlarım" class="@(ViewContext.RouteData.Values["controller"] as string == "WorkoutProgram" ? "active" : "")">
-            <i class="bi bi-list-task"></i>
-            <span>Antrenman</span>
+        <a asp-controller="Workout" asp-action="MyWorkout" class="nav-link @(currentController == "WorkoutProgram" ? "text-orange" : "text-dark")">
+            <i class="bi bi-list-task fs-4"></i>
         </a>
-        <a asp-controller="Profile" asp-action="Index" title="Profil" class="@(ViewContext.RouteData.Values["controller"] as string == "Profile" ? "active" : "")">
-            <img src="@profilePhoto" alt="@fullName" width="25" height="25" style="object-fit:cover;border-radius:50%;border:1.5px solid #ff8800;vertical-align:middle;margin-bottom:3px;">
-            <span style="font-size:11px;">@fullName</span>
+        <a asp-controller="Profile" asp-action="Detail" class="nav-link">
+            <img src="@profilePhoto" class="rounded-circle border border-warning" width="25" height="25" />
         </a>
     </nav>
+
     @if (User.Identity.IsAuthenticated && ViewBag.ProfileIncomplete == true)
     {
-        <div class="alert alert-warning mt-3 text-center">
-            Profilini tamamlamadın! <a href="/Profile/CompleteProfile">Şimdi tamamla</a>
+        <div class="alert alert-warning text-center mt-3">
+            Profilini tamamlamadın! <a href="/Profile/CompleteProfile" class="fw-bold">Şimdi tamamla</a>
         </div>
     }
-    <!-- Main Content -->
-    <main class="main-content pb-4">
-        <div class="container">
-            @RenderBody()
-        </div>
+
+    <main class="container py-4">
+        @RenderBody()
     </main>
 
-    <!-- Footer -->
-    <footer class="app-footer text-center">
-        <div class="container">
-            <div class="pb-2">© @DateTime.Now.Year FraoulaPT | Tüm hakları saklıdır.</div>
-            <div style="font-size:13px;opacity:.65;">Sporcu Takip, Kişisel Antrenman ve Online Danışmanlık Platformu</div>
-        </div>
+    <footer class="text-center py-3">
+        <div>© @DateTime.Now.Year FraoulaPT | Tüm hakları saklıdır.</div>
+        <small>Sporcu Takip ve Online Danışmanlık Platformu</small>
     </footer>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     @await RenderSectionAsync("Scripts", false)
 
+    @if (TempData["AlertMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                title: @Html.Raw(Json.Serialize(TempData["AlertTitle"] ?? "")),
+                text: @Html.Raw(Json.Serialize(TempData["AlertMessage"])),
+                icon: @Html.Raw(Json.Serialize(TempData["AlertType"] ?? "info")),
+                confirmButtonText: 'Tamam',
+                timer: 3000
+            });
+        </script>
+    }
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             var message = '@Html.Raw(TempData["message"])';
             var type = '@TempData["messageType"]';
-
             if (message) {
                 Toastify({
                     text: message,
                     duration: 4000,
                     gravity: "top",
-                    position: "right", // ✅ Sağ üst köşe
-                    backgroundColor: type === "success"
-                        ? "linear-gradient(to right, #00c851, #007e33)"  // Yeşil tonları
-                        : type === "error"
-                            ? "linear-gradient(to right, #ff4444, #cc0000)" // Kırmızı tonları
-                            : type === "warning"
-                                ? "linear-gradient(to right, #ffbb33, #ff8800)" // Turuncu
-                                : "linear-gradient(to right, #33b5e5, #0099cc)", // Mavi tonları
-                    close: true,
-                    stopOnFocus: true,
-                    style: {
-                        fontSize: "15px",
-                        fontWeight: "500",
-                        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                        padding: "14px 24px"
-                    },
-                    onClick: function () { }
+                    position: "right",
+                    backgroundColor: type === "success" ? "#28a745" :
+                                     type === "error" ? "#dc3545" :
+                                     type === "warning" ? "#ffc107" : "#17a2b8",
+                    close: true
                 }).showToast();
             }
         });
     </script>
+
+    @{
+        var alert = Context.Request.Query["alert"].ToString();
+    }
+
+    @section Scripts {
+        @if (!string.IsNullOrEmpty(alert))
+        {
+            <script>
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Uyarı',
+                    text: '@alert',
+                    confirmButtonText: 'Tamam'
+                });
+            </script>
+        }
+    }
 
 </body>
 </html>

@@ -342,6 +342,148 @@ namespace FraoulaPT.DAL.Migrations
                     b.ToTable("ExerciseCategory");
                 });
 
+            modelBuilder.Entity("FraoulaPT.Entity.ExtraPackageOption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AutoID")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExtraPackageOptions");
+                });
+
+            modelBuilder.Entity("FraoulaPT.Entity.ExtraPackageUsage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AutoID")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ExtraPackageOptionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("PurchasedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserPackageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExtraPackageOptionId");
+
+                    b.HasIndex("UserPackageId");
+
+                    b.ToTable("ExtraPackageUsages");
+                });
+
+            modelBuilder.Entity("FraoulaPT.Entity.ExtraRight", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Amount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AutoID")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("PurchaseDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RightType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserPackageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserPackageId");
+
+                    b.ToTable("ExtraRights");
+                });
+
             modelBuilder.Entity("FraoulaPT.Entity.Media", b =>
                 {
                     b.Property<Guid>("Id")
@@ -397,84 +539,6 @@ namespace FraoulaPT.DAL.Migrations
                     b.ToTable("Medias");
                 });
 
-            modelBuilder.Entity("FraoulaPT.Entity.Package", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("AutoID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AutoID"));
-
-                    b.Property<Guid?>("CreatedByUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Features")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HighlightColor")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("MaxMessagesPerPeriod")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxQuestionsPerPeriod")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("Order")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<int>("PackageType")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SubscriptionPeriod")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("UpdatedByUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Packages");
-                });
-
             modelBuilder.Entity("FraoulaPT.Entity.UserPackage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -491,7 +555,6 @@ namespace FraoulaPT.DAL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AutoID"));
 
                     b.Property<string>("CancelReason")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("CreatedByUserId")
@@ -519,7 +582,6 @@ namespace FraoulaPT.DAL.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PaymentId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RenewalCount")
@@ -529,6 +591,12 @@ namespace FraoulaPT.DAL.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalMessages")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalQuestions")
                         .HasColumnType("int");
 
                     b.Property<Guid?>("UpdatedByUserId")
@@ -1043,7 +1111,7 @@ namespace FraoulaPT.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AppUserId")
+                    b.Property<Guid>("AppUserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("AutoID")
@@ -1082,7 +1150,8 @@ namespace FraoulaPT.DAL.Migrations
 
                     b.HasIndex("AppUserId");
 
-                    b.HasIndex("UserWeeklyFormId");
+                    b.HasIndex("UserWeeklyFormId")
+                        .IsUnique();
 
                     b.ToTable("WorkoutPrograms");
                 });
@@ -1190,6 +1259,84 @@ namespace FraoulaPT.DAL.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Package", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AutoID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AutoID"));
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Features")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HighlightColor")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxMessagesPerPeriod")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxQuestionsPerPeriod")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Order")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("PackageType")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubscriptionPeriod")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Packages");
+                });
+
             modelBuilder.Entity("FraoulaPT.Entity.ChatMedia", b =>
                 {
                     b.HasOne("FraoulaPT.Entity.ChatMessage", "ChatMessage")
@@ -1239,6 +1386,36 @@ namespace FraoulaPT.DAL.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("FraoulaPT.Entity.ExtraPackageUsage", b =>
+                {
+                    b.HasOne("FraoulaPT.Entity.ExtraPackageOption", "ExtraPackageOption")
+                        .WithMany("Usages")
+                        .HasForeignKey("ExtraPackageOptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FraoulaPT.Entity.UserPackage", "UserPackage")
+                        .WithMany()
+                        .HasForeignKey("UserPackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ExtraPackageOption");
+
+                    b.Navigation("UserPackage");
+                });
+
+            modelBuilder.Entity("FraoulaPT.Entity.ExtraRight", b =>
+                {
+                    b.HasOne("FraoulaPT.Entity.UserPackage", "UserPackage")
+                        .WithMany("ExtraRights")
+                        .HasForeignKey("UserPackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserPackage");
+                });
+
             modelBuilder.Entity("FraoulaPT.Entity.Media", b =>
                 {
                     b.HasOne("FraoulaPT.Entity.UserWeeklyForm", "UserWeeklyForm")
@@ -1256,7 +1433,7 @@ namespace FraoulaPT.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FraoulaPT.Entity.Package", "Package")
+                    b.HasOne("Package", "Package")
                         .WithMany("UserPackages")
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1307,7 +1484,7 @@ namespace FraoulaPT.DAL.Migrations
             modelBuilder.Entity("FraoulaPT.Entity.UserWeeklyForm", b =>
                 {
                     b.HasOne("FraoulaPT.Entity.AppUser", "AppUser")
-                        .WithMany()
+                        .WithMany("UserWeeklyForms")
                         .HasForeignKey("AppUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1377,15 +1554,19 @@ namespace FraoulaPT.DAL.Migrations
 
             modelBuilder.Entity("FraoulaPT.Entity.WorkoutProgram", b =>
                 {
-                    b.HasOne("FraoulaPT.Entity.AppUser", null)
-                        .WithMany("AuthoredPrograms")
-                        .HasForeignKey("AppUserId");
-
-                    b.HasOne("FraoulaPT.Entity.UserWeeklyForm", "UserWeeklyForm")
-                        .WithMany()
-                        .HasForeignKey("UserWeeklyFormId")
+                    b.HasOne("FraoulaPT.Entity.AppUser", "AppUser")
+                        .WithMany("WorkoutPrograms")
+                        .HasForeignKey("AppUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("FraoulaPT.Entity.UserWeeklyForm", "UserWeeklyForm")
+                        .WithOne("WorkoutProgram")
+                        .HasForeignKey("FraoulaPT.Entity.WorkoutProgram", "UserWeeklyFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppUser");
 
                     b.Navigation("UserWeeklyForm");
                 });
@@ -1447,8 +1628,6 @@ namespace FraoulaPT.DAL.Migrations
 
                     b.Navigation("AskedQuestions");
 
-                    b.Navigation("AuthoredPrograms");
-
                     b.Navigation("Profile")
                         .IsRequired();
 
@@ -1457,6 +1636,10 @@ namespace FraoulaPT.DAL.Migrations
                     b.Navigation("SentMessages");
 
                     b.Navigation("UserPackages");
+
+                    b.Navigation("UserWeeklyForms");
+
+                    b.Navigation("WorkoutPrograms");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.ChatMessage", b =>
@@ -1474,14 +1657,16 @@ namespace FraoulaPT.DAL.Migrations
                     b.Navigation("Exercises");
                 });
 
-            modelBuilder.Entity("FraoulaPT.Entity.Package", b =>
+            modelBuilder.Entity("FraoulaPT.Entity.ExtraPackageOption", b =>
                 {
-                    b.Navigation("UserPackages");
+                    b.Navigation("Usages");
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.UserPackage", b =>
                 {
                     b.Navigation("ChatMessages");
+
+                    b.Navigation("ExtraRights");
 
                     b.Navigation("UserQuestions");
                 });
@@ -1489,6 +1674,9 @@ namespace FraoulaPT.DAL.Migrations
             modelBuilder.Entity("FraoulaPT.Entity.UserWeeklyForm", b =>
                 {
                     b.Navigation("ProgressPhotos");
+
+                    b.Navigation("WorkoutProgram")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("FraoulaPT.Entity.WorkoutDay", b =>
@@ -1499,6 +1687,11 @@ namespace FraoulaPT.DAL.Migrations
             modelBuilder.Entity("FraoulaPT.Entity.WorkoutProgram", b =>
                 {
                     b.Navigation("Days");
+                });
+
+            modelBuilder.Entity("Package", b =>
+                {
+                    b.Navigation("UserPackages");
                 });
 #pragma warning restore 612, 618
         }

@@ -42,6 +42,7 @@ namespace FraoulaPT.DAL
                     inner = inner.InnerException;
                     level++;
                 }
+                Console.WriteLine(ex.ToString());
 
                 fullMessage.AppendLine("***** HATA ZİNCİRİ SONU *****");
 

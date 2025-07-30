@@ -1,6 +1,6 @@
 ﻿@{
     ViewData["Title"] = ViewBag.Title ?? "Admin Panel";
-    var profilePhoto = ViewBag.ProfilePhotoUrl as string ?? "/img/default-avatar.png";
+    var profilePhoto = ViewBag.ProfilePhotoUrl as string ?? "/uploads/user-default.jpg";
     var profileName = ViewBag.ProfileName as string ?? "Admin";
 }
 <!DOCTYPE html>
@@ -8,110 +8,85 @@
 <head>
     <meta charset="UTF-8" />
     <title>@ViewData["Title"] - Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- HEAD içine ekleyin -->
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
     <style>
         body {
-            background: #f7f8fa;
+            background: #f8f9fa;
         }
-
-        .sidebar-sub-link {
-            color: #ffe299 !important;
-            font-size: 0.98rem;
-            border-radius: 5px;
-            margin-bottom: 2px;
-            transition: background .16s, color .16s;
-        }
-
-            .sidebar-sub-link.active,
-            .sidebar-sub-link:hover {
-                color: #ff8800 !important;
-                background: #fff1e5 !important;
-            }
-
 
         .sidebar {
-            background: linear-gradient(135deg, #1b2838 80%, #ff8800 100%);
-            min-height: 100vh;
+            background: #1f2937;
             color: #fff;
-            width: 240px;
+            width: 250px;
             position: fixed;
             top: 0;
+            bottom: 0;
             left: 0;
-            z-index: 1010;
-            transition: all .3s;
+            padding: 1rem;
+            overflow-y: auto;
+            z-index: 1030;
         }
 
             .sidebar a {
-                color: #ffd26c;
-                display: block;
-                padding: 12px 18px;
-                border-radius: 7px;
-                margin-bottom: 10px;
-                font-size: 1rem;
-                transition: background .2s, color .2s;
+                color: #cbd5e1;
                 text-decoration: none;
+                display: block;
+                padding: 0.6rem 1rem;
+                border-radius: 0.5rem;
+                margin-bottom: 0.3rem;
+                transition: all 0.2s;
             }
 
-                .sidebar a.active, .sidebar a:hover {
-                    color: #ff8800;
-                    background: #fff;
+                .sidebar a.active,
+                .sidebar a:hover {
+                    background: #ff8800;
+                    color: #fff;
                 }
 
-            .sidebar .sidebar-title {
-                font-weight: bold;
-                font-size: 1.4rem;
-                margin-bottom: 2rem;
-                color: #ff8800;
-                letter-spacing: 1px;
+            .sidebar .menu-title {
+                font-size: 0.9rem;
+                color: #94a3b8;
+                margin: 1rem 0 0.5rem;
+                text-transform: uppercase;
             }
 
         .main {
-            margin-left: 240px;
-            padding: 38px 20px 24px 20px;
-            min-height: 100vh;
-            transition: margin .3s;
-        }
-
-        .profile-img {
-            width: 42px;
-            height: 42px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            background: #eee;
-        }
-
-        .profile-name {
-            color: #fff;
-            font-weight: 500;
-            margin-left: 10px;
+            margin-left: 250px;
+            padding: 2rem;
         }
 
         .navbar-admin {
             background: #fff;
-            border-bottom: 1px solid #ececec;
-            height: 62px;
-            z-index: 1030;
+            height: 60px;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         }
 
-            .navbar-admin .navbar-brand {
-                color: #ff8800;
-                font-weight: bold;
-                font-size: 1.1rem;
-                margin-right: 2rem;
-            }
-
-        .profile-dropdown .dropdown-menu {
-            min-width: 180px;
-            font-size: .96rem;
+        .profile-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
         }
-        media (max-width: 991.98px) {
+
+        media (max-width: 768px) {
             .sidebar
 
         {
-            left: -260px;
+            left: -250px;
+            transition: left 0.3s ease;
         }
 
         .sidebar.show {
@@ -122,116 +97,138 @@
             margin-left: 0;
         }
 
-        .navbar-admin {
-            left: 0;
         }
 
+
+
+        .coach-note-textarea {
+            resize: vertical;
+            font-size: 0.9rem;
         }
 
-        .sidebar-toggle {
-            font-size: 1.5rem;
-            color: #ff8800;
-            background: none;
-            border: none;
-            margin-right: 18px;
-            outline: none;
+        .coach-note-box {
+            background: #d1e7dd; /* soft green (Bootstrap success background) */
+            border-left: 5px solid #0f5132;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .glow-red {
+            animation: glow-red-bg 2s infinite ease-in-out;
+        }
+
+        keyframes glow-red-bg {
+            0%
+
+        {
+            background-color: #f8d7da;
+        }
+
+        50% {
+            background-color: #f5c6cb;
+        }
+
+        100% {
+            background-color: #f8d7da;
+        }
+
         }
     </style>
 </head>
 <body>
-    <!-- Top Navbar -->
-    <nav class="navbar navbar-admin navbar-expand-lg sticky-top shadow-sm px-3">
-        <button class="sidebar-toggle d-lg-none me-2" id="sidebarToggleBtn">
-            <i class="bi bi-list"></i>
-        </button>
-        <span class="navbar-brand d-none d-lg-inline"><i class="bi bi-gear"></i> Admin Panel</span>
-        <div class="ms-auto d-flex align-items-center">
-            <div class="dropdown profile-dropdown">
-                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="@profilePhoto" class="profile-img me-2" alt="profil" />
-                    <span class="profile-name d-none d-md-inline">@profileName</span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end mt-2 shadow">
-                    <li>
-                        <a class="dropdown-item" asp-controller="Profile" asp-action="Index"><i class="bi bi-person-lines-fill me-2"></i> Profilim</a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item text-danger" asp-controller="Account" asp-action="SignOut">
-                            <i class="bi bi-box-arrow-right me-2"></i> Çıkış Yap
-                        </a>
-                    </li>
-                </ul>
-            </div>
+    <!-- Navbar -->
+    <div class="navbar-admin">
+        <button class="btn btn-outline-dark d-md-none" id="toggleSidebar"><i class="bi bi-list"></i></button>
+        <span class="fw-bold text-orange"><i class="bi bi-gear"></i> Admin Panel</span>
+        <div class="d-flex align-items-center">
+            <img src="@profilePhoto" class="profile-img me-2" alt="profil" />
+            <span class="fw-medium">@profileName</span>
         </div>
-    </nav>
-    <!-- Sidebar -->
-    <div class="sidebar p-4 d-flex flex-column align-items-start" id="sidebarPanel">
-        <div class="sidebar-title"><i class="bi bi-person-lock"></i> Admin Panel</div>
-        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "Dashboard" ? "active" : "")">
-            <i class="bi bi-speedometer2"></i> Dashboard
-        </a>
-        <a asp-area="Admin" asp-controller="User" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "User" ? "active" : "")">
-            <i class="bi bi-people"></i> Kullanıcılar
-        </a>
-        <a asp-area="Admin" asp-controller="UserWeeklyForm" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "Form" ? "active" : "")">
-            <i class="bi bi-journal-check"></i> Formlar
-        </a>
-
-        <!-- Kategoriler Menüsü -->
-        <a class="d-flex justify-content-between align-items-center sidebar-link" data-bs-toggle="collapse" href="#collapseCategories" role="button" aria-expanded="false" aria-controls="collapseCategories">
-            <span><i class="bi bi-tags"></i> Egzersiz Kategorileri</span>
-            <i class="bi bi-chevron-down small"></i>
-        </a>
-        <div class="collapse ms-2 mb-2" id="collapseCategories">
-            <a asp-area="Admin" asp-controller="ExerciseCategory" asp-action="Create" class="sidebar-sub-link d-block ps-4 py-2 @(ViewContext.RouteData.Values["controller"] as string == "ExerciseCategory" && ViewContext.RouteData.Values["action"] as string == "Create" ? "active" : "")">
-                <i class="bi bi-plus-square me-1"></i> Egzersiz Kategorisi Ekle
-            </a>
-            <a asp-area="Admin" asp-controller="ExerciseCategory" asp-action="Index" class="sidebar-sub-link d-block ps-4 py-2 @(ViewContext.RouteData.Values["controller"] as string == "ExerciseCategory" && ViewContext.RouteData.Values["action"] as string == "Index" ? "active" : "")">
-                <i class="bi bi-list-ul me-1"></i> Egzersiz Kategorisi Listele
-            </a>
-        </div>
-
-        <!-- Egzersiz Hareketleri Menüsü -->
-        <a class="d-flex justify-content-between align-items-center sidebar-link" data-bs-toggle="collapse" href="#collapseExercises" role="button" aria-expanded="false" aria-controls="collapseExercises">
-            <span><i class="bi bi-bicycle"></i> Egzersiz Hareketleri</span>
-            <i class="bi bi-chevron-down small"></i>
-        </a>
-        <div class="collapse ms-2 mb-2" id="collapseExercises">
-            <a asp-area="Admin" asp-controller="Exercise" asp-action="Index" class="sidebar-sub-link d-block ps-4 py-2 @(ViewContext.RouteData.Values["controller"] as string == "Exercise" && ViewContext.RouteData.Values["action"] as string == "Index" ? "active" : "")">
-                <i class="bi bi-list-task me-1"></i> Hareket Listele
-            </a>
-            <a asp-area="Admin" asp-controller="Exercise" asp-action="Create" class="sidebar-sub-link d-block ps-4 py-2 @(ViewContext.RouteData.Values["controller"] as string == "Exercise" && ViewContext.RouteData.Values["action"] as string == "Create" ? "active" : "")">
-                <i class="bi bi-plus-circle me-1"></i> Yeni Hareket Ekle
-            </a>
-        </div>
-
-        <a asp-area="Admin" asp-controller="WorkoutProgram" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "WorkoutProgram" ? "active" : "")">
-            <i class="bi bi-list-task"></i> Antrenmanlar
-        </a>
-        <a asp-area="Admin" asp-controller="Reports" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "Reports" ? "active" : "")">
-            <i class="bi bi-file-earmark-bar-graph"></i> Raporlar
-        </a>
-        <a asp-controller="Account" asp-action="SignOut">
-            <i class="bi bi-box-arrow-right"></i> Çıkış
-        </a>
-
     </div>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="menu-title">Genel</div>
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "Dashboard" ? "active" : "")">
+            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+        </a>
+
+        <div class="menu-title">Kullanıcılar</div>
+        <a asp-area="Admin" asp-controller="User" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "User" ? "active" : "")">
+            <i class="bi bi-people me-1"></i> Kullanıcılar
+        </a>
+        <a asp-area="Admin" asp-controller="UserWeeklyForm" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "UserWeeklyForm" ? "active" : "")">
+            <i class="bi bi-journal-check me-1"></i> Aylık Vücut Formları
+        </a>
+
+        <div class="menu-title">Egzersizler</div>
+        <a asp-area="Admin" asp-controller="Exercise" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "Exercise" ? "active" : "")">
+            <i class="bi bi-bicycle me-1"></i> Egzersiz Listele
+        </a>
+        <a asp-area="Admin" asp-controller="Exercise" asp-action="Create" class="@(ViewContext.RouteData.Values["controller"] as string == "Exercise" && ViewContext.RouteData.Values["action"] as string == "Create" ? "active" : "")">
+            <i class="bi bi-plus-circle me-1"></i> Egzersiz Ekle
+        </a>
+        <a asp-area="Admin" asp-controller="ExerciseCategory" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "ExerciseCategory" ? "active" : "")">
+            <i class="bi bi-tags me-1"></i> Egzersiz Kategorileri
+        </a>
+
+        <div class="menu-title">Programlar</div>
+        <a asp-area="Admin" asp-controller="WorkoutProgram" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "WorkoutProgram" ? "active" : "")">
+            <i class="bi bi-calendar-check me-1"></i> Antrenmanlar
+        </a>
+
+        <div class="menu-title">Paketler</div>
+        <a asp-area="Admin" asp-controller="Package" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "Package" ? "active" : "")">
+            <i class="bi bi-box-seam me-1"></i> Paketler
+        </a>
+        <a asp-area="Admin" asp-controller="ExtraPackageOption" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "ExtraPackageOption" ? "active" : "")">
+            <i class="bi bi-puzzle me-1"></i> Ek Paketler
+        </a>
+
+        <div class="menu-title">Raporlar</div>
+        <a asp-area="Admin" asp-controller="Reports" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"] as string == "Reports" ? "active" : "")">
+            <i class="bi bi-bar-chart-line me-1"></i> Raporlar
+        </a>
+
+        <div class="menu-title">Ayarlar</div>
+        <a asp-controller="Profile" asp-action="Index">
+            <i class="bi bi-person-circle me-1"></i> Profilim
+        </a>
+        <a asp-controller="Auth" asp-action="SignOut" class="text-danger">
+            <i class="bi bi-box-arrow-right me-1"></i> Çıkış Yap
+        </a>
+    </div>
+
+
     <!-- Main Content -->
     <div class="main">
         @RenderBody()
     </div>
-    <!-- Toastify & Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    @if (TempData["AlertMessage"] != null)
+    {
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            Swal.fire({
+                title: @Html.Raw(Json.Serialize(TempData["AlertTitle"] ?? "")),
+                text: @Html.Raw(Json.Serialize(TempData["AlertMessage"])),
+                icon: @Html.Raw(Json.Serialize(TempData["AlertType"] ?? "info")),
+                confirmButtonText: 'Tamam',
+                timer: 3000
+            });
+        </script>
+    }
+
     <script>
-        // Sidebar toggle (mobil)
-        $("#sidebarToggleBtn").on("click", function () {
-            $("#sidebarPanel").toggleClass("show");
+        $("#toggleSidebar").click(function () {
+            $("#sidebar").toggleClass("show");
         });
 
-        // Toastify messages
+        // Toastify mesajları
         document.addEventListener("DOMContentLoaded", function () {
             var message = '@Html.Raw(TempData["message"])';
             var type = '@TempData["messageType"]';
@@ -256,6 +253,6 @@
             }
         });
     </script>
-    @await RenderSectionAsync("Scripts", false)
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

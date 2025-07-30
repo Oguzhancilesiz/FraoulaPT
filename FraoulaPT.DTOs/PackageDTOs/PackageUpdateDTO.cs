@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FraoulaPT.Core.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,7 @@ namespace FraoulaPT.DTOs.PackageDTOs
     public class PackageUpdateDTO : PackageCreateDTO
     {
         public Guid Id { get; set; }
+        public Status? Status { get; set; }
     }
 
 }

@@ -192,9 +192,12 @@ namespace FraoulaPT.WebUI.Controllers
 
         // GET: /Profile/Detail
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Detail()
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                RedirectToAction("Login", "Auth");
             var profile = await _userProfileService.GetByAppUserIdAsync(user.Id);
 
             if (profile == null)

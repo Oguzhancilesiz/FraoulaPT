@@ -1,0 +1,91 @@
+﻿@model FraoulaPT.DTOs.UserWeeklyFormDTOs.UserLastFormDTO
+
+@if (Model == null)
+{
+    <div class="alert alert-warning">Form bilgisi bulunamadı.</div>
+}
+else
+{
+    <div class="border rounded p-3 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="text-primary mb-0">📅 Form Tarihi: @Model.FormDate.ToString("dd.MM.yyyy")</h5>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-secondary">📏 Vücut Ölçüleri</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Kilo: <strong>@(Model.Weight?.ToString("0.0") ?? "-") kg</strong></li>
+                            <li class="list-group-item">Yağ Oranı: <strong>@(Model.FatPercent?.ToString("0.0") ?? "-") %</strong></li>
+                            <li class="list-group-item">Kas Kütlesi: <strong>@(Model.MuscleMass?.ToString("0.0") ?? "-") kg</strong></li>
+                            <li class="list-group-item">Bel: <strong>@(Model.Waist?.ToString("0.0") ?? "-") cm</strong></li>
+                            <li class="list-group-item">Kalça: <strong>@(Model.Hip?.ToString("0.0") ?? "-") cm</strong></li>
+                            <li class="list-group-item">Göğüs: <strong>@(Model.Chest?.ToString("0.0") ?? "-") cm</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-secondary">💪 Ek Ölçümler</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">Kol: <strong>@(Model.Arm?.ToString("0.0") ?? "-") cm</strong></li>
+                            <li class="list-group-item">Bacak: <strong>@(Model.Leg?.ToString("0.0") ?? "-") cm</strong></li>
+                            <li class="list-group-item">Nabız: <strong>@(Model.RestingPulse?.ToString("0") ?? "-") bpm</strong></li>
+                            <li class="list-group-item">Tansiyon: <strong>@(Model.BloodPressure?.ToString("0.0") ?? "-")</strong></li>
+                            <li class="list-group-item">VO2 Max: <strong>@(Model.Vo2Max?.ToString("0.0") ?? "-")</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-secondary">🧘 Esneklik Notu</h6>
+                        <p>@(string.IsNullOrWhiteSpace(Model.FlexibilityNotes) ? "-" : Model.FlexibilityNotes)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-secondary">📝 Kullanıcı Notu</h6>
+                        <p>@(string.IsNullOrWhiteSpace(Model.UserNote) ? "-" : Model.UserNote)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="text-secondary">🎯 Koç Geri Bildirimi</h6>
+                        <p>@(string.IsNullOrWhiteSpace(Model.CoachFeedback) ? "-" : Model.CoachFeedback)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.ProgressPhotoUrls != null && Model.ProgressPhotoUrls.Any())
+        {
+            <div class="mt-4">
+                <h6 class="text-secondary">📸 Gelişim Fotoğrafları</h6>
+                <div class="row g-2">
+                    @foreach (var url in Model.ProgressPhotoUrls)
+                    {
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <img src="@url" class="img-fluid rounded shadow-sm border" alt="Progress Photo" />
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}

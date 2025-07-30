@@ -35,6 +35,7 @@
     <Folder Include="Hubs\" />
     <Folder Include="wwwroot\uploads\chat\" />
     <Folder Include="wwwroot\uploads\exercises\" />
+    <Folder Include="wwwroot\uploads\packages\" />
   </ItemGroup>
 
 </Project>

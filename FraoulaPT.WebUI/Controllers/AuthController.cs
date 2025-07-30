@@ -3,6 +3,7 @@ using FraoulaPT.Entity;
 using FraoulaPT.Services.Abstracts;
 using FraoulaPT.Services.Concrete;
 using FraoulaPT.WebUI.Models.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -266,8 +267,14 @@ namespace FraoulaPT.WebUI.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            ShowMessage("Çıkış başarılı!", MessageType.Success);
+            ShowAlert("Bilgi", "Çıkış Başarılı", Core.Enums.AlertType.info);
             return RedirectToAction("Login", "Auth");
+        }
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }

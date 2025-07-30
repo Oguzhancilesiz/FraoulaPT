@@ -11,6 +11,7 @@ namespace FraoulaPT.DTOs.UserWeeklyFormDTOs
     {
         public Guid Id { get; set; }
         public DateTime FormDate { get; set; }
+        public Guid UserId { get; set; }
 
         public double? Weight { get; set; }
         public double? FatPercent { get; set; }

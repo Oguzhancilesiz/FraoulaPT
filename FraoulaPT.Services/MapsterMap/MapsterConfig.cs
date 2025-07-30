@@ -4,6 +4,7 @@ using FraoulaPT.DTOs.ChatMediaDTOs;
 using FraoulaPT.DTOs.ChatMessageDTOs;
 using FraoulaPT.DTOs.ExerciseCategoryDTOs;
 using FraoulaPT.DTOs.ExerciseDTOs;
+using FraoulaPT.DTOs.ExtraRightDTOs;
 using FraoulaPT.DTOs.MediaDTOs;
 using FraoulaPT.DTOs.PackageDTOs;
 using FraoulaPT.DTOs.UserPackageDTOs;
@@ -166,7 +167,12 @@ namespace FraoulaPT.Services.MapsterMap
             config.NewConfig<UserPackage, UserPackageListDTO>();
             config.NewConfig<UserPackageListDTO, UserPackage>();
 
-            config.NewConfig<UserPackage, UserPackageDetailDTO>();
+            config.NewConfig<UserPackage, UserPackageDetailDTO>()
+                  .Map(dest => dest.TotalMessages, src => src.TotalMessages)
+                  .Map(dest => dest.TotalQuestions, src => src.TotalQuestions)
+                  .Map(dest => dest.UsedMessages, src => src.UsedMessages)
+                  .Map(dest => dest.UsedQuestions, src => src.UsedQuestions);
+
             config.NewConfig<UserPackageDetailDTO, UserPackage>();
 
             // UserProfile
@@ -299,6 +305,18 @@ namespace FraoulaPT.Services.MapsterMap
             // UserWeeklyForm → UserWeeklyFormDetailDTO
             config.NewConfig<UserWeeklyForm, UserWeeklyFormDetailDTO>()
                 .Map(dest => dest.ProgressPhotoUrls, src => src.ProgressPhotos);
+
+
+            // MapsterConfig.cs
+
+            config.NewConfig<Package, PackageListDTO>();
+            config.NewConfig<Package, PackageDetailDTO>();
+            config.NewConfig<PackageCreateDTO, Package>();
+            config.NewConfig<PackageUpdateDTO, Package>();
+
+            config.NewConfig<ExtraRight, ExtraRightListDTO>();
+            config.NewConfig<ExtraRightAddDTO, ExtraRight>();
+
         }
     }
 }

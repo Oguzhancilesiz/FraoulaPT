@@ -14,6 +14,8 @@ namespace FraoulaPT.Entity
         public Guid PackageId { get; set; }
         public Package Package { get; set; }
 
+
+
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int UsedQuestions { get; set; }
@@ -22,13 +24,19 @@ namespace FraoulaPT.Entity
 
         // Opsiyonel alanlar:
         public int RenewalCount { get; set; } // Kaç kez yenilendi
-        public string CancelReason { get; set; }
-        public string PaymentId { get; set; } // Gerçek ödeme sistemi ile entegreysen
+        public string? CancelReason { get; set; }
+        public string? PaymentId { get; set; }
         public DateTime? LastPaymentDate { get; set; }
         public bool IsRenewable { get; set; } // Otomatik yenileme
+
+        public int? TotalQuestions { get; set; } // Paket + ek paket toplamı
+        public int? TotalMessages { get; set; }
+
 
         // Navigation’lar (diğer ilişkiler)
         public ICollection<UserQuestion> UserQuestions { get; set; }
         public ICollection<ChatMessage> ChatMessages { get; set; }
+
+        public virtual ICollection<ExtraRight> ExtraRights { get; set; } = new List<ExtraRight>();
     }
 }
