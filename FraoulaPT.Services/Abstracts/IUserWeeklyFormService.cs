@@ -19,6 +19,7 @@ namespace FraoulaPT.Services.Abstracts
         Task<UserWeeklyFormListDTO> GetLastFormByUserIdAsync(Guid userId);
         Task<List<UserWeeklyFormAdminListDTO>> GetAllForAdminAsync();
 
+        Task<UserLastFormDTO> GetLastFormByUserAsync(Guid userId);
 
     }
 }

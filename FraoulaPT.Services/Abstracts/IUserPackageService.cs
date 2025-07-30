@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 namespace FraoulaPT.Services.Abstracts
 {
 
-    public interface IUserPackageService : IBaseService<
-        UserPackageListDTO,
-        UserPackageDetailDTO,
-        UserPackageCreateDTO,
-        UserPackageUpdateDTO>
-    { }
+    public interface IUserPackageService
+    {
+        Task<bool> CreateAsync(UserPackageCreateDTO dto);
+        Task<bool> HasActivePackageAsync(Guid userId);
+        Task <List<UserPackageDetailDTO>> GetPackagesByUserAsync(Guid userId);
+    }
+
 }

@@ -3,12 +3,14 @@ using FraoulaPT.Services.Abstracts;
 using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.ExerciseViewModels;
 using FraoulaPT.WebUI.Models.Enums;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Build.Evaluation;
 
 namespace FraoulaPT.WebUI.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin,Coach")]
     public class ExerciseController : BaseController
     {
         private readonly IExerciseService _exerciseService;

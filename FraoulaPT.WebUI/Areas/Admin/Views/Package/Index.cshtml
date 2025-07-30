@@ -1,0 +1,167 @@
+﻿@using FraoulaPT.Core.Enums
+@using FraoulaPT.DTOs.PackageDTOs
+
+@{
+    ViewData["Title"] = "Paketler";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@model List<PackageListDTO>
+
+<div class="container mt-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <h2 class="mb-0">📦 Paketler</h2>
+        <a asp-action="Create" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Yeni Paket Ekle
+        </a>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">Henüz paket eklenmemiş.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle text-nowrap">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Ad</th>
+                        <th>Tip</th>
+                        <th>Süre</th>
+                        <th>Fiyat</th>
+                        <th>Soru / Mesaj</th>
+                        <th>Durum</th>
+                        <th style="min-width: 180px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var item = Model[i];
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@item.Name</td>
+                            <td>@item.PackageType</td>
+                            <td>@item.SubscriptionPeriod</td>
+                            <td>@($"{item.Price:C0}")</td>
+                            <td>@item.MaxQuestionsPerPeriod / @item.MaxMessagesPerPeriod</td>
+                            <td>
+                                <span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(item.IsActive ? "Aktif" : "Pasif")
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm @(item.IsActive ? "btn-danger" : "btn-success") toggle-status-btn"
+                                            data-id="@item.Id"
+                                            title="Durum Değiştir"
+                                            data-bs-toggle="tooltip">
+                                        <i class="bi @(item.IsActive ? "bi-eye-slash" : "bi-eye")"></i>
+                                    </button>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary" title="Düzenle" data-bs-toggle="tooltip">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="javascript:void(0);"
+                                       class="btn btn-sm btn-outline-danger delete-btn"
+                                       data-id="@item.Id"
+                                       title="Sil"
+                                       data-bs-toggle="tooltip">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+
+                const confirmed = await Swal.fire({
+                    title: 'Emin misiniz?',
+                    text: "Bu paketi silmek üzeresiniz. Devam etmek istiyor musunuz?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Evet, sil',
+                    cancelButtonText: 'İptal'
+                });
+
+                if (confirmed.isConfirmed) {
+                    // Yönlendirme (Redirect) ile silme isteği
+                    window.location.href = `/Admin/Package/Delete/${id}`;
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.querySelectorAll('.toggle-status-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+
+                const confirmed = await Swal.fire({
+                    title: 'Emin misiniz?',
+                    text: "Durumu değiştirmek istiyor musunuz?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Evet, değiştir',
+                    cancelButtonText: 'İptal',
+                    reverseButtons: true
+                });
+
+                if (!confirmed.isConfirmed) return;
+
+                const res = await fetch('/Admin/Package/ToggleStatus', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ Id: id })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    if (data.newStatus === "Aktif") {
+                        btn.classList.remove("btn-success");
+                        btn.classList.add("btn-danger");
+                        btn.innerHTML = `<i class="bi bi-eye-slash"></i>`;
+                    } else {
+                        btn.classList.remove("btn-danger");
+                        btn.classList.add("btn-success");
+                        btn.innerHTML = `<i class="bi bi-eye"></i>`;
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Başarılı!',
+                        text: 'Durum başarıyla güncellendi.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata!',
+                        text: data.message || 'Bir hata oluştu. Lütfen tekrar deneyin.'
+                    });
+                }
+            });
+        });
+
+
+        // Bootstrap tooltip init
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+    </script>
+}

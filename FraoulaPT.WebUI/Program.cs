@@ -4,6 +4,7 @@ using FraoulaPT.DAL;
 using FraoulaPT.Entity;
 using FraoulaPT.Services.Abstracts;
 using FraoulaPT.Services.Concrete;
+using FraoulaPT.WebUI.Infrastructure.Auth;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,8 @@ namespace FraoulaPT.WebUI
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllersWithViews();
+
+         
 
 
             builder.Services.AddDbContext<BaseContext>(options =>
@@ -40,7 +43,13 @@ namespace FraoulaPT.WebUI
                 option.Password.RequireNonAlphanumeric = false;
                 option.Password.RequireLowercase = false;
             }).AddEntityFrameworkStores<BaseContext>().AddDefaultTokenProviders();
-
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/Auth/Login";
+                options.AccessDeniedPath = "/Auth/AccessDenied";
+                options.EventsType = typeof(CustomRedirectHandler);
+            });
+            builder.Services.AddScoped<CustomRedirectHandler>();
             builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
             {
                 options.TokenLifespan = TimeSpan.FromMinutes(2); // 2 dakika
@@ -68,6 +77,8 @@ namespace FraoulaPT.WebUI
             builder.Services.AddScoped<IWorkoutExerciseService, WorkoutExerciseService>();
             builder.Services.AddScoped<IWorkoutProgramService, WorkoutProgramService>();
             builder.Services.AddScoped<IMailService, MailService>();
+            builder.Services.AddScoped<IExtraPackageOptionService, ExtraPackageOptionService>();
+            builder.Services.AddScoped<IExtraRightService, ExtraRightService>();
 
             var app = builder.Build();
 
@@ -81,7 +92,8 @@ namespace FraoulaPT.WebUI
             app.UseHttpsRedirection();
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseAuthentication(); // GÝRÝÞ BURADA!
+            app.UseAuthorization();  // sonra authorization çalýþýr
 
             app.MapStaticAssets();
 
@@ -89,13 +101,14 @@ namespace FraoulaPT.WebUI
                        name: "areas",
                        pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
                      );
+
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}")
                 .WithStaticAssets();
 
-
             app.Run();
+
 
         }
     }

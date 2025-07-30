@@ -3,18 +3,51 @@
 @{
     ViewData["Title"] = "Giriş Yap";
 }
-<h2>Giriş Yap</h2>
-<form asp-action="Login" method="post">
-    <div asp-validation-summary="All"></div>
-    <div>
-        <label>Kullanıcı Adı veya Email</label>
-        <input asp-for="UserNameOrEmail" />
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white text-center fw-semibold">
+                    <i class="bi bi-person-check-fill me-2"></i> Giriş Yap
+                </div>
+                <div class="card-body">
+                    <form asp-action="Login" method="post">
+                        <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="UserNameOrEmail" class="form-label">Kullanıcı Adı veya Email</label>
+                            <input asp-for="UserNameOrEmail" class="form-control" placeholder="kullanici@eposta.com" />
+                            <span asp-validation-for="UserNameOrEmail" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">Şifre</label>
+                            <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-orange">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Giriş Yap
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="mt-3 text-center small">
+                        <a asp-action="Register" class="text-decoration-none me-3">
+                            <i class="bi bi-person-plus"></i> Kayıt Ol
+                        </a>
+                        <a asp-action="ForgotPassword" class="text-decoration-none">
+                            <i class="bi bi-lock"></i> Şifremi Unuttum
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div>
-        <label>Şifre</label>
-        <input asp-for="Password" type="password" />
-    </div>
-    <button type="submit">Giriş Yap</button>
-    <a asp-action="Register">Kayıt Ol</a>
-    <a asp-action="ForgotPassword">Şifremi Unuttum</a>
-</form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

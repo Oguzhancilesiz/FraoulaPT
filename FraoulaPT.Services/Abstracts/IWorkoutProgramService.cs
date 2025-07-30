@@ -1,4 +1,5 @@
 ﻿using FraoulaPT.DTOs.WorkoutProgramDTOs;
+using FraoulaPT.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,8 @@ namespace FraoulaPT.Services.Abstracts
     {
         Task<Guid> CreateAsync(WorkoutProgramCreateDTO dto, Guid coachId);
         Task<WorkoutProgramDetailDTO> GetWorkoutProgramDetailByIdAsync(Guid id);
+        Task<WorkoutProgram> GetLastWorkoutProgramByUserAsync(Guid id);
+
     }
 
 }

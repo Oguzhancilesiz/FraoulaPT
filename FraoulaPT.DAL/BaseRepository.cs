@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using FraoulaPT.Entity;
 
 namespace FraoulaPT.DAL
 {
@@ -235,6 +236,9 @@ namespace FraoulaPT.DAL
             try
             {
                 _context.Entry(item).State = EntityState.Modified;
+                _context.Entry(item).Property(nameof(BaseEntity.CreatedDate)).CurrentValue = DateTime.UtcNow;
+                _context.Entry(item).Property(nameof(BaseEntity.ModifiedDate)).CurrentValue = DateTime.UtcNow;
+
                 if (isComeFromDelete)
                 {
                     //Log tablosunda item update işleminin aslında Silme işlemi olduğunu yazmak için kullanılır.

@@ -1,0 +1,69 @@
+﻿@using FraoulaPT.WebUI.Models.ViewModels.WorkoutProgramViewModel
+@{
+    ViewData["Title"] = "Antrenmanım";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string[] gunler = { "", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar" };
+}
+@model MyWorkoutProgramVM
+
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-primary">@Model.ProgramTitle</h2>
+        <p class="text-muted">@Model.CoachNote</p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @for (int i = 1; i <= 7; i++)
+        {
+            var day = Model.Days.FirstOrDefault(d => d.DayOfWeek == i);
+            var isRestDay = day == null;
+            var hasExercises = day?.Exercises != null && day.Exercises.Any();
+
+            <div class="col">
+                <div class="card h-100 border @(isRestDay ? "border-secondary" : "border-primary") bg-@(isRestDay ? "white" : "light")">
+                    <div class="card-header bg-white text-center">
+                        <h5 class="card-title mb-0">@gunler[i]</h5>
+                        @if (!isRestDay && !string.IsNullOrWhiteSpace(day.Description))
+                        {
+                            <p class="card-subtitle text-muted small">@day.Description</p>
+                        }
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        @if (isRestDay)
+                        {
+                            <div class="text-center text-muted my-auto">
+                                <i class="bi bi-moon fs-1 mb-2"></i>
+                                <p class="fw-semibold mb-1">Off Day</p>
+                                <small>Bu gün için program tanımlanmamış.</small>
+                            </div>
+                        }
+                        else if (!hasExercises)
+                        {
+                            <div class="text-center text-warning fw-semibold mb-3">
+                                Henüz hareket eklenmemiş.
+                            </div>
+                            <a asp-action="StartDay" asp-route-id="@day.Id" class="btn btn-outline-primary mt-auto w-100">Antrenmana Başla</a>
+                        }
+                        else
+                        {
+                            <ul class="list-group list-group-flush mb-3">
+                                @foreach (var ex in day.Exercises.Take(3))
+                                {
+                                    <li class="list-group-item small">
+                                        <strong>@ex.ExerciseName</strong><br />
+                                        <span class="text-muted">@ex.SetCount x @ex.Repetition tekrar</span>
+                                    </li>
+                                }
+                            </ul>
+                            @if (day.Exercises.Count > 3)
+                            {
+                                <small class="text-muted mb-2">+ @(day.Exercises.Count - 3) hareket daha...</small>
+                            }
+                            <a asp-action="StartDay" asp-route-id="@day.Id" class="btn btn-primary mt-auto w-100">Antrenmana Başla</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

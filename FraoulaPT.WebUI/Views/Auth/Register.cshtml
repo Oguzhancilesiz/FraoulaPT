@@ -1,31 +1,66 @@
 ﻿@using FraoulaPT.DTOs.AuthDTOs
 @model UserRegisterDTO
+
 @{
     ViewData["Title"] = "Kayıt Ol";
 }
-<h2>Kayıt Ol</h2>
-<form asp-action="Register" method="post">
-    <div asp-validation-summary="All"></div>
-    <div>
-        <label>Ad Soyad</label>
-        <input asp-for="FullName" />
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white text-center fw-semibold">
+                    <i class="bi bi-person-plus-fill me-2"></i> Kayıt Ol
+                </div>
+                <div class="card-body">
+                    <form asp-action="Register" method="post">
+                        <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label">Ad Soyad</label>
+                            <input asp-for="FullName" class="form-control" placeholder="Adınız Soyadınız" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="UserName" class="form-label">Kullanıcı Adı</label>
+                            <input asp-for="UserName" class="form-control" placeholder="kullanici123" />
+                            <span asp-validation-for="UserName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" class="form-control" placeholder="mail@ornek.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">Şifre</label>
+                            <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ConfirmPassword" class="form-label">Şifre Tekrar</label>
+                            <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="••••••••" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-orange w-100">
+                            <i class="bi bi-person-check-fill me-1"></i> Kayıt Ol
+                        </button>
+                    </form>
+
+                    <div class="mt-3 text-center small">
+                        Zaten hesabınız var mı?
+                        <a asp-action="Login" class="text-decoration-none ms-1"><i class="bi bi-box-arrow-in-right"></i> Giriş Yap</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div>
-        <label>Kullanıcı Adı</label>
-        <input asp-for="UserName" />
-    </div>
-    <div>
-        <label>Email</label>
-        <input asp-for="Email" />
-    </div>
-    <div>
-        <label>Şifre</label>
-        <input asp-for="Password" type="password" />
-    </div>
-    <div>
-        <label>Şifre Tekrar</label>
-        <input asp-for="ConfirmPassword" type="password" />
-    </div>
-    <button type="submit">Kayıt Ol</button>
-    <a asp-action="Login">Giriş Yap</a>
-</form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -71,6 +71,7 @@ namespace FraoulaPT.Services.Concrete
                 .Select(x => new UserWeeklyFormListDTO
             {
                 Id = x.Id,
+                UserId=x.AppUserId,
                 FormDate = x.FormDate,
                 Weight = x.Weight,
                 FatPercent = x.FatPercent,
@@ -213,6 +214,43 @@ namespace FraoulaPT.Services.Concrete
                 Status = entity.Status,
                 ProgressPhotoUrls = entity.ProgressPhotos?
                     .Where(p => p.Status == Core.Enums.Status.Active)
+                    .Select(p => p.Url)
+                    .ToList()
+            };
+
+            return dto;
+        }
+        public async Task<UserLastFormDTO> GetLastFormByUserAsync(Guid userId)
+        {
+            var form = await _unitOfWork.Repository<UserWeeklyForm>()
+                .Query()
+                .Where(f => f.AppUserId == userId && f.Status != Status.Deleted)
+                .OrderByDescending(f => f.FormDate)
+                .Include(f => f.ProgressPhotos)
+                .FirstOrDefaultAsync();
+
+            if (form == null) return null;
+
+            var dto = new UserLastFormDTO
+            {
+                Id = form.Id,
+                FormDate = form.FormDate,
+                Weight = form.Weight,
+                FatPercent = form.FatPercent,
+                MuscleMass = form.MuscleMass,
+                Waist = form.Waist,
+                Hip = form.Hip,
+                Chest = form.Chest,
+                Arm = form.Arm,
+                Leg = form.Leg,
+                RestingPulse = form.RestingPulse,
+                BloodPressure = form.BloodPressure,
+                Vo2Max = form.Vo2Max,
+                FlexibilityNotes = form.FlexibilityNotes,
+                UserNote = form.UserNote,
+                CoachFeedback = form.CoachFeedback,
+                ProgressPhotoUrls = form.ProgressPhotos
+                    .Where(p => p.Status != Status.Deleted)
                     .Select(p => p.Url)
                     .ToList()
             };

@@ -3,12 +3,14 @@ using FraoulaPT.DTOs.UserWeeklyFormDTOs;
 using FraoulaPT.Entity;
 using FraoulaPT.Services.Abstracts;
 using FraoulaPT.Services.Concrete;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FraoulaPT.WebUI.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin,Coach")]
     public class UserWeeklyFormController : Controller
     {
         private readonly IUserWeeklyFormService _formService;
@@ -31,7 +33,6 @@ namespace FraoulaPT.WebUI.Areas.Admin.Controllers
         public async Task<IActionResult> UserForms(Guid userId)
         {
             var forms = await _formService.GetListByUserAsync(userId);
-            ViewBag.UserName = "Kullanıcı";
             return View(forms);
         }
 
@@ -44,6 +45,12 @@ namespace FraoulaPT.WebUI.Areas.Admin.Controllers
 
             return View(form); // Areas/Admin/Views/UserWeeklyForm/Detail.cshtml
         }
+        public async Task<IActionResult> GetLastFormPartial(Guid id)
+        {
+            var dto = await _formService.GetLastFormByUserAsync(id);
+            return PartialView("_LastFormDetailsPartial", dto);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateCoachFeedback([FromBody] CoachFeedbackUpdateDTO dto)

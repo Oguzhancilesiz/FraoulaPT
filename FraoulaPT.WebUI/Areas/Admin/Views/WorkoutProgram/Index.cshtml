@@ -1,0 +1,230 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@model List<FraoulaPT.DTOs.WorkoutProgramDTOs.WorkoutProgramOverviewDTO>
+
+@{
+    ViewData["Title"] = "Antrenmanlar";
+}
+<div class="container mt-4">
+    <h2 class="mb-4 text-primary">📋 Öğrencilerin Antrenman Programları</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Hiçbir öğrenciye form veya program atanmamış.</div>
+    }
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var user in Model)
+        {
+            <div class="col">
+                <div class="card shadow-sm h-100 border-0">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="@user.UserProfilePhoto" alt="Profil" class="rounded-circle me-3 shadow-sm" style="width: 60px; height: 60px; object-fit: cover;" />
+                            <div>
+                                <h5 class="mb-1">@user.UserFullName</h5>
+                                <small class="text-muted">📅 Son Form: @user.FormCreatedDate.ToString("dd.MM.yyyy")</small>
+                            </div>
+                        </div>
+                        <div class="mb-2 p-3 rounded border shadow-sm @(string.IsNullOrWhiteSpace(user.CoachFeedback) ? "bg-warning-subtle" : "bg-light")"
+                             style="box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" id="formId" value="@user.FormId" />
+
+                            <label for="coachFeedbackInput" class="form-label small text-muted mb-1">Koç Notu</label>
+
+                            <div class="d-flex align-items-start gap-2">
+                                <textarea class="form-control form-control-sm coach-feedback-input"
+                                          data-form-id="@user.FormId"
+                                          rows="2"
+                                          placeholder="Yorum yaz..."
+                                          style="resize: vertical; min-height: 60px; flex: 1;">@user.CoachFeedback</textarea>
+
+                                <button class="btn btn-sm btn-outline-success mt-1 update-feedback-btn" data-form-id="@user.FormId">
+                                    <i class="bi bi-send me-1"></i> Kaydet
+                                </button>
+
+                            </div>
+                        </div>
+
+                        <div class="mt-auto">
+                            <button class="btn btn-outline-info btn-sm w-100 show-form-details-btn mt-2 mb-3"
+                                    data-user-id="@user.UserId"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#formDetailModal">
+                                👀 Son Formun Detayı
+                            </button>
+
+
+                            @if (user.HasWorkoutProgram)
+                            {
+                                <a asp-controller="WorkoutProgram" asp-action="Detail" asp-route-id="@user.WorkoutProgramId" class="btn btn-sm btn-outline-primary w-100">
+                                    📄 Programı Gör
+                                </a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-success w-100 start-program-btn"
+                                        data-form-id="@user.FormId"
+                                        data-user-id="@user.UserId"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#startProgramModal">
+                                    ➕ Antrenman Oluştur
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<div class="modal fade" id="formDetailModal" tabindex="-1" aria-labelledby="formDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="formDetailModalLabel">📋 Öğrenci Form Detayı</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body" id="formDetailsBody">
+                <div class="text-center text-muted">Yükleniyor...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="startProgramModal" tabindex="-1" aria-labelledby="startProgramModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="createProgramForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Program Başlat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="userWeeklyFormId" />
+                    <input type="hidden" id="userId" />
+                    <div class="mb-3">
+                        <label>Program Başlığı</label>
+                        <input type="text" class="form-control" id="programTitle" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Koç Notu</label>
+                        <textarea class="form-control" id="coachNote"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Hangi günler olacak?</label><br />
+                        @for (int i = 1; i <= 7; i++)
+                        {
+                            var dayName = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetDayName((DayOfWeek)(i % 7));
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input day-checkbox" type="checkbox" value="@i" id="day_@i">
+                                <label class="form-check-label" for="day_@i">@dayName</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+                $(document).on('click', '.update-feedback-btn', function () {
+            const button = $(this);
+            const formId = button.data('form-id');
+            const feedback = button.closest('.d-flex').find('.coach-feedback-input').val();
+            const token = $('input[name="__RequestVerificationToken"]').first().val();
+
+            Swal.fire({
+                title: "Emin misiniz?",
+                text: "Koç notu güncellenecek. Devam etmek istiyor musunuz?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Evet, güncelle!",
+                cancelButtonText: "İptal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch("/Admin/UserWeeklyForm/UpdateCoachFeedback", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": token
+                        },
+                        body: JSON.stringify({
+                            id: formId,
+                            feedback: feedback
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error("Sunucu hatası");
+                        return response.text(); // JSON dönmüyorsa text kullan
+                    })
+                    .then(() => {
+                        Swal.fire("Başarılı!", "Koç notu güncellendi.", "success");
+                    })
+                    .catch(error => {
+                        Swal.fire("Hata!", "Bir hata oluştu: " + error.message, "error");
+                    });
+                }
+            });
+        });
+
+    </script>
+    <script>
+        // Modal açıldığında formId set et
+        $('#startProgramModal').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            const formId = button.data('form-id');
+            const userId = button.data('user-id');
+            $('#userWeeklyFormId').val(formId);
+            $('#userId').val(userId);
+        });
+
+        // Program Kaydet
+        $('#createProgramForm').on('submit', function (e) {
+            e.preventDefault();
+
+            const data = {
+                UserWeeklyFormId: $('#userWeeklyFormId').val(),
+                AppUserId: $('#userId').val(),
+                ProgramTitle: $('#programTitle').val(),
+                CoachNote: $('#coachNote').val(),
+                Days: $('.day-checkbox:checked').map(function () { return parseInt($(this).val()); }).get()
+            };
+
+            $.ajax({
+                url: '/Admin/WorkoutProgram/CreateWithDays',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (res) {
+                    window.location.href = '/Admin/WorkoutProgram/Detail/' + res.programId;
+                },
+                error: function () {
+                    Swal.fire("Hata", "Program oluşturulamadı", "error");
+                }
+            });
+        });
+    </script>
+    <script>
+        $('.show-form-details-btn').on('click', function () {
+            const userId = $(this).data('user-id');
+            $('#formDetailsBody').html('<div class="text-center text-muted">Yükleniyor...</div>');
+            $('#formDetailsBody').load(`/Admin/UserWeeklyForm/GetLastFormPartial/${userId}`);
+        });
+    </script>
+
+
+}

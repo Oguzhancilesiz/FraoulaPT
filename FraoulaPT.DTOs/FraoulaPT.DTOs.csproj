@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FraoulaPT.Core\FraoulaPT.Core.csproj" />
+    <ProjectReference Include="..\FraoulaPT.Entity\FraoulaPT.Entity.csproj" />
   </ItemGroup>
 
 </Project>

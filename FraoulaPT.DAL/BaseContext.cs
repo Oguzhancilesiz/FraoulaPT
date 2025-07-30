@@ -80,6 +80,10 @@ namespace FraoulaPT.DAL
         public DbSet<WorkoutExercise> WorkoutExercises { get; set; }
         public DbSet<WorkoutFeedback> WorkoutFeedbacks { get; set; }
         public DbSet<WorkoutProgram> WorkoutPrograms { get; set; }
+        public DbSet<ExtraPackageOption> ExtraPackageOptions { get; set; }
+        public DbSet<ExtraPackageUsage> ExtraPackageUsages { get; set; }
+        public DbSet<ExtraRight> ExtraRights { get; set; }
+
 
 
 

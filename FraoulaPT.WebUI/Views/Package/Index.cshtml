@@ -1,0 +1,66 @@
+﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels
+@model PackageIndexVM
+
+@{
+    ViewData["Title"] = "Paketler";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="container py-5">
+    <h2 class="text-center mb-4">📦 Paketler</h2>
+
+    @if (Model == null || !Model.Packages.Any())
+    {
+        <div class="alert alert-warning text-center">
+            Şu anda aktif bir paket bulunmamaktadır.
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            @foreach (var package in Model.Packages)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-primary">
+                        @if (!string.IsNullOrWhiteSpace(package.ImageUrl))
+                        {
+                            <img src="@package.ImageUrl" class="card-img-top" alt="@package.Name" style="height: 180px; object-fit: cover;" />
+                        }
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title text-primary">@package.Name</h5>
+                            <h6 class="text-muted">@package.PackageType.ToString() | @package.SubscriptionPeriod.ToString()</h6>
+                            <p class="card-text">@package.Description</p>
+
+                            <ul class="list-group list-group-flush small mt-2 mb-3">
+                                <li class="list-group-item"><strong>@package.MaxQuestionsPerPeriod</strong> soru hakkı</li>
+                                <li class="list-group-item"><strong>@package.MaxMessagesPerPeriod</strong> mesaj hakkı</li>
+                            </ul>
+
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <span class="badge bg-primary fs-6">@($"{package.Price:C2}")</span>
+                                @if (Model.HasActivePackage)
+                                {
+                                    <div class="alert alert-warning">
+                                        Aktif bir paketiniz bulunmaktadır.
+                                        <a href="/ExtraPackage">Dilerseniz ek paket satın alabilirsiniz.</a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <form method="post" asp-action="Purchase" asp-controller="Package">
+                                        <input type="hidden" name="packageId" value="@package.Id" />
+                                        <button type="submit" class="btn btn-primary">Satın Al</button>
+                                    </form>
+
+                                }
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</section>

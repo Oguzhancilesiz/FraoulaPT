@@ -22,6 +22,7 @@ namespace FraoulaPT.Entity
         public ICollection<ChatMessage> ReceivedMessages { get; set; }
         public ICollection<UserQuestion> AskedQuestions { get; set; }
         public ICollection<UserQuestion> AnsweredQuestions { get; set; }
-        public ICollection<WorkoutProgram> AuthoredPrograms { get; set; } // Koçsa
+        public ICollection<WorkoutProgram> WorkoutPrograms { get; set; } // Koçsa
+        public virtual ICollection<UserWeeklyForm> UserWeeklyForms { get; set; } = new List<UserWeeklyForm>();
     }
 }

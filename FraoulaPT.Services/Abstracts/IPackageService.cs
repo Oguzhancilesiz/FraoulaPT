@@ -7,10 +7,13 @@ using System.Threading.Tasks;
 
 namespace FraoulaPT.Services.Abstracts
 {
-    public interface IPackageService : IBaseService<
-      PackageListDTO,
-      PackageDetailDTO,
-      PackageCreateDTO,
-      PackageUpdateDTO>
-    { }
+    public interface IPackageService
+    {
+        Task<List<PackageListDTO>> GetAllAsync();
+        Task<PackageDetailDTO> GetByIdAsync(Guid id);
+        Task<bool> AddAsync(PackageCreateDTO dto);
+        Task<bool> UpdateAsync(PackageUpdateDTO dto);
+        Task<bool> SoftDeleteAsync(Guid id);
+    }
+
 }

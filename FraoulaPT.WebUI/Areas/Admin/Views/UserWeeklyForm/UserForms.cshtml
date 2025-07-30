@@ -1,4 +1,5 @@
 ﻿@model List<FraoulaPT.DTOs.UserWeeklyFormDTOs.UserWeeklyFormListDTO>
+@using System.Globalization
 @{
     ViewData["Title"] = "Kullanıcı Formları";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
@@ -23,7 +24,6 @@
         @foreach (var form in Model)
         {
             var dayDiff = (DateTime.Today - form.FormDate.Date).Days;
-
             <tr>
                 <td>
                     @form.FormDate.ToString("dd.MM.yyyy")
@@ -72,16 +72,103 @@
                     }
                     else
                     {
-                        <a asp-area="Admin"
-                           asp-controller="WorkoutProgram"
-                           asp-action="Create"
-                           asp-route-formId="@form.Id"
-                           class="btn btn-success mb-3">
-                            🏋️‍♂️ Bu Forma Program Oluştur
-                        </a>
+                        <button class="btn btn-success mb-3 start-program-btn"
+                                data-form-id="@form.Id"
+                                data-user-id="@form.UserId"
+                                data-bs-toggle="modal"
+                                data-bs-target="#startProgramModal">
+                            🏋️‍♂️ Program Oluştur
+                        </button>
                     }
+
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+
+<div class="modal fade" id="startProgramModal" tabindex="-1" aria-labelledby="startProgramModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="createProgramForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Program Başlat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="userWeeklyFormId" />
+                    <input type="hidden" id="userId" />
+                    <div class="mb-3">
+                        <label>Program Başlığı</label>
+                        <input type="text" class="form-control" id="programTitle" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Koç Notu</label>
+                        <textarea class="form-control" id="coachNote"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Hangi günler olacak?</label><br />
+                        @for (int i = 1; i <= 7; i++)
+                        {
+                            var dayName = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetDayName((DayOfWeek)(i % 7));
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input day-checkbox" type="checkbox" value="@i" id="day_@i">
+                                <label class="form-check-label" for="day_@i">@dayName</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+@section Scripts {
+    <script>
+        // Modal açıldığında formId set et
+        $('#startProgramModal').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            const formId = button.data('form-id');
+            const userId = button.data('user-id');
+            $('#userWeeklyFormId').val(formId);
+            $('#userId').val(userId);
+        });
+
+        // Program Kaydet
+        $('#createProgramForm').on('submit', function (e) {
+            e.preventDefault();
+
+            const data = {
+                UserWeeklyFormId: $('#userWeeklyFormId').val(),
+                AppUserId: $('#userId').val(),
+                ProgramTitle: $('#programTitle').val(),
+                CoachNote: $('#coachNote').val(),
+                Days: $('.day-checkbox:checked').map(function () { return parseInt($(this).val()); }).get()
+            };
+
+            $.ajax({
+                url: '/Admin/WorkoutProgram/CreateWithDays',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (res) {
+                    window.location.href = '/Admin/WorkoutProgram/Detail/' + res.programId;
+                },
+                error: function () {
+                    Swal.fire("Hata", "Program oluşturulamadı", "error");
+                }
+            });
+        });
+    </script>
+
+}

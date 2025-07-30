@@ -9,12 +9,12 @@ namespace FraoulaPT.DTOs.UserQuestionDTOs
     public class UserQuestionListDTO
     {
         public Guid Id { get; set; }
-        public Guid UserPackageId { get; set; }
-        public Guid AskedByUserId { get; set; }
         public string QuestionText { get; set; }
-        public DateTime AskedAt { get; set; }
-        public bool IsAnswered => !string.IsNullOrEmpty(AnswerText);
         public string AnswerText { get; set; }
+        public DateTime AskedAt { get; set; }
+        public DateTime? AnsweredAt { get; set; }
+        public string AskedByUserName { get; set; }
+        public string AnsweredByCoachName { get; set; }
     }
 
 }
