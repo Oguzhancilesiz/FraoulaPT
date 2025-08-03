@@ -64,5 +64,10 @@ namespace FraoulaPT.DAL
 
             return _repositoryDictionary[entityName];
         }
+
+        public IBaseRepository<T> GetRepository<T>() where T : class, IEntity
+        {
+            return Repository<T>();
+        }
     }
 }

@@ -9,6 +9,7 @@ namespace FraoulaPT.Core.Abstracts
     public interface IUnitOfWork
     {
         IBaseRepository<T> Repository<T>() where T : class, IEntity;
+        IBaseRepository<T> GetRepository<T>() where T : class, IEntity;
         Task<int> SaveChangesAsync();
     }
 }

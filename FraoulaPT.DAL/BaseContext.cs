@@ -83,6 +83,31 @@ namespace FraoulaPT.DAL
         public DbSet<ExtraPackageOption> ExtraPackageOptions { get; set; }
         public DbSet<ExtraPackageUsage> ExtraPackageUsages { get; set; }
         public DbSet<ExtraRight> ExtraRights { get; set; }
+        
+        // E-ticaret tabloları
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<ShippingRate> ShippingRates { get; set; }
+        
+        // Video programları
+        public DbSet<VideoProgram> VideoPrograms { get; set; }
+        public DbSet<ProgramVideo> ProgramVideos { get; set; }
+        public DbSet<ProgramPurchase> ProgramPurchases { get; set; }
+        
+        // Mesajlaşma
+        public DbSet<AdminMessage> AdminMessages { get; set; }
+        
+        // Sporcu Grupları ve Gelişim Paketleri
+        public DbSet<SportsGroup> SportsGroups { get; set; }
+        public DbSet<GroupMembership> GroupMemberships { get; set; }
+        public DbSet<DevelopmentPackage> DevelopmentPackages { get; set; }
+        public DbSet<PackagePurchase> PackagePurchases { get; set; }
+        public DbSet<PackageContent> PackageContents { get; set; }
+        public DbSet<GroupAssignment> GroupAssignments { get; set; }
+        public DbSet<AssignmentSubmission> AssignmentSubmissions { get; set; }
+        public DbSet<GroupProgress> GroupProgresses { get; set; }
+        public DbSet<PackageReview> PackageReviews { get; set; }
 
 
 

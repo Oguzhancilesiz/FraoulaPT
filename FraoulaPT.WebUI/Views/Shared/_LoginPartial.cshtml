@@ -1,0 +1,40 @@
+@using Microsoft.AspNetCore.Identity
+@using FraoulaPT.Entity
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+<ul class="navbar-nav">
+@if (SignInManager.IsSignedIn(User))
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle me-1"></i>@User.Identity?.Name
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="/Profile"><i class="fas fa-user me-2"></i>Profilim</a></li>
+            <li><a class="dropdown-item" href="/Calorie/Calculator"><i class="fas fa-calculator me-2"></i>Kalori Hesaplayıcı</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link" href="/Auth/Login">
+            <i class="fas fa-sign-in-alt me-1"></i>Giriş Yap
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link btn btn-primary text-white ms-2" href="/Auth/Register">
+            <i class="fas fa-user-plus me-1"></i>Kayıt Ol
+        </a>
+    </li>
+}
+</ul> 
