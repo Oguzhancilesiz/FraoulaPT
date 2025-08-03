@@ -1,0 +1,53 @@
+﻿@using FraoulaPT.WebUI.Models.ViewModels.QuestionAnsverViewModel
+@model SupportBoxViewModel
+
+<!-- 🟠 Tab 1: Soru Sor -->
+<div class="tab-pane fade show active" id="tab-question" role="tabpanel">
+    <form id="questionForm" class="bg-dark text-light p-3 rounded shadow-sm">
+        <input type="hidden" name="UserPackageId" value="@Model.UserPackageId" />
+        <input type="hidden" name="AskedByUserId" value="@Model.CurrentUserId" />
+
+        <!-- Koç Seçimi -->
+        <div class="mb-3">
+            <label for="coach-select" class="form-label fw-semibold text-warning">
+                🎯 Koç Seç
+            </label>
+            @if (Model?.Coaches != null && Model.Coaches.Any())
+            {
+                <select class="form-select bg-dark text-light border-secondary" id="coach-select" name="AnsweredByCoachId" required>
+                    @foreach (var coach in Model.Coaches)
+                    {
+                        <option value="@coach.Id" data-image="@coach.ProfilePhotoUrl">@coach.FullName</option>
+                    }
+                </select>
+            }
+            else
+            {
+                <select class="form-select bg-dark text-light border-secondary" disabled>
+                    <option>Koç bulunamadı</option>
+                </select>
+            }
+        </div>
+
+        <!-- Soru Metni -->
+        <div class="mb-3">
+            <label for="questionText" class="form-label fw-semibold text-warning">
+                ✏️ Sorunuz
+            </label>
+            <textarea class="form-control bg-dark text-light border-secondary" name="QuestionText" rows="3" placeholder="Sorunuzu buraya yazın..." required></textarea>
+        </div>
+
+        <!-- Gönder Butonu -->
+        <div class="d-grid">
+            <button type="submit" class="btn btn-warning fw-semibold">
+                📤 Soruyu Gönder
+            </button>
+        </div>
+    </form>
+
+    <!-- Geçmiş Sorular -->
+    <hr class="border-secondary" />
+    <div id="questionHistory" class="bg-dark text-light p-3 rounded shadow-sm">
+        <div class="text-center my-2 text-muted">Sorular yükleniyor...</div>
+    </div>
+</div>

@@ -1,69 +1,101 @@
 ﻿@using FraoulaPT.WebUI.Models.ViewModels.WorkoutProgramViewModel
+@model MyWorkoutProgramVM
+
 @{
     ViewData["Title"] = "Antrenmanım";
     Layout = "~/Views/Shared/_Layout.cshtml";
     string[] gunler = { "", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar" };
 }
-@model MyWorkoutProgramVM
 
 <div class="container py-4">
-    <div class="text-center mb-4">
-        <h2 class="fw-bold text-primary">@Model.ProgramTitle</h2>
-        <p class="text-muted">@Model.CoachNote</p>
-    </div>
+    @if (Model == null || Model.Days == null || !Model.Days.Any())
+    {
+        <div class="alert alert-warning text-center shadow-sm p-4">
+            <i class="bi bi-exclamation-triangle-fill fs-1 text-warning mb-3"></i>
+            <h4 class="fw-bold text-warning">Henüz antrenman programınız oluşturulmamış</h4>
+            <p class="fw-semibold text-danger">Koçunuz size özel bir program tanımladığında burada göreceksiniz.</p>
+        </div>
+    }
+    else
+    {
+        <!-- Başlık -->
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-warning">@Model.ProgramTitle</h2>
+            @if (!string.IsNullOrWhiteSpace(Model.CoachNote))
+            {
+                <p class="text-light small bg-dark rounded px-3 py-2 d-inline-block shadow-sm">
+                    <i class="bi bi-info-circle me-1"></i> @Model.CoachNote
+                </p>
+            }
+        </div>
 
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-        @for (int i = 1; i <= 7; i++)
-        {
-            var day = Model.Days.FirstOrDefault(d => d.DayOfWeek == i);
-            var isRestDay = day == null;
-            var hasExercises = day?.Exercises != null && day.Exercises.Any();
+        <!-- Günler -->
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @for (int i = 1; i <= 7; i++)
+            {
+                var day = Model.Days.FirstOrDefault(d => d.DayOfWeek == i);
+                var isRestDay = day == null;
+                var hasExercises = day?.Exercises != null && day.Exercises.Any();
 
-            <div class="col">
-                <div class="card h-100 border @(isRestDay ? "border-secondary" : "border-primary") bg-@(isRestDay ? "white" : "light")">
-                    <div class="card-header bg-white text-center">
-                        <h5 class="card-title mb-0">@gunler[i]</h5>
-                        @if (!isRestDay && !string.IsNullOrWhiteSpace(day.Description))
-                        {
-                            <p class="card-subtitle text-muted small">@day.Description</p>
-                        }
-                    </div>
-                    <div class="card-body d-flex flex-column">
-                        @if (isRestDay)
-                        {
-                            <div class="text-center text-muted my-auto">
-                                <i class="bi bi-moon fs-1 mb-2"></i>
-                                <p class="fw-semibold mb-1">Off Day</p>
-                                <small>Bu gün için program tanımlanmamış.</small>
-                            </div>
-                        }
-                        else if (!hasExercises)
-                        {
-                            <div class="text-center text-warning fw-semibold mb-3">
-                                Henüz hareket eklenmemiş.
-                            </div>
-                            <a asp-action="StartDay" asp-route-id="@day.Id" class="btn btn-outline-primary mt-auto w-100">Antrenmana Başla</a>
-                        }
-                        else
-                        {
-                            <ul class="list-group list-group-flush mb-3">
-                                @foreach (var ex in day.Exercises.Take(3))
-                                {
-                                    <li class="list-group-item small">
-                                        <strong>@ex.ExerciseName</strong><br />
-                                        <span class="text-muted">@ex.SetCount x @ex.Repetition tekrar</span>
-                                    </li>
-                                }
-                            </ul>
-                            @if (day.Exercises.Count > 3)
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 rounded-3 bg-dark text-light">
+                        <!-- Gün Başlık -->
+                        <div class="card-header border-0 bg-dark text-center pb-1">
+                            <h5 class="card-title fw-bold text-warning mb-1">@gunler[i]</h5>
+                            @if (!isRestDay && !string.IsNullOrWhiteSpace(day.Description))
                             {
-                                <small class="text-muted mb-2">+ @(day.Exercises.Count - 3) hareket daha...</small>
+                                <p class="text-muted small">@day.Description</p>
                             }
-                            <a asp-action="StartDay" asp-route-id="@day.Id" class="btn btn-primary mt-auto w-100">Antrenmana Başla</a>
-                        }
+                        </div>
+
+                        <!-- İçerik -->
+                        <div class="card-body d-flex flex-column">
+                            @if (isRestDay)
+                            {
+                                <!-- Dinlenme Günü -->
+                                <div class="text-center text-muted my-auto">
+                                    <i class="bi bi-moon-stars fs-1 text-secondary mb-2"></i>
+                                    <p class="fw-semibold mb-1 text-light">Dinlenme Günü</p>
+                                    <small>Bu gün için antrenman tanımlı değil.</small>
+                                </div>
+                            }
+                            else if (!hasExercises)
+                            {
+                                <!-- Henüz hareket eklenmemiş -->
+                                <div class="text-center my-auto">
+                                    <i class="bi bi-exclamation-triangle fs-1 text-warning mb-2"></i>
+                                    <p class="fw-semibold text-warning">Henüz hareket eklenmemiş</p>
+                                </div>
+                                <a asp-action="StartDay" asp-route-id="@day.Id" class="btn btn-outline-warning fw-semibold mt-auto w-100">
+                                    <i class="bi bi-play-fill"></i> Antrenmana Başla
+                                </a>
+                            }
+                            else
+                            {
+                                <!-- Egzersiz Listesi -->
+                                <ul class="list-group list-group-flush mb-3">
+                                    @foreach (var ex in day.Exercises.Take(3))
+                                    {
+                                        <li class="list-group-item bg-dark text-light border-secondary small">
+                                            <strong class="text-warning">@ex.ExerciseName</strong><br />
+                                            <span class="text-muted">@ex.SetCount x @ex.Repetition tekrar</span>
+                                        </li>
+                                    }
+                                </ul>
+                                @if (day.Exercises.Count > 3)
+                                {
+                                    <small class="text-muted mb-2">
+                                        + @(day.Exercises.Count - 3) hareket daha...
+                                    </small>
+                                }
+                                <a asp-action="StartDay" asp-route-id="@day.Id" class="btn btn-warning fw-semibold mt-auto w-100 text-dark">
+                                    <i class="bi bi-play-fill"></i> Antrenmana Başla
+                                </a>
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 </div>

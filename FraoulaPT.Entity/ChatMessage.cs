@@ -8,8 +8,8 @@ namespace FraoulaPT.Entity
 {
     public class ChatMessage : BaseEntity
     {
-        public Guid UserPackageId { get; set; }
-        public UserPackage UserPackage { get; set; }
+        public Guid? UserPackageId { get; set; }
+        public UserPackage? UserPackage { get; set; }
 
         public Guid SenderId { get; set; }
         public AppUser Sender { get; set; }

@@ -2,12 +2,37 @@
     ViewBag.Title = "Erişim Reddedildi";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<style>
+    /* Mobil uyum için */
+    media (max-width: 576px) {
+        .access-denied-section
 
-<div class="container text-center py-5">
-    <i class="bi bi-shield-lock-fill text-danger display-1 mb-3"></i>
-    <h2 class="text-danger mb-3">🚫 Bu sayfaya erişim izniniz yok</h2>
-    <p class="lead">Bu sayfa sadece belirli yetkilere sahip kullanıcılar içindir.</p>
-    <a href="/" class="btn btn-outline-dark mt-4">
-        <i class="bi bi-arrow-left-circle"></i> Ana Sayfa'ya Dön
-    </a>
+    {
+        padding: 2rem 1rem !important;
+    }
+
+    .access-denied-section i {
+        font-size: 3rem !important;
+    }
+
+    }
+
+    /* Hover efekti */
+    .btn-warning:hover {
+        background-color: #e6801a !important;
+        border-color: #e6801a !important;
+        color: #fff !important;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="access-denied-section text-center p-5 rounded shadow-lg mx-auto" style="max-width: 600px; background: rgba(20, 20, 20, 0.95); border: 1px solid #cc6a00;">
+        <i class="bi bi-shield-lock-fill mb-4" style="font-size: 4rem; color: #cc6a00;"></i>
+        <h2 class="fw-bold text-white mb-3">🚫 Bu sayfaya erişim izniniz yok</h2>
+        <p class="lead text-light opacity-75 mb-4">Bu sayfa sadece belirli yetkilere sahip kullanıcılar içindir.</p>
+        <a href="/" class="btn btn-warning px-4 py-2 fw-semibold" style="background-color: #cc6a00; border-color: #cc6a00;">
+            <i class="bi bi-arrow-left-circle me-1"></i> Ana Sayfa'ya Dön
+        </a>
+    </div>
 </div>
+

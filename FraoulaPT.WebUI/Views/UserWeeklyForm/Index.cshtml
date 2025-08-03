@@ -1,11 +1,8 @@
-﻿@{
+﻿@model List<FraoulaPT.DTOs.UserWeeklyFormDTOs.UserWeeklyFormListDTO>
+@{
     ViewData["Title"] = "Formlarım";
     Layout = "~/Views/Shared/_Layout.cshtml";
-}
-@model List<FraoulaPT.DTOs.UserWeeklyFormDTOs.UserWeeklyFormListDTO>
 
-<h2 class="mb-4">📈 Aylık Ölçümlerim</h2>
-@{
     int daysUntilNextForm = 0;
     bool canSubmitNewForm = true;
 
@@ -13,138 +10,146 @@
     {
         var latestFormDate = Model.Max(x => x.FormDate.Date);
         var daysPassed = (DateTime.Now.Date - latestFormDate).Days;
-
         daysUntilNextForm = 27 - daysPassed;
         canSubmitNewForm = daysPassed >= 27;
     }
 }
-@if (canSubmitNewForm)
-{
-    <a asp-action="Create" class="btn btn-success mb-4">
-        <i class="bi bi-plus-circle"></i> Yeni Form Ekle
-    </a>
-}
-else
-{
-    <button class="btn btn-outline-secondary mb-4" disabled>
-        <i class="bi bi-clock-history"></i> Yeni ölçüm gönderebilmek için @daysUntilNextForm gün kaldı
-    </button>
-}
 
-@if (Model == null || !Model.Any())
-{
-    <div class="alert alert-info">Henüz Ölçüm gönderilmedi.</div>
-}
-else
-{
-    var lastForm = Model.OrderByDescending(x => x.FormDate).FirstOrDefault();
-    var otherForms = Model.OrderByDescending(x => x.FormDate).Skip(1).ToList();
+<div class="container py-4">
+    <h2 class="mb-4 text-warning fw-bold">📈 Aylık Ölçümlerim</h2>
 
-    <!-- SON FORM -->
-    <div class="card shadow-lg mb-5 border-primary">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <strong><i class="bi bi-star-fill me-1"></i> Son Ölçüm - @lastForm.FormDate.ToString("dd.MM.yyyy")</strong>
-            <span class="badge bg-light text-dark">@((DateTime.Now - lastForm.FormDate).Days) gün önce</span>
-        </div>
-        <div class="card-body row g-4 align-items-center">
-            <div class="col-md-4 text-center">
-                @if (lastForm.ProgressPhotoUrls != null && lastForm.ProgressPhotoUrls.Any())
-                {
-                    <img src="@lastForm.ProgressPhotoUrls.First()" class="img-thumbnail shadow-sm rounded"
-                         style="height:180px;width:100%;object-fit:cover;" />
-                }
-                else
-                {
-                    <div class="text-muted">Görsel yüklenmemiş</div>
-                }
+    @if (canSubmitNewForm)
+    {
+        <a asp-action="Create" class="btn btn-warning text-dark fw-semibold mb-4">
+            <i class="bi bi-plus-circle"></i> Yeni Form Ekle
+        </a>
+    }
+    else
+    {
+        <button class="btn btn-outline-light border-secondary text-secondary mb-4" disabled>
+            <i class="bi bi-clock-history"></i> Yeni ölçüm gönderebilmek için <strong>@daysUntilNextForm gün</strong> kaldı
+        </button>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info bg-dark border-0 text-light">Henüz ölçüm gönderilmedi.</div>
+    }
+    else
+    {
+        var lastForm = Model.OrderByDescending(x => x.FormDate).FirstOrDefault();
+        var otherForms = Model.OrderByDescending(x => x.FormDate).Skip(1).ToList();
+
+        <!-- ✅ Son Form -->
+        <div class="card shadow-lg mb-5 border-0 bg-dark text-light rounded-3">
+            <div class="card-header bg-warning text-dark fw-bold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-star-fill me-1"></i> Son Ölçüm - @lastForm.FormDate.ToString("dd.MM.yyyy")</span>
+                <span class="badge bg-dark text-warning">@((DateTime.Now - lastForm.FormDate).Days) gün önce</span>
             </div>
-            <div class="col-md-8">
-                <div class="row row-cols-2 gy-2">
-                    <div><strong>Kilo:</strong> @lastForm.Weight kg</div>
-                    <div><strong>Yağ Oranı:</strong> @lastForm.FatPercent %</div>
-                    <div><strong>Kas Kütlesi:</strong> @lastForm.MuscleMass kg</div>
-                    <div>
-                        <strong>Durum:</strong>
-                        @if (lastForm.Status == FraoulaPT.Core.Enums.Status.Pending)
-                        {
-                            <span class="badge bg-warning text-dark">Bekliyor</span>
-                        }
-                        else if (lastForm.Status == FraoulaPT.Core.Enums.Status.Active)
-                        {
-                            <span class="badge bg-success">Aktif</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">@lastForm.Status</span>
-                        }
-                    </div>
-                    <div class="col-12 mt-2">
-                        <strong>Koç Notu:</strong>
-                        <div class="border p-2 rounded text-muted bg-light">@(!string.IsNullOrWhiteSpace(lastForm.CoachFeedback) ? lastForm.CoachFeedback : "Henüz yazılmamış.")</div>
-                    </div>
+            <div class="card-body row g-4 align-items-center">
+                <div class="col-md-4 text-center">
+                    @if (lastForm.ProgressPhotoUrls?.Any() == true)
+                    {
+                        <img src="@lastForm.ProgressPhotoUrls.First()" class="img-fluid rounded shadow-sm border border-secondary"
+                             style="height:200px;width:100%;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div class="text-muted">📷 Görsel yüklenmemiş</div>
+                    }
                 </div>
-                <div class="mt-3 text-end">
-                    <a asp-action="Detail" asp-route-id="@lastForm.Id" class="btn btn-outline-light bg-dark">
-                        <i class="bi bi-search"></i> Detaya Git
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- DİĞER FORMLAR -->
-    <h4 class="mb-3 text-muted">📁 Önceki Ölçümlerim</h4>
-    <div class="row row-cols-1 row-cols-md-2 g-4">
-        @foreach (var form in otherForms)
-        {
-            <div class="col">
-                <div class="card h-100 border shadow-sm">
-                    <div class="card-header bg-light d-flex justify-content-between">
-                        <span><i class="bi bi-calendar-event me-1"></i> @form.FormDate.ToString("dd.MM.yyyy")</span>
-                        <span class="badge bg-secondary">@((DateTime.Now - form.FormDate).Days) gün önce</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex gap-3">
-                            @if (form.ProgressPhotoUrls != null && form.ProgressPhotoUrls.Any())
+                <div class="col-md-8">
+                    <div class="row row-cols-2 gy-2">
+                        <div>⚖️ <strong>Kilo:</strong> @lastForm.Weight kg</div>
+                        <div>🔥 <strong>Yağ Oranı:</strong> @lastForm.FatPercent %</div>
+                        <div>💪 <strong>Kas Kütlesi:</strong> @lastForm.MuscleMass kg</div>
+                        <div>
+                            <strong>Durum:</strong>
+                            @if (lastForm.Status == FraoulaPT.Core.Enums.Status.Pending)
                             {
-                                <div class="d-flex flex-wrap gap-2">
-                                    @foreach (var photo in form.ProgressPhotoUrls.Take(2))
-                                    {
-                                        <img src="@photo" width="60" height="60" class="rounded shadow-sm" style="object-fit:cover;" />
-                                    }
-                                    @if (form.ProgressPhotoUrls.Count > 2)
-                                    {
-                                        <span class="badge bg-dark align-self-center">+@((form.ProgressPhotoUrls.Count - 2))</span>
-                                    }
-                                </div>
+                                <span class="badge bg-warning text-dark">Bekliyor</span>
+                            }
+                            else if (lastForm.Status == FraoulaPT.Core.Enums.Status.Active)
+                            {
+                                <span class="badge bg-success">Aktif</span>
                             }
                             else
                             {
-                                <div class="text-muted small align-self-center">Görsel yok</div>
+                                <span class="badge bg-secondary">@lastForm.Status</span>
                             }
                         </div>
-
-                        <div class="mt-3">
-                            <strong>Ölçümler:</strong>
-                            <ul class="list-unstyled small">
-                                <li>📏 Kilo: <strong>@form.Weight</strong> kg</li>
-                                <li>🔥 Yağ: <strong>@form.FatPercent</strong> %</li>
-                                <li>💪 Kas: <strong>@form.MuscleMass</strong> kg</li>
-                            </ul>
-                        </div>
-
-                        <div class="small text-muted">
+                        <div class="col-12 mt-2">
                             <strong>Koç Notu:</strong>
-                            <div class="border rounded bg-light p-2">@(!string.IsNullOrWhiteSpace(form.CoachFeedback) ? form.CoachFeedback : "-")</div>
+                            <div class="border border-secondary rounded p-2 bg-secondary bg-opacity-25 text-light small">
+                                @(!string.IsNullOrWhiteSpace(lastForm.CoachFeedback) ? lastForm.CoachFeedback : "Henüz yazılmamış.")
+                            </div>
                         </div>
                     </div>
-                    <div class="card-footer bg-white text-end">
-                        <a asp-action="Detail" asp-route-id="@form.Id" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-eye"></i> Detay
+                    <div class="mt-3 text-end">
+                        <a asp-action="Detail" asp-route-id="@lastForm.Id" class="btn btn-outline-warning fw-semibold">
+                            <i class="bi bi-search"></i> Detaya Git
                         </a>
                     </div>
                 </div>
             </div>
-        }
-    </div>
-}
+        </div>
+
+        <!-- 📂 Önceki Formlar -->
+        <h4 class="mb-3 text-light">📁 Önceki Ölçümlerim</h4>
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var form in otherForms)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm bg-dark text-light rounded-3">
+                        <div class="card-header bg-secondary text-light d-flex justify-content-between">
+                            <span><i class="bi bi-calendar-event me-1"></i> @form.FormDate.ToString("dd.MM.yyyy")</span>
+                            <span class="badge bg-dark text-warning">@((DateTime.Now - form.FormDate).Days) gün önce</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex gap-3">
+                                @if (form.ProgressPhotoUrls?.Any() == true)
+                                {
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach (var photo in form.ProgressPhotoUrls.Take(2))
+                                        {
+                                            <img src="@photo" width="60" height="60" class="rounded shadow-sm border border-secondary" style="object-fit:cover;" />
+                                        }
+                                        @if (form.ProgressPhotoUrls.Count > 2)
+                                        {
+                                            <span class="badge bg-dark text-warning align-self-center">+@((form.ProgressPhotoUrls.Count - 2))</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="text-muted small align-self-center">📷 Görsel yok</div>
+                                }
+                            </div>
+
+                            <div class="mt-3">
+                                <strong>Ölçümler:</strong>
+                                <ul class="list-unstyled small">
+                                    <li>⚖️ Kilo: <strong>@form.Weight</strong> kg</li>
+                                    <li>🔥 Yağ: <strong>@form.FatPercent</strong> %</li>
+                                    <li>💪 Kas: <strong>@form.MuscleMass</strong> kg</li>
+                                </ul>
+                            </div>
+
+                            <div class="small">
+                                <strong>Koç Notu:</strong>
+                                <div class="border rounded p-2 bg-secondary bg-opacity-25">
+                                    @(!string.IsNullOrWhiteSpace(form.CoachFeedback) ? form.CoachFeedback : "-")
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-dark text-end border-0">
+                            <a asp-action="Detail" asp-route-id="@form.Id" class="btn btn-sm btn-outline-warning">
+                                <i class="bi bi-eye"></i> Detay
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

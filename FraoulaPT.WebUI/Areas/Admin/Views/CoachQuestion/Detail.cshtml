@@ -1,0 +1,80 @@
+﻿@model FraoulaPT.DTOs.UserQuestionDTOs.UserQuestionAnswerDTO
+
+@{
+    ViewData["Title"] = "Soru Detayı";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container py-4">
+    <h3>📌 Soru Detayı</h3>
+
+    <div class="card shadow-sm border-primary mb-4">
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+                <img src="@Model.AskedByUserPhoto" class="rounded-circle me-2" width="50" height="50" />
+                <div>
+                    <strong>@Model.AskedByUserName</strong>
+                    <div class="text-muted small">🗓 @Model.AskedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                </div>
+            </div>
+            <p class="fw-bold">❓ @Model.QuestionText</p>
+        </div>
+    </div>
+
+    <!-- Cevap Formu -->
+    <div class="card shadow-sm border-success">
+        <div class="card-header bg-success text-white">
+            ✏️ Cevap Ver
+        </div>
+        <div class="card-body">
+            <textarea id="AnswerText" class="form-control mb-3" rows="4" placeholder="Cevabınızı buraya yazın...">@Model.AnswerText</textarea>
+            <button id="btnAnswer" class="btn btn-success">
+                💬 Cevapla
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#btnAnswer").click(function () {
+                var answerText = $("#AnswerText").val().trim();
+                if (!answerText) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Boş cevap gönderemezsiniz",
+                        confirmButtonText: "Tamam"
+                    });
+                    return;
+                }
+
+                $.ajax({
+                    url: '/Admin/CoachQuestion/Answer', // 📌 Yeni endpoint
+                    type: 'POST',
+                    data: {
+                        QuestionId: '@Model.QuestionId',
+                        AnswerText: answerText
+                    },
+                    success: function (res) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Cevap kaydedildi!",
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = '/Admin/CoachQuestion/Index';
+                        });
+                    },
+                    error: function (xhr) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Hata!",
+                            text: xhr.responseText || "Cevap kaydedilemedi."
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}

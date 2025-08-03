@@ -11,8 +11,8 @@ namespace FraoulaPT.Entity
         public Guid AppUserId { get; set; }
         public AppUser AppUser { get; set; }
 
-        public Guid PackageId { get; set; }
-        public Package Package { get; set; }
+        public Guid? PackageId { get; set; }
+        public Package? Package { get; set; }
 
 
 

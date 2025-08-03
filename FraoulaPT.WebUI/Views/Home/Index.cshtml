@@ -1,8 +1,93 @@
-﻿
-@{
-    ViewData["Title"] = "Index";
+﻿@{
+    ViewData["Title"] = "FraoulaPT - Ana Sayfa";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Aferin sana Home index yaptın</h1>
+<!-- Hero Section -->
+<section class="text-center py-5 mb-4"
+         style="background: linear-gradient(135deg, #000 0%, #1a1a1a 50%, #c05a00 100%);
+                color: #fff; border-radius: 12px;">
+    <div class="container">
+        <h1 class="display-4 fw-bold">🏋️‍♂️ FraoulaPT</h1>
+        <p class="lead opacity-75">Online sporcu takip ve danışmanlık platformu</p>
+        <a href="/Package/Index" class="btn btn-warning btn-lg mt-3 fw-semibold shadow">
+            📦 Paketlerimizi Keşfet
+        </a>
+    </div>
+</section>
 
+<!-- Hakkımızda -->
+<section class="py-5 rounded-4 mb-4"
+         style="background-color: rgba(20,20,20,0.95); color: #f1f1f1;">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4 text-warning">Biz Kimiz?</h2>
+        <p class="opacity-85">
+            FraoulaPT, sporculara özel olarak hazırlanmış antrenman ve beslenme programları sunan modern bir online platformdur.
+            Profesyonel koçlarımızla hedefinize ulaşmanız artık çok daha kolay!
+        </p>
+    </div>
+</section>
+
+<!-- Özellikler -->
+<section class="py-5" style="background-color: rgba(15,15,15,0.92); border-radius: 12px;">
+    <div class="container">
+        <div class="row text-center g-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100"
+                     style="background-color: rgba(30,30,30,0.95); color: #f1f1f1;">
+                    <div class="card-body">
+                        <h3 class="text-warning">💪 Kişiye Özel Programlar</h3>
+                        <p class="small">Sana özel antrenman ve beslenme planları ile hedeflerine ulaş.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100"
+                     style="background-color: rgba(30,30,30,0.95); color: #f1f1f1;">
+                    <div class="card-body">
+                        <h3 class="text-warning">📊 İlerleme Takibi</h3>
+                        <p class="small">Gelişimini takip et, motivasyonunu yüksek tut!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100"
+                     style="background-color: rgba(30,30,30,0.95); color: #f1f1f1;">
+                    <div class="card-body">
+                        <h3 class="text-warning">👨‍🏫 Canlı Destek</h3>
+                        <p class="small">Koçlarımızla anlık olarak iletişime geç, sorularını sor.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Referanslar -->
+<section class="py-5 rounded-4 my-4"
+         style="background-color: rgba(20,20,20,0.95); color: #f1f1f1;">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4 text-warning">Bize Güvenen Markalar</h2>
+        <div class="d-flex flex-wrap justify-content-center gap-4">
+            <img src="/uploads/52560b68-c31c-4e1d-8bbf-46a01d1c4ad7.jpg"
+                 alt="Marka 1" class="brand-logo shadow" style="max-height:100px; border-radius: 8px;">
+            <img src="/uploads/52560b68-c31c-4e1d-8bbf-46a01d1c4ad7.jpg"
+                 alt="Marka 2" class="brand-logo shadow" style="max-height:100px; border-radius: 8px;">
+            <img src="/uploads/52560b68-c31c-4e1d-8bbf-46a01d1c4ad7.jpg"
+                 alt="Marka 3" class="brand-logo shadow" style="max-height:100px; border-radius: 8px;">
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="text-center py-5 mt-4"
+         style="background: linear-gradient(135deg, #000 0%, #1a1a1a 50%, #c05a00 100%);
+                border-radius: 12px; color: #fff;">
+    <div class="container">
+        <h2 class="fw-bold">Hemen Başla!</h2>
+        <p class="mb-4">Hedeflerine ulaşmak için ilk adımı at. Ücretsiz hesap oluştur ve koçlarımızla çalışmaya başla.</p>
+        <a href="/Auth/Register" class="btn btn-warning btn-lg fw-semibold shadow">
+            🚀 Ücretsiz Kayıt Ol
+        </a>
+    </div>
+</section>

@@ -10,72 +10,96 @@
 }
 
 <div class="container py-4">
-    <h2 class="text-primary fw-bold mb-3">@((DayOfWeek)Model.DayOfWeek) Antrenmanı</h2>
-    <p class="text-muted mb-4">@Model.Description</p>
+    <!-- Başlık -->
+    <h2 class="fw-bold text-warning mb-3">
+        🏋️‍♂️ @((DayOfWeek)Model.DayOfWeek) Antrenmanı
+    </h2>
+    @if (!string.IsNullOrWhiteSpace(Model.Description))
+    {
+        <p class="text-light bg-dark rounded px-3 py-2 shadow-sm d-inline-block">
+            <i class="bi bi-info-circle me-1"></i> @Model.Description
+        </p>
+    }
 
     @if (!Model.Exercises.Any())
     {
-        <div class="alert alert-warning text-center">Bu güne ait egzersiz bulunmamaktadır.</div>
+        <div class="alert alert-warning text-center mt-4 shadow-sm">
+            <i class="bi bi-exclamation-triangle"></i> Bu güne ait egzersiz bulunmamaktadır.
+        </div>
     }
 
+    <!-- Egzersiz Grupları -->
     @foreach (var categoryGroup in groupedByCategory)
     {
-        <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-header bg-light border-bottom">
-                <h6 class="fw-bold text-dark mb-0">@categoryGroup.Key?.Name"</h6>
+        <div class="card mb-4 shadow-lg border-0 bg-dark text-light rounded-3">
+            <div class="card-header border-0 bg-dark text-warning fw-bold fs-5">
+                <i class="bi bi-list-ul me-1"></i> @categoryGroup.Key?.Name
             </div>
-            <div class="card-body p-3">
+            <div class="card-body">
                 @foreach (var ex in categoryGroup)
                 {
                     var exercise = ex.Exercise;
-                    <div class="row mb-3 align-items-center gy-2">
-                        <div class="col-3 col-md-2">
+                    <div class="row mb-3 align-items-center gy-2 p-2 rounded bg-secondary bg-opacity-25">
+                        <!-- Görsel -->
+                        <div class="col-3 col-md-2 text-center">
                             @if (!string.IsNullOrEmpty(exercise.ImageUrl))
                             {
-                                <img src="@exercise.ImageUrl" class="img-fluid rounded" style="max-height: 80px; object-fit: cover;" alt="@exercise.Name" />
+                                <img src="@exercise.ImageUrl"
+                                     class="img-fluid rounded shadow-sm border border-warning"
+                                     style="max-height: 80px; object-fit: cover;"
+                                     alt="@exercise.Name" />
+                            }
+                            else
+                            {
+                                <div class="bg-dark text-muted small rounded p-2">📷 Yok</div>
                             }
                         </div>
+
+                        <!-- Egzersiz Bilgi -->
                         <div class="col-9 col-md-10">
-                            <div class="d-flex justify-content-between">
-                                <strong class="text-primary">@exercise.Name</strong>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <strong class="text-warning">@exercise.Name</strong>
                                 @if (!string.IsNullOrEmpty(exercise.VideoUrl))
                                 {
-                                    <a class="btn btn-sm btn-outline-secondary" target="_blank"
+                                    <a class="btn btn-sm btn-outline-light border-warning"
+                                       target="_blank"
                                        href="@exercise.VideoUrl">
                                         🎥 İzle
                                     </a>
                                 }
                             </div>
-                            <div class="text-muted small">
-                                <span>@ex.SetCount set x @ex.Repetition tekrar</span>
+                            <div class="small text-light opacity-75">
+                                @ex.SetCount set x @ex.Repetition tekrar
                                 @if (ex.Weight.HasValue)
                                 {
                                     <span> | @ex.Weight kg</span>
                                 }
                                 @if (!string.IsNullOrWhiteSpace(ex.Note))
                                 {
-                                    <div class="text-secondary mt-1">📝 <em>@ex.Note</em></div>
+                                    <div class="mt-1">📝 <em>@ex.Note</em></div>
                                 }
                             </div>
                         </div>
-                        <form class="feedback-form mt-2" data-exercise-id="@ex.Id">
+
+                        <!-- Geri Bildirim Formu -->
+                        <form class="feedback-form mt-3" data-exercise-id="@ex.Id">
                             <div class="row g-2 align-items-end">
                                 <div class="col-12 col-md-6">
-                                    <label class="form-label small">📝 Geri Bildirim</label>
-                                    <textarea name="FeedbackText" class="form-control form-control-sm" rows="2" placeholder="Bu set zor geldi, tekrar azalttım..."></textarea>
+                                    <label class="form-label small text-light">📝 Geri Bildirim</label>
+                                    <textarea name="FeedbackText" class="form-control form-control-sm bg-dark text-light border-warning" rows="2" placeholder="Bu set zor geldi, tekrar azalttım..."></textarea>
                                 </div>
                                 <div class="col-4 col-md-2">
-                                    <label class="form-label small">✅ Tekrar</label>
-                                    <input name="ActualReps" type="number" class="form-control form-control-sm" placeholder="gerçekleşen tekrar"/>
+                                    <label class="form-label small text-light">✅ Tekrar</label>
+                                    <input name="ActualReps" type="number" class="form-control form-control-sm bg-dark text-light border-warning" placeholder="gerçek" />
                                 </div>
                                 <div class="col-4 col-md-2">
-                                    <label class="form-label small">🏋️‍♂️ Kilo</label>
-                                    <input name="ActualWeight" type="number" step="0.1" class="form-control form-control-sm" placeholder="gerçekleşen kilo" />
+                                    <label class="form-label small text-light">🏋️‍♂️ Kilo</label>
+                                    <input name="ActualWeight" type="number" step="0.1" class="form-control form-control-sm bg-dark text-light border-warning" placeholder="kg" />
                                 </div>
                                 <div class="col-4 col-md-2">
-                                    <label class="form-label small">📊 RPE</label>
-                                    <select name="RPE" class="form-select form-select-sm">
-                                        <option value="0">Sana göre Harcadığın Efor</option>
+                                    <label class="form-label small text-light">📊 RPE</label>
+                                    <select name="RPE" class="form-select form-select-sm bg-dark text-light border-warning">
+                                        <option value="">Seç</option>
                                         @for (int i = 1; i <= 10; i++)
                                         {
                                             <option value="@i">@i</option>
@@ -83,15 +107,15 @@
                                     </select>
                                 </div>
                                 <div class="col-12 mt-2">
-                                    <button type="submit" class="btn btn-sm btn-outline-success">✔️ Gönder</button>
+                                    <button type="submit" class="btn btn-sm btn-warning fw-semibold text-dark">
+                                        ✔️ Kaydet
+                                    </button>
                                     <span class="text-success small ms-2 feedback-success" style="display:none;">Kaydedildi ✅</span>
+                                    <span class="text-danger small ms-2 feedback-error" style="display:none;">Hata oluştu ❌</span>
                                 </div>
                             </div>
                         </form>
-
                     </div>
-
-                    <hr class="my-2" />
                 }
             </div>
         </div>
@@ -112,7 +136,6 @@
                 const successMsg = form.querySelector('.feedback-success');
                 const errorMsg = form.querySelector('.feedback-error');
 
-                // butonu devre dışı bırak
                 submitButton.disabled = true;
                 submitButton.innerText = "Gönderiliyor...";
 
@@ -123,24 +146,17 @@
                     });
 
                     if (response.ok) {
-                        // Başarı mesajı göster
                         successMsg.style.display = 'inline';
                         errorMsg.style.display = 'none';
-
-                        setTimeout(() => {
-                            successMsg.style.display = 'none';
-                        }, 4000);
+                        setTimeout(() => successMsg.style.display = 'none', 3000);
                     } else {
-                        const data = await response.json();
-                        errorMsg.textContent = data?.error || "Beklenmeyen bir hata oluştu.";
                         errorMsg.style.display = 'inline';
                     }
-                } catch (err) {
-                    errorMsg.textContent = "Sunucuya bağlanırken hata oluştu.";
+                } catch {
                     errorMsg.style.display = 'inline';
                 } finally {
                     submitButton.disabled = false;
-                    submitButton.innerText = "✔️ Gönder";
+                    submitButton.innerText = "✔️ Kaydet";
                 }
             });
         });

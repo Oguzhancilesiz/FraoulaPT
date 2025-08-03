@@ -1,4 +1,5 @@
 ﻿using FraoulaPT.DTOs.AppUserDTOs;
+using FraoulaPT.DTOs.DashboardDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +16,13 @@ namespace FraoulaPT.Services.Abstracts
     {
         Task<List<string>> GetUserRolesAsync(Guid userId);
         Task UpdateUserRolesAsync(Guid userId, List<string> newRoles);
+        Task<List<CoachListDTO>> GetAllCoachesAsync();
+
+        //dashboard için
+        Task<int> GetActiveStudentCountAsync();
+        Task<List<UserActivityDTO>> GetRecentActivitiesAsync(int limit);
+        Task<List<TopUserDTO>> GetTopCoachesAsync(int limit);
+        Task<List<TopUserDTO>> GetTopStudentsAsync(int limit);
+
     }
 }

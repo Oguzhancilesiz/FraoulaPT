@@ -1,0 +1,60 @@
+﻿@model FraoulaPT.DTOs.UserQuestionDTOs.UserQuestionDTO
+
+@{
+    ViewData["Title"] = "Soru Detayı";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-4">
+    <div class="card shadow-lg border-0 bg-dark text-light rounded-3">
+        <div class="card-header bg-warning text-dark fw-bold">
+            <i class="bi bi-chat-left-text-fill me-2"></i> Soru Detayı
+        </div>
+        <div class="card-body">
+
+            <!-- Soru -->
+            <p class="fw-semibold mb-1 text-warning">
+                <i class="bi bi-question-circle-fill me-1"></i> Sorduğunuz Soru:
+            </p>
+            <div class="p-3 rounded bg-secondary bg-opacity-25 border border-warning mb-3">
+                @Model.QuestionText
+            </div>
+
+            <!-- Cevap -->
+            @if (!string.IsNullOrWhiteSpace(Model.AnswerText))
+            {
+                <p class="fw-semibold mb-1 text-success">
+                    <i class="bi bi-check-circle-fill me-1"></i> Koçun Yanıtı:
+                </p>
+                <div class="p-3 rounded bg-success bg-opacity-25 border border-success mb-2">
+                    @Model.AnswerText
+                </div>
+                <small class="text-muted">
+                    <i class="bi bi-person-badge me-1"></i> Yanıtlayan:
+                    <b>@Model.CoachName</b> |
+                    <i class="bi bi-clock-history me-1"></i> @Model.AnsweredAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                </small>
+            }
+            else
+            {
+                <div class="alert alert-warning border-0 mt-3">
+                    <i class="bi bi-hourglass-split me-1"></i> Bu soru henüz yanıtlanmamış.
+                </div>
+            }
+
+            <hr class="border-secondary" />
+
+            <!-- Gönderim Tarihi -->
+            <p class="small mb-0 text-muted">
+                <i class="bi bi-calendar-event me-1"></i>
+                <strong>Gönderim Tarihi:</strong> @Model.AskedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+            </p>
+        </div>
+
+        <div class="card-footer bg-dark border-0 text-end">
+            <a asp-action="AllMyQuestions" asp-controller="Support" class="btn btn-outline-warning">
+                <i class="bi bi-arrow-left-circle me-1"></i> Tüm Sorulara Dön
+            </a>
+        </div>
+    </div>
+</div>

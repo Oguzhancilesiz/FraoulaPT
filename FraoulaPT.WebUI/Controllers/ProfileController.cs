@@ -89,7 +89,7 @@ namespace FraoulaPT.WebUI.Controllers
                     DietType = DietType.Custom
                 };
                 await _userProfileService.AddAsync(defaultDto);
-                ShowMessage("Profil daha sonra tamamlanmak üzere kaydedildi.", MessageType.Warning);
+                ShowAlert("Bilgilendirme", "Profil daha sonra düzenlenmek icin oluşturuldu... Lütfen bilgileri doldurmayı unutmmayın",AlertType.warning);
                 return RedirectToAction("Index", "Home");
             }
 
@@ -117,12 +117,12 @@ namespace FraoulaPT.WebUI.Controllers
 
             if (newProfileId != Guid.Empty)
             {
-                ShowMessage("Profil başarıyla oluşturuldu.", MessageType.Success);
+                ShowAlert("Başarılı", "Profil Başarıyla oluşturuldu", AlertType.success);
                 return RedirectToAction("Index", "Home");
             }
             else
             {
-                ShowMessage("Profil oluşturulurken bir hata oluştu.", MessageType.Error);
+                ShowAlert("Hata", "Profil oluşturulurken bir hata oluştu", AlertType.error);
                 return View(dto);
             }
         }
@@ -182,11 +182,11 @@ namespace FraoulaPT.WebUI.Controllers
 
             if (result)
             {
-                ShowMessage("Profil başarıyla güncellendi.", MessageType.Success);
+                ShowAlert("Başarılı","Profil başarıyla güncellendi.", AlertType.success);
                 return RedirectToAction("Edit");
             }
 
-            ShowMessage("Güncelleme sırasında hata oluştu.", MessageType.Error);
+            ShowAlert("Hata", "Güncelleme sırasında hata oluştu.", AlertType.error);
             return View(dto);
         }
 
@@ -202,7 +202,7 @@ namespace FraoulaPT.WebUI.Controllers
 
             if (profile == null)
             {
-                ShowMessage("Profil bilgisi bulunamadı. Lütfen profilinizi tamamlayın.", MessageType.Warning);
+                ShowAlert("Uyarı", "Profil bilgisi bulunamadı. Lütfen profilinizi tamamlayın.", AlertType.warning);
                 return RedirectToAction("CompleteProfile");
             }
 

@@ -10,6 +10,7 @@ namespace FraoulaPT.DTOs.UserQuestionDTOs
     {
         public Guid UserPackageId { get; set; }
         public Guid AskedByUserId { get; set; }
+        public Guid AnsweredByCoachId { get; set; }
         public string QuestionText { get; set; }
     }
 

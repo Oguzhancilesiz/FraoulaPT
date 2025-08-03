@@ -17,48 +17,134 @@
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
 
     <style>
-        .text-orange {
-            color: #ff8800 !important;
+        /* Sohbet mesaj stilleri */
+        .chat-message {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            display: inline-block;
+            word-break: break-word;
         }
 
-        .bg-dark-gradient {
-            background: linear-gradient(90deg, #000000, #333333);
+            .chat-message.mine {
+                background-color: #ffb84d; /* Turuncu ton */
+                color: #222;
+                border-bottom-right-radius: 0;
+            }
+
+            .chat-message.their {
+                background-color: #2c2c2c; /* Koyu gri */
+                color: #f1f1f1;
+                border-bottom-left-radius: 0;
+            }
+
+        .chat-meta {
+            font-size: 0.80rem;
+            color: black;
+            margin-top: 4px;
         }
 
+
+        /* === Temel Arka Plan ve Yazılar === */
+        body {
+            background-color: #0d0d0d;
+            color: #f5f5f5;
+        }
+
+        /* === Navbar === */
+        .navbar-dark-custom {
+            background: linear-gradient(90deg, #0d0d0d 0%, #1a1a1a 50%, #cc6a00 100%) !important;
+        }
+
+            .navbar-dark-custom .nav-link {
+                color: #e0e0e0 !important;
+                transition: color 0.2s;
+            }
+
+                .navbar-dark-custom .nav-link.active,
+                .navbar-dark-custom .nav-link:hover {
+                    color: #ff9d26 !important;
+                }
+
+            .navbar-dark-custom .navbar-brand {
+                font-weight: bold;
+                color: #fff !important;
+            }
+
+        /* === Footer === */
         footer {
-            background-color: #000;
-            color: white;
+            background: linear-gradient(90deg, #0d0d0d, #1a1a1a, #cc6a00);
+            color: #f1f1f1;
+            font-size: 0.9rem;
+        }
+
+        /* === Turuncu Yazı ve Butonlar === */
+        .text-orange {
+            color: #cc6a00 !important;
+        }
+
+        .btn-warning {
+            background-color: #cc6a00 !important;
+            border-color: #cc6a00 !important;
+            color: #fff !important;
+        }
+
+            .btn-warning:hover {
+                background-color: #e6801a !important;
+                border-color: #e6801a !important;
+            }
+
+        /* === Mobile Alt Navbar === */
+        .mobile-nav {
+            background: rgba(15, 15, 15, 0.95);
+            border-top: 1px solid #333;
+        }
+
+            .mobile-nav .nav-link {
+                color: #ccc;
+                padding: 10px 0;
+            }
+
+                .mobile-nav .nav-link.active,
+                .mobile-nav .nav-link:hover {
+                    color: #ff9d26 !important;
+                }
+
+        /* === Profil Fotoğrafı === */
+        .profile-img {
+            border: 2px solid #cc6a00;
         }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
-    <!-- Üst Navbar (Sadece büyük ekranlarda) -->
-    <nav class="navbar navbar-expand-lg bg-dark-gradient d-none d-lg-flex">
+    <!-- === Üst Navbar === -->
+    <nav class="navbar navbar-expand-lg navbar-dark-custom fixed-top">
         <div class="container">
-            <a class="navbar-brand text-white fw-bold d-flex align-items-center" href="/">
+            <a class="navbar-brand d-flex align-items-center" href="/">
                 <img src="~/images/fraoulapt-logo.png" alt="Logo" width="40" class="me-2 rounded">
                 Fraoula<span class="text-orange">PT</span>
             </a>
             <div class="collapse navbar-collapse justify-content-end">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link @(currentController == "Dashboard" ? "text-orange" : "text-white")" href="/">
+                        <a class="nav-link @(currentController == "Dashboard" ? "active" : "")" href="/">
                             <i class="bi bi-house-door"></i> Ana Sayfa
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link @(currentController == "Package" ? "text-orange" : "text-white")" asp-controller="Package" asp-action="Index">
+                        <a class="nav-link @(currentController == "Package" ? "active" : "")" asp-controller="Package" asp-action="Index">
                             <i class="bi bi-box2-heart"></i> Paketler
                         </a>
                     </li>
                     @if (User.Identity.IsAuthenticated)
                     {
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-white" href="#" data-bs-toggle="dropdown">
-                                <img src="@profilePhoto" alt="@fullName" width="30" height="30" class="rounded-circle me-2"> @fullName
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                <img src="@profilePhoto" alt="@fullName" width="30" height="30" class="rounded-circle profile-img me-2"> @fullName
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
+                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
                                 <li><a class="dropdown-item" asp-controller="Profile" asp-action="Detail">Profilim</a></li>
                                 <li><a class="dropdown-item" asp-controller="Package" asp-action="MyPackages">Tüm Paketlerim</a></li>
                                 <li><a class="dropdown-item" asp-controller="UserWeeklyForm" asp-action="Index">Vücut Ölçülerim</a></li>
@@ -71,10 +157,10 @@
                     else
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-controller="Auth" asp-action="Login">Giriş Yap</a>
+                            <a class="nav-link" asp-controller="Auth" asp-action="Login">Giriş Yap</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-controller="Auth" asp-action="Register">Kayıt Ol</a>
+                            <a class="nav-link" asp-controller="Auth" asp-action="Register">Kayıt Ol</a>
                         </li>
                     }
                 </ul>
@@ -82,46 +168,259 @@
         </div>
     </nav>
 
-    <!-- Mobil Alt Navbar -->
-    <nav class="navbar navbar-light bg-white border-top fixed-bottom d-flex d-lg-none justify-content-around">
-        <a href="/" class="nav-link @(currentController == "Dashboard" ? "text-orange" : "text-dark")">
+    <!-- === Mobile Alt Navbar === -->
+    <nav class="navbar mobile-nav fixed-bottom d-flex d-lg-none justify-content-around">
+        <a href="/" class="nav-link @(currentController == "Dashboard" ? "active" : "")">
             <i class="bi bi-house-door fs-4"></i>
         </a>
-        <a asp-controller="Package" asp-action="Index" class="nav-link @(currentController == "Package" ? "text-orange" : "text-dark")">
+        <a asp-controller="Package" asp-action="Index" class="nav-link @(currentController == "Package" ? "active" : "")">
             <i class="bi bi-box2-heart fs-4"></i>
         </a>
-        <a asp-controller="UserWeeklyForm" asp-action="Index" class="nav-link @(currentController == "UserWeeklyForm" ? "text-orange" : "text-dark")">
+        <a asp-controller="UserWeeklyForm" asp-action="Index" class="nav-link @(currentController == "UserWeeklyForm" ? "active" : "")">
             <i class="bi bi-journal-check fs-4"></i>
         </a>
-        <a asp-controller="Workout" asp-action="MyWorkout" class="nav-link @(currentController == "WorkoutProgram" ? "text-orange" : "text-dark")">
+        <a asp-controller="Workout" asp-action="MyWorkout" class="nav-link @(currentController == "WorkoutProgram" ? "active" : "")">
             <i class="bi bi-list-task fs-4"></i>
         </a>
         <a asp-controller="Profile" asp-action="Detail" class="nav-link">
-            <img src="@profilePhoto" class="rounded-circle border border-warning" width="25" height="25" />
+            <img src="@profilePhoto" class="rounded-circle profile-img" width="25" height="25" />
         </a>
     </nav>
 
-    @if (User.Identity.IsAuthenticated && ViewBag.ProfileIncomplete == true)
-    {
-        <div class="alert alert-warning text-center mt-3">
-            Profilini tamamlamadın! <a href="/Profile/CompleteProfile" class="fw-bold">Şimdi tamamla</a>
-        </div>
-    }
-
-    <main class="container py-4">
+    <!-- === İçerik === -->
+    <main class="container py-4 mt-5">
         @RenderBody()
     </main>
 
-    <footer class="text-center py-3">
+    <!-- === Footer === -->
+    <footer class="text-center py-3 mt-4">
         <div>© @DateTime.Now.Year FraoulaPT | Tüm hakları saklıdır.</div>
         <small>Sporcu Takip ve Online Danışmanlık Platformu</small>
     </footer>
+    <button id="supportToggle" class="btn btn-warning position-fixed" style="bottom:35px; right: 20px; z-index: 1050;">
+        <i class="bi bi-chat-dots-fill"></i> Destek
+    </button>
+    <div id="supportBox"
+         class="card shadow-lg position-fixed bg-dark text-light border-0 rounded-3"
+         style="bottom: 80px; right: 20px; width: 350px; display: none; z-index: 1050;">
 
-    <!-- Scripts -->
+        <!-- Başlık -->
+        <div class="card-header bg-warning text-dark p-2 d-flex justify-content-between align-items-center rounded-top">
+            <span class="fw-bold"><i class="bi bi-chat-dots-fill me-1"></i> Destek Kutusu</span>
+            <button type="button" class="btn-close btn-sm" aria-label="Kapat" onclick="$('#supportBox').hide()"></button>
+        </div>
+
+        <div class="card-body p-0">
+            <!-- Sekmeler -->
+            <ul class="nav nav-tabs border-0" id="supportTabs" role="tablist" style="background-color: #222;">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active text-warning fw-semibold border-0"
+                            style="background-color: transparent;"
+                            id="question-tab" data-bs-toggle="tab"
+                            data-bs-target="#tab-question" type="button" role="tab">
+                        <i class="bi bi-question-circle me-1"></i> Soru Sor
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link text-warning fw-semibold border-0"
+                            style="background-color: transparent;"
+                            id="chat-tab" data-bs-toggle="tab"
+                            data-bs-target="#tab-chat" type="button" role="tab">
+                        <i class="bi bi-chat-fill me-1"></i> Canlı Sohbet
+                    </button>
+                </li>
+            </ul>
+
+            <!-- İçerik -->
+            <div class="tab-content p-3 bg-dark text-light">
+                <!-- Soru Sor -->
+                <div class="tab-pane fade show active" id="tab-question" role="tabpanel">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        @await Component.InvokeAsync("SupportBox")
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning text-center small mb-0">
+                            Devam etmek için önce <strong>giriş yapmalısınız</strong>.
+                        </div>
+                    }
+                </div>
+
+                <!-- Canlı Sohbet -->
+                <div class="tab-pane fade" id="tab-chat" role="tabpanel">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        @await Component.InvokeAsync("SupportChat")
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning text-center small mb-0">
+                            Canlı sohbete başlamak için önce <strong>giriş yapmalısınız</strong>.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Scripts --><!-- Doğru kullanım -->
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.5/dist/browser/signalr.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+
+    </script>
+    <script>
+        let selectedCoachId = null;
+        let currentUserId = "@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value";
+
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub") // SignalR route
+            .build();
+
+        // Mesaj alındığında çalışacak
+                      connection.on("ReceiveMessage", function (userId, message, isMine) {
+            const chatBox = document.getElementById("chatMessages");
+
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "d-flex " + (isMine ? "justify-content-end" : "justify-content-start");
+
+            let timeText = "şimdi";
+            try {
+                const date = new Date(message.sentAt);
+                if (!isNaN(date)) {
+                    timeText = date.toLocaleTimeString("tr-TR", {
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    });
+                }
+            } catch (err) {
+                console.warn("Tarih parse edilemedi:", message.sentAt);
+            }
+
+            msgDiv.innerHTML = `
+                <div class="chat-message ${isMine ? 'mine' : 'their'}">
+                    <div class="fw-bold mb-1">${isMine ? 'Sen' : 'Koç'}</div>
+                    <div>${message.messageText}</div>
+                    <div class="chat-meta">${timeText}</div>
+                </div>
+            `;
+
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+
+               
+
+        connection.on("QuotaExceeded", function (warningMessage) {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Mesaj Gönderilemedi',
+        text: warningMessage,
+        confirmButtonText: 'Tamam',
+        footer: '<a href="/Package/MyPackages">📦 Paketleri Görüntüle</a>'
+    });
+});
+
+
+
+
+        // Bağlantıyı başlat
+        connection.start().then(function () {
+            console.log("SignalR bağlantısı kuruldu");
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        // Mesaj gönderme butonu
+        document.getElementById("sendMessageBtn").addEventListener("click", async function () {
+            const input = document.getElementById("chatInput");
+            const message = input.value.trim();
+            if (!message || !selectedCoachId) return;
+
+            await connection.invoke("SendMessage", selectedCoachId, message); // ✅ doğru parametre sayısı
+
+            input.value = "";
+        });
+
+        // Koç seçimi ve sohbet başlatma
+        document.getElementById("startChatBtn").addEventListener("click", function () {
+            selectedCoachId = document.getElementById("chatCoach").value;
+            if (!selectedCoachId) return;
+
+            document.getElementById("chatCoachSelection").classList.add("d-none");
+            document.getElementById("chatBoxArea").classList.remove("d-none");
+            loadPreviousMessages(selectedCoachId);
+        });
+    </script>
+
+    <script>
+        document.getElementById("supportToggle").addEventListener("click", function () {
+            const box = document.getElementById("supportBox");
+            box.style.display = box.style.display === "none" ? "block" : "none";
+        });
+    </script>
+    <script>
+        // Canlı Sohbet Tabı içindeki koç seçimi
+        document.getElementById("chatCoach").addEventListener("change", function () {
+            const selected = this.value;
+            document.getElementById("startChatBtn").disabled = !selected;
+        });
+
+        document.getElementById("startChatBtn").addEventListener("click", function () {
+            const coachId = document.getElementById("chatCoach").value;
+            if (!coachId) return;
+
+            // UI geçişi
+            document.getElementById("chatCoachSelection").classList.add("d-none");
+            document.getElementById("chatBoxArea").classList.remove("d-none");
+
+            // Mesajları yükle (AJAX veya SignalR tetiklenecek burada)
+            loadPreviousMessages(coachId);
+        });
+        function loadPreviousMessages(coachId) {
+            const chatBox = document.getElementById("chatMessages");
+            chatBox.innerHTML = '<div class="text-muted text-center">🔄 Geçmiş mesajlar yükleniyor...</div>';
+
+            fetch(`/Chat/GetHistory?coachId=${coachId}`)
+                .then(response => response.json())
+                .then(messages => {
+                    chatBox.innerHTML = "";
+
+                    messages.forEach(msg => {
+                        const msgDiv = document.createElement("div");
+                        msgDiv.className = "d-flex " + (msg.isMine ? "justify-content-end" : "justify-content-start");
+
+                        msgDiv.innerHTML = `
+                            <div class="chat-message ${msg.isMine ? 'mine' : 'their'}">
+                                <div class="fw-bold mb-1">${msg.isMine ? 'Sen' : 'Koç'}</div>
+                                <div>${msg.messageText}</div>
+                                <div class="chat-meta">${new Date(msg.sentAt).toLocaleTimeString('tr-TR')}</div>
+                            </div>
+                        `;
+
+                        chatBox.appendChild(msgDiv);
+                    });
+
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                })
+                .catch(err => {
+                    console.error("Mesajlar yüklenemedi:", err);
+                    chatBox.innerHTML = '<div class="text-danger text-center">❌ Mesajlar yüklenemedi.</div>';
+                });
+        }
+
+
+    </script>
 
     @await RenderSectionAsync("Scripts", false)
 
@@ -155,24 +454,60 @@
             }
         });
     </script>
+    <script>
+                $(document).ready(function () {
 
+            function loadQuestionHistory() {
+                $.get('/Support/MyQuestions', function (html) {
+                    $('#questionHistory').html(html);
+                });
+            }
+
+            loadQuestionHistory(); // Sayfa yüklenince geçmişi getir
+
+            $('#questionForm').on('submit', function (e) {
+                e.preventDefault();
+
+                $.ajax({
+                    url: '/Support/AskQuestion',
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function () {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sorunuz gönderildi!',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        loadQuestionHistory();
+                        $('#questionForm')[0].reset();
+                    },
+                    error: function (xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata!',
+                            text: xhr.responseText || 'Sorunuz gönderilemedi.'
+                        });
+                    }
+                });
+            });
+        });
+
+    </script>
     @{
         var alert = Context.Request.Query["alert"].ToString();
     }
 
-    @section Scripts {
-        @if (!string.IsNullOrEmpty(alert))
-        {
-            <script>
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Uyarı',
-                    text: '@alert',
-                    confirmButtonText: 'Tamam'
-                });
-            </script>
-        }
+    @if (!string.IsNullOrEmpty(alert))
+    {
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Uyarı',
+                text: '@alert',
+                confirmButtonText: 'Tamam'
+            });
+        </script>
     }
-
 </body>
 </html>

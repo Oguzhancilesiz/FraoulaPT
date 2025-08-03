@@ -1,0 +1,55 @@
+﻿@model FraoulaPT.WebUI.Models.ViewModels.QuestionAnsverViewModel.SupportBoxViewModel
+
+@if (Model?.Coaches != null && Model.Coaches.Any())
+{
+    <!-- Koç Seçimi -->
+    <div id="chatCoachSelection" class="bg-dark text-light p-3 rounded shadow-sm mb-3">
+        <label for="chatCoach" class="form-label fw-semibold text-warning">
+            🎯 Görüşmek istediğin koçu seç:
+        </label>
+        <select id="chatCoach" class="form-select bg-dark text-light border-secondary mb-3">
+            <option value="">-- Seçiniz --</option>
+            @foreach (var coach in Model.Coaches)
+            {
+                <option value="@coach.Id" data-photo="@coach.ProfilePhotoUrl">@coach.FullName</option>
+            }
+        </select>
+        <button class="btn btn-warning w-100 fw-semibold" id="startChatBtn" disabled>
+            🟢 Sohbete Başla
+        </button>
+    </div>
+}
+else
+{
+    <div class="text-muted p-3 bg-dark rounded shadow-sm small">⚠️ Sistemde tanımlı koç bulunamadı.</div>
+}
+
+<!-- Sohbet Alanı -->
+<div id="chatBoxArea" class="d-none">
+    <!-- Mesajlar -->
+    <div id="chatMessages"
+         class="border border-secondary p-3 mb-3 rounded bg-dark text-light small"
+         style="max-height: 250px; overflow-y: auto;">
+        <div class="text-muted text-center">💬 Sohbet başlatılıyor...</div>
+    </div>
+
+    <!-- Mesaj Giriş Alanı -->
+    <div class="input-group">
+        <input type="text" id="chatInput" class="form-control bg-dark text-light border-secondary"
+               placeholder="✏️ Mesaj yaz..." />
+
+        <!-- Ataç Butonu -->
+        <button class="btn btn-outline-light border-secondary" type="button" id="attachImageBtn"
+                title="Görsel Ekle">
+            <i class="bi bi-paperclip"></i>
+        </button>
+
+        <!-- Gönder Butonu -->
+        <button class="btn btn-warning text-dark fw-semibold" id="sendMessageBtn">
+            <i class="bi bi-send-fill"></i>
+        </button>
+
+        <!-- Gizli Çoklu Dosya Input -->
+        <input type="file" id="imageInput" accept="image/*" multiple hidden />
+    </div>
+</div>

@@ -33,20 +33,20 @@ namespace FraoulaPT.WebUI.Controllers
 
             if (ogrenci == null)
             {
-                ShowMessage("Kayıtlı kullanıcı yok", MessageType.Error);
+                ShowAlert("Hata","Kayıtlı kullanıcı yok", AlertType.error);
                 return RedirectToAction("Index", "Home");
             }
             var userid = ogrenci.Id;
             if (userid == Guid.Empty)
             {
-                ShowMessage("Kullanıcı ID'si bulunamadı", MessageType.Error);
+                ShowAlert("Hata", "Kullanıcı ID'si bulunamadı", AlertType.error);
                 return RedirectToAction("Index", "Home");
             }
             var program = await _workoutProgramService.GetLastWorkoutProgramByUserAsync(userid);
 
             if (program == null)
             {
-                ShowMessage("Aktif bir antrenman programınız bulunmamaktadır.", MessageType.Warning);
+                ShowAlert("Uyarı","Aktif bir antrenman programınız bulunmamaktadır.", AlertType.warning);
                 return View(null);
             }
 
@@ -95,13 +95,13 @@ namespace FraoulaPT.WebUI.Controllers
 
             if (ogrenci == null)
             {
-                ShowMessage("Kayıtlı kullanıcı yok", MessageType.Error);
+                ShowAlert("Hata", "Kayıtlı kullanıcı yok", AlertType.error);
                 return RedirectToAction("Index", "Home");
             }
             var userid = ogrenci.Id;
             if (userid == Guid.Empty)
             {
-                ShowMessage("Kullanıcı ID'si bulunamadı", MessageType.Error);
+                ShowAlert("Hata", "Kullanıcı ID'si bulunamadı", AlertType.error);
                 return RedirectToAction("Index", "Home");
             }
 
