@@ -7,11 +7,19 @@ using System.Threading.Tasks;
 
 namespace FraoulaPT.Services.Abstracts
 {
-    public interface IUserQuestionService : IBaseService<
-      UserQuestionListDTO,
-      UserQuestionDetailDTO,
-      UserQuestionCreateDTO,
-      UserQuestionUpdateDTO>
-    { }
+    public interface IUserQuestionService
+    {
+        Task<List<UserQuestionDTO>> GetQuestionsByUserAsync(Guid userId);
+        Task<bool> AskQuestionAsync(UserQuestionCreateDTO dto);
+        Task<UserQuestionDTO?> GetByIdAsync(Guid id);
 
+
+        //admin
+        Task<List<AllUserQuestionDTO>> GetAllQuestionsAsync();
+        Task<UserQuestionAnswerDTO> GetByIdAnswerAsync(Guid id);
+        Task<bool> AnswerQuestionAsync(Guid questionId, string answerText, Guid coachId);
+
+        //dashboard için
+        Task<int> GetPendingCountAsync();
+    }
 }

@@ -15,7 +15,7 @@ namespace FraoulaPT.Entity
         public Guid? AnsweredByCoachId { get; set; }
         public AppUser AnsweredByCoach { get; set; }
         public string QuestionText { get; set; }
-        public string AnswerText { get; set; }
+        public string? AnswerText { get; set; }
         public DateTime AskedAt { get; set; }
         public DateTime? AnsweredAt { get; set; }
     }

@@ -1,0 +1,104 @@
+﻿@using FraoulaPT.DTOs.ChatMessageDTOs
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@model List<StudentChatListDTO>
+
+<div class="row">
+    <div class="col-md-4">
+        <h5>Öğrenciler</h5>
+        <ul class="list-group" id="studentList">
+            @foreach (var student in Model)
+            {
+                <li class="list-group-item student-item" data-id="@student.Id">
+                    <img src="@student.ProfilePhotoUrl" class="rounded-circle me-2" width="30" height="30" />
+                    @student.FullName
+                </li>
+            }
+        </ul>
+    </div>
+    <div class="col-md-8">
+        <h5>Sohbet</h5>
+        <div class="border p-2 mb-2" id="chatMessages" style="height: 300px; overflow-y: auto;">
+            <div class="text-muted text-center">Öğrenci seçiniz</div>
+        </div>
+        <div class="input-group">
+            <input type="text" id="chatInput" class="form-control" placeholder="Mesaj yaz..." />
+            <button class="btn btn-success" id="sendMessageBtn">Gönder</button>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let selectedStudentId = null;
+
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/chatHub")
+                .build();
+
+            connection.on("ReceiveMessage", function (fromUserId, messageObj, isMine) {
+                if (selectedStudentId !== fromUserId) return;
+
+                const chatBox = document.getElementById("chatMessages");
+
+                const msgDiv = document.createElement("div");
+                msgDiv.className = "mb-2 " + (isMine ? "text-end" : "text-start");
+                msgDiv.innerHTML = `
+                    <div class="d-inline-block p-2 rounded shadow-sm" style="max-width: 80%; background-color: ${isMine ? '#dcf8c6' : '#fff'};">
+                        <div class="fw-bold">${isMine ? 'Siz' : 'Öğrenci'}</div>
+                        <div>${messageObj.messageText}</div>
+                        <div class="text-muted small">${new Date(messageObj.sentAt).toLocaleTimeString('tr-TR')}</div>
+                    </div>
+                `;
+                chatBox.appendChild(msgDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+
+            connection.start().then(() => console.log("Koç SignalR bağlantısı kuruldu."));
+
+            // Öğrencilere tıklama
+            document.querySelectorAll(".student-item").forEach(item => {
+                item.addEventListener("click", function () {
+                    // Aktif class'ı güncelle
+                    document.querySelectorAll(".student-item").forEach(i => i.classList.remove("active"));
+                    this.classList.add("active");
+
+                    selectedStudentId = this.dataset.id;
+                    fetch(`/Admin/CoachChat/GetHistory?studentId=${selectedStudentId}`)
+                        .then(res => res.json())
+                        .then(messages => {
+                            const box = document.getElementById("chatMessages");
+                            box.innerHTML = "";
+                            messages.forEach(m => {
+                                const msgDiv = document.createElement("div");
+                                msgDiv.className = "mb-2 " + (m.isMine ? "text-end" : "text-start");
+                                msgDiv.innerHTML = `
+                                    <div class="d-inline-block p-2 rounded shadow-sm" style="max-width: 80%; background-color: ${m.isMine ? '#dcf8c6' : '#fff'};">
+                                        <div class="fw-bold">${m.isMine ? 'Siz' : 'Öğrenci'}</div>
+                                        <div>${m.messageText}</div>
+                                        <div class="text-muted small">${new Date(m.sentAt).toLocaleTimeString('tr-TR')}</div>
+                                    </div>
+                                `;
+                                box.appendChild(msgDiv);
+                            });
+                            box.scrollTop = box.scrollHeight;
+                        });
+                });
+            });
+
+            // Mesaj gönder
+            document.getElementById("sendMessageBtn").addEventListener("click", function () {
+                const input = document.getElementById("chatInput");
+                const message = input.value.trim();
+                if (!message || !selectedStudentId) return;
+
+                connection.invoke("SendMessage", selectedStudentId, message);
+                input.value = "";
+            });
+        });
+    </script>
+}

@@ -1,6 +1,7 @@
 ﻿using FraoulaPT.Core.Abstracts;
 using FraoulaPT.Core.Enums;
 using FraoulaPT.DTOs.AppUserDTOs;
+using FraoulaPT.DTOs.DashboardDTOs;
 using FraoulaPT.DTOs.WorkoutProgramDTOs;
 using FraoulaPT.Entity;
 using FraoulaPT.Services.Abstracts;
@@ -86,6 +87,88 @@ namespace FraoulaPT.Services.Concrete
             }
 
             return result;
+        }
+        public async Task<List<CoachListDTO>> GetAllCoachesAsync()
+        {
+            var users = await _unitOfWork.Repository<AppUser>()
+                .Query()
+                .Include(u => u.Profile)
+                .Where(u => u.Status == Status.Active)
+                .ToListAsync();
+
+            var result = new List<CoachListDTO>();
+
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                if (roles.Contains("Koc"))
+                {
+                    result.Add(new CoachListDTO
+                    {
+                        Id = user.Id,
+                        FullName = user.FullName,
+                        ProfilePhotoUrl = user.Profile?.ProfilePhotoUrl ?? "/uploads/user-default.jpg"
+                    });
+                }
+            }
+
+            return result;
+        }
+
+
+        //dashboard için
+        public async Task<int> GetActiveStudentCountAsync()
+        {
+            return await _userManager.Users
+                .Where(u => u.Status == Status.Active)
+                .CountAsync();
+        }
+
+        public async Task<List<UserActivityDTO>> GetRecentActivitiesAsync(int limit)
+        {
+            var questions = await _unitOfWork.Repository<UserQuestion>()
+                       .Query()
+                       .OrderByDescending(q => q.AskedAt)
+                       .Take(limit)
+                       .Select(q => new UserActivityDTO
+                       {
+                           UserName = q.AskedByUser.FullName,
+                           ActionDescription = "Yeni soru sordu",
+                           TimeAgo = EF.Functions.DateDiffMinute(q.AskedAt, DateTime.UtcNow) + " dk önce"
+                       })
+                       .ToListAsync();
+
+            return questions;
+        }
+
+        public async Task<List<TopUserDTO>> GetTopCoachesAsync(int limit)
+        {
+            var coaches = await _userManager.GetUsersInRoleAsync("Koc");
+
+            return coaches
+                .Select(u => new TopUserDTO
+                {
+                    Name = u.FullName,
+                    Count = u.AnsweredQuestions != null ? u.AnsweredQuestions.Count : 0
+                })
+                .OrderByDescending(x => x.Count)
+                .Take(limit)
+                .ToList();
+        }
+
+        public async Task<List<TopUserDTO>> GetTopStudentsAsync(int limit)
+        {
+            var students = await _userManager.GetUsersInRoleAsync("Ogrenci");
+
+            return students
+                .Select(u => new TopUserDTO
+                {
+                    Name = u.FullName,
+                    Count = u.AnsweredQuestions != null ? u.AnsweredQuestions.Count : 0
+                })
+                .OrderByDescending(x => x.Count)
+                .Take(limit)
+                .ToList();
         }
 
     }

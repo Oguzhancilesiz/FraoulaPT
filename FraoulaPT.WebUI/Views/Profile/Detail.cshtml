@@ -1,121 +1,83 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Html
+@{
     ViewData["Title"] = "Profilim";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @model FraoulaPT.DTOs.UserProfileDTOs.UserProfileDetailDTO
 
 <div class="container py-5">
-    <div class="card shadow border-0">
+    <div class="card shadow-lg border-0 rounded-3"
+         style="background-color: rgba(25,25,25,0.95); color: #f1f1f1;">
         <div class="card-body">
+            <!-- Profil Fotoğrafı ve Ad -->
             <div class="text-center mb-4">
-                <img src="@(!string.IsNullOrWhiteSpace(Model.ProfilePhotoUrl) ? Model.ProfilePhotoUrl : "/uploads/user-default.jpg")"
+                <img src="@Model.ProfilePhotoUrl"
                      alt="Profil Fotoğrafı"
-                     class="rounded-circle shadow"
-                     width="140" height="140"
-                     style="object-fit: cover; background:#f5f5f5; border:5px solid #ff8800;" />
-                <h3 class="mt-3 fw-semibold">Ad Soyad Gelecek</h3>
+                     class="rounded-circle border border-3 shadow-sm"
+                     style="border-color: #ff8800 !important; width:140px; height:140px; object-fit: cover; background:#111;" />
+
+                <h3 class="mt-3 fw-bold text-warning">@* @Model.FullName *@ Ad soyad gelecek </h3>
 
                 @if (!string.IsNullOrWhiteSpace(Model.Instagram))
                 {
-                    <a href="https://instagram.com/@Model.Instagram" target="_blank" class="text-muted d-inline-block mt-1 text-decoration-none">
-                        <i class="bi bi-instagram"></i> @Model.Instagram
+                    <a href="https://instagram.com/@Model.Instagram" target="_blank"
+                       class="text-light opacity-75 text-decoration-none d-inline-flex align-items-center mt-1">
+                        <i class="bi bi-instagram me-1"></i> @Model.Instagram
                     </a>
                 }
             </div>
 
-            <hr class="mb-4" />
+            <hr class="border-secondary mb-4" />
 
-            <dl class="row">
-                <dt class="col-md-4 col-sm-6">Cinsiyet</dt>
-                <dd class="col-md-8 col-sm-6">@Model.Gender</dd>
+            <!-- Bilgiler -->
+            <div class="row g-3">
+                <div class="col-12 col-md-6">@InfoCard("bi-gender-ambiguous", "Cinsiyet", Model.Gender?.ToString())</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-calendar3", "Doğum Tarihi", Model.BirthDate?.ToString("dd.MM.yyyy"))</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-rulers", "Boy / Kilo", $"{Model.HeightCm} cm / {Model.WeightKg} kg")</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-body-text", "Vücut Tipi", Model.BodyType?.ToString())</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-droplet-half", "Kan Grubu", Model.BloodType?.ToString())</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-telephone", "Telefon", Model.PhoneNumber)</div>
+                <div class="col-12">@InfoCard("bi-geo-alt", "Adres", Model.Address)</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-person-lines-fill", "Acil Durum Kişisi", $"{Model.EmergencyContactName} {Model.EmergencyContactPhone}")</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-journal-medical", "Medikal Geçmiş", Model.MedicalHistory)</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-activity", "Kronik Hastalıklar", Model.ChronicDiseases)</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-capsule", "Sürekli İlaçlar", Model.CurrentMedications)</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-allergies", "Alerjiler", Model.Allergies)</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-bandaid", "Geçmiş Yaralanmalar", Model.PastInjuries)</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-emoji-frown", "Mevcut Ağrılar", Model.CurrentPain)</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-gender-female", "Hamilelik Durumu", Model.PregnancyStatus == true ? "Evet" : "Hayır")</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-heart-pulse", "Sağlık Kontrolü", Model.LastCheckResults)</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-cup-straw", "Sigara / Alkol", Model.SmokingAlcohol)</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-briefcase", "Meslek", Model.Occupation)</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-award", "Deneyim", Model.ExperienceLevel?.ToString())</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-trophy", "Favori Sporlar", Model.FavoriteSports)</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-pencil", "Notlar", Model.Notes)</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-egg-fried", "Diyet Tipi", Model.DietType?.ToString())</div>
+                <div class="col-12 col-md-6">@InfoCard("bi-clock-history", "Oluşturulma Tarihi", Model.CreatedDate.ToString("dd.MM.yyyy HH:mm"))</div>
+            </div>
 
-                <dt class="col-md-4 col-sm-6">Doğum Tarihi</dt>
-                <dd class="col-md-8 col-sm-6">@Model.BirthDate?.ToString("dd.MM.yyyy") ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Boy / Kilo</dt>
-                <dd class="col-md-8 col-sm-6">
-                    @(Model.HeightCm.HasValue ? $"{Model.HeightCm.Value} cm" : "-") /
-                    @(Model.WeightKg.HasValue ? $"{Model.WeightKg.Value} kg" : "-")
-                </dd>
-
-                <dt class="col-md-4 col-sm-6">Vücut Tipi</dt>
-                <dd class="col-md-8 col-sm-6">@Model.BodyType</dd>
-
-                <dt class="col-md-4 col-sm-6">Kan Grubu</dt>
-                <dd class="col-md-8 col-sm-6">@Model.BloodType</dd>
-
-                <dt class="col-md-4 col-sm-6">Telefon</dt>
-                <dd class="col-md-8 col-sm-6">@Model.PhoneNumber ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Adres</dt>
-                <dd class="col-md-8 col-sm-6">@Model.Address ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Acil Durum Kişisi</dt>
-                <dd class="col-md-8 col-sm-6">
-                    @if (!string.IsNullOrWhiteSpace(Model.EmergencyContactName) || !string.IsNullOrWhiteSpace(Model.EmergencyContactPhone))
-                    {
-                        @(Model.EmergencyContactName + " " + Model.EmergencyContactPhone)
-                    }
-                    else
-                    {
-                        @("-")
-                    }
-                </dd>
-
-                <dt class="col-md-4 col-sm-6">Medikal Geçmiş</dt>
-                <dd class="col-md-8 col-sm-6">@Model.MedicalHistory ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Kronik Hastalıklar</dt>
-                <dd class="col-md-8 col-sm-6">@Model.ChronicDiseases ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Sürekli İlaçlar</dt>
-                <dd class="col-md-8 col-sm-6">@Model.CurrentMedications ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Alerjiler</dt>
-                <dd class="col-md-8 col-sm-6">@Model.Allergies ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Geçmiş Yaralanmalar</dt>
-                <dd class="col-md-8 col-sm-6">@Model.PastInjuries ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Mevcut Ağrılar</dt>
-                <dd class="col-md-8 col-sm-6">@Model.CurrentPain ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Hamilelik Durumu</dt>
-                <dd class="col-md-8 col-sm-6">
-                    @(Model.PregnancyStatus == true ? "Evet" :
-                        Model.PregnancyStatus == false ? "Hayır" : "-")
-                </dd>
-
-                <dt class="col-md-4 col-sm-6">Sağlık Kontrolü</dt>
-                <dd class="col-md-8 col-sm-6">@Model.LastCheckResults ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Sigara / Alkol</dt>
-                <dd class="col-md-8 col-sm-6">@Model.SmokingAlcohol ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Meslek</dt>
-                <dd class="col-md-8 col-sm-6">@Model.Occupation ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Deneyim</dt>
-                <dd class="col-md-8 col-sm-6">@Model.ExperienceLevel</dd>
-
-                <dt class="col-md-4 col-sm-6">Favori Sporlar</dt>
-                <dd class="col-md-8 col-sm-6">@Model.FavoriteSports ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Notlar</dt>
-                <dd class="col-md-8 col-sm-6">@Model.Notes ?? "-"</dd>
-
-                <dt class="col-md-4 col-sm-6">Diyet Tipi</dt>
-                <dd class="col-md-8 col-sm-6">@Model.DietType</dd>
-
-                <dt class="col-md-4 col-sm-6">Oluşturulma Tarihi</dt>
-                <dd class="col-md-8 col-sm-6">@Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</dd>
-            </dl>
-
+            <!-- Düzenle Butonu -->
             <div class="mt-4 text-end">
-                <a asp-action="Edit" asp-controller="Profile" class="btn btn-warning px-4">
+                <a asp-action="Edit" asp-controller="Profile"
+                   class="btn fw-semibold text-white px-4"
+                   style="background: linear-gradient(90deg, #ff8800, #cc6600); border: none;">
                     <i class="bi bi-pencil-square me-1"></i> Profili Düzenle
                 </a>
             </div>
         </div>
     </div>
 </div>
+@functions {
+    private IHtmlContent InfoCard(string icon, string title, string value)
+    {
+        var html = $@"
+            <div class='p-3 rounded shadow-sm h-100 d-flex align-items-start' style='background-color: rgba(40,40,40,0.9); border-left: 4px solid #ff8800;'>
+                             <i class='bi {icon} text-warning fs-4 me-2'></i>
+                <div>
+                    <small class='text-light opacity-75'>{title}</small>
+                    <div class='fw-semibold text-white'>{(string.IsNullOrWhiteSpace(value) ? '-' : value)}</div>
+                </div>
+            </div>";
+        return new HtmlString(html);
+    }
+}

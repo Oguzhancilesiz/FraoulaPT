@@ -1,0 +1,121 @@
+﻿@model List<FraoulaPT.DTOs.UserQuestionDTOs.UserQuestionDTO>
+@{
+    ViewData["Title"] = "Tüm Sorularım";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var totalCount = Model.Count;
+    var answeredCount = Model.Count(q => !string.IsNullOrWhiteSpace(q.AnswerText));
+    var unansweredCount = totalCount - answeredCount;
+
+    var sortedQuestions = Model
+        .OrderByDescending(q => !string.IsNullOrWhiteSpace(q.AnswerText))
+        .ThenByDescending(q => q.AskedAt)
+        .ToList();
+}
+
+<h2 class="mb-4 text-warning fw-bold"><i class="bi bi-chat-left-text-fill me-2"></i>Tüm Sorularım</h2>
+
+@if (!sortedQuestions.Any())
+{
+    <div class="alert alert-warning text-center shadow-sm border-0">
+        <i class="bi bi-info-circle-fill me-1"></i> Henüz bir soru sormadınız.
+    </div>
+}
+else
+{
+    <!-- Filtre Butonları -->
+    <div class="btn-group mb-4" role="group">
+        <button type="button" class="btn btn-outline-light active" data-filter="all">
+            Tümü (<span id="count-all">@totalCount</span>)
+        </button>
+        <button type="button" class="btn btn-outline-success" data-filter="answered">
+            Cevaplananlar (<span id="count-answered">@answeredCount</span>)
+        </button>
+        <button type="button" class="btn btn-outline-warning" data-filter="unanswered">
+            Cevaplanmayanlar (<span id="count-unanswered">@unansweredCount</span>)
+        </button>
+    </div>
+
+    <div id="questionList" class="row">
+        @foreach (var q in sortedQuestions)
+        {
+            var isAnswered = !string.IsNullOrWhiteSpace(q.AnswerText);
+            <div class="col-12 col-md-6 col-lg-4 mb-3 question-item @(isAnswered ? "answered" : "unanswered")">
+                <div class="card h-100 shadow-sm border-0 bg-dark text-light rounded-3 position-relative">
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title fw-bold text-warning">
+                            <i class="bi bi-question-circle me-1"></i>@q.QuestionText
+                        </h6>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-calendar-event me-1"></i> @q.AskedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                        </p>
+
+                        @if (isAnswered)
+                        {
+                            <p class="text-success mb-1">
+                                <strong><i class="bi bi-check-circle-fill me-1"></i>Cevap:</strong> @q.AnswerText
+                            </p>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-person-badge me-1"></i> Yanıtlayan: @(string.IsNullOrWhiteSpace(q.CoachName) ? "Bilinmiyor" : q.CoachName)
+                                <span class="ms-2"><i class="bi bi-clock-history me-1"></i>@q.AnsweredAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</span>
+                            </p>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-hourglass-split me-1"></i> Henüz yanıtlanmadı
+                            </span>
+                        }
+
+                        <!-- Kartı tıklanabilir yap -->
+                        <a href="/Support/QuestionDetail/@q.QuestionId" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.querySelectorAll("[data-filter]").forEach(btn => {
+            btn.addEventListener("click", function () {
+                document.querySelectorAll("[data-filter]").forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+
+                let filter = this.getAttribute("data-filter");
+                let allItems = document.querySelectorAll(".question-item");
+
+                let countAll = 0, countAnswered = 0, countUnanswered = 0;
+
+                allItems.forEach(item => {
+                    if (filter === "all") {
+                        item.style.display = "block";
+                        countAll++;
+                    }
+                    else if (filter === "answered") {
+                        if (item.classList.contains("answered")) {
+                            item.style.display = "block";
+                            countAnswered++;
+                        } else {
+                            item.style.display = "none";
+                        }
+                    }
+                    else if (filter === "unanswered") {
+                        if (item.classList.contains("unanswered")) {
+                            item.style.display = "block";
+                            countUnanswered++;
+                        } else {
+                            item.style.display = "none";
+                        }
+                    }
+                });
+
+                // Sayaçları güncelle
+                if (filter === "all") document.getElementById("count-all").textContent = countAll;
+                if (filter === "answered") document.getElementById("count-answered").textContent = countAnswered;
+                if (filter === "unanswered") document.getElementById("count-unanswered").textContent = countUnanswered;
+            });
+        });
+    </script>
+}

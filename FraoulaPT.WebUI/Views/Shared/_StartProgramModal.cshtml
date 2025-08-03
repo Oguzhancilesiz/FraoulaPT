@@ -2,40 +2,65 @@
 
 <div class="modal fade" id="startProgramModal" tabindex="-1" role="dialog" aria-labelledby="startProgramModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">Program Başlat</h5>
-                <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content bg-dark text-light shadow-lg border-0 rounded-3">
+            <!-- Modal Başlık -->
+            <div class="modal-header bg-warning bg-opacity-75 text-dark rounded-top">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-play-circle-fill me-1"></i> Program Başlat
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
             </div>
+
+            <!-- Modal İçerik -->
             <div class="modal-body">
                 <form id="startProgramForm">
                     <input type="hidden" name="UserWeeklyFormId" id="UserWeeklyFormId" />
 
-                    <div class="form-group mb-3">
-                        <label>Program Başlığı</label>
-                        <input type="text" class="form-control" name="ProgramTitle" required />
+                    <!-- Program Başlığı -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-warning">
+                            <i class="bi bi-type-bold me-1"></i> Program Başlığı
+                        </label>
+                        <input type="text" class="form-control bg-secondary text-light border-0"
+                               name="ProgramTitle" placeholder="Örn: Kas Gelişim Programı" required />
                     </div>
 
-                    <div class="form-group mb-3">
-                        <label>Koç Notu</label>
-                        <textarea class="form-control" name="CoachNote"></textarea>
+                    <!-- Koç Notu -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-warning">
+                            <i class="bi bi-journal-text me-1"></i> Koç Notu
+                        </label>
+                        <textarea class="form-control bg-secondary text-light border-0"
+                                  name="CoachNote" rows="2" placeholder="İsteğe bağlı koç notu yazın..."></textarea>
                     </div>
 
-                    <div class="form-group mb-2">
-                        <label>Program Günleri:</label>
-                        @for (int i = 1; i <= 7; i++)
-                        {
-                            var dayName = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName((DayOfWeek)(i % 7));
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="SelectedDays" value="@i" id="day_@i" />
-                                <label class="form-check-label" for="day_@i">@dayName</label>
-                            </div>
-                        }
+                    <!-- Program Günleri -->
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold text-warning">
+                            <i class="bi bi-calendar-week me-1"></i> Program Günleri:
+                        </label>
+                        <div class="row">
+                            @for (int i = 1; i <= 7; i++)
+                            {
+                                var dayName = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName((DayOfWeek)(i % 7));
+                                <div class="col-6 col-md-4">
+                                    <div class="form-check text-light">
+                                        <input class="form-check-input bg-warning border-0" type="checkbox"
+                                               name="SelectedDays" value="@i" id="day_@i" />
+                                        <label class="form-check-label" for="day_@i">@dayName</label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" id="submitProgramBtn">Kaydet</button>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-warning fw-semibold text-dark w-100" id="submitProgramBtn">
+                    <i class="bi bi-save-fill me-1"></i> Kaydet
+                </button>
             </div>
         </div>
     </div>

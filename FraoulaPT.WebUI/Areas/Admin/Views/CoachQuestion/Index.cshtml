@@ -1,0 +1,122 @@
+﻿@model List<FraoulaPT.DTOs.UserQuestionDTOs.AllUserQuestionDTO>
+
+@{
+    ViewData["Title"] = "Gelen Sorular";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var answered = Model.Where(q => !string.IsNullOrWhiteSpace(q.AnswerText)).OrderByDescending(q => q.AnsweredAt).ToList();
+    var unanswered = Model.Where(q => string.IsNullOrWhiteSpace(q.AnswerText)).OrderByDescending(q => q.AskedAt).ToList();
+}
+
+<div class="container py-4">
+    <h2 class="mb-4">📩 Gelen Sorular</h2>
+
+    <ul class="nav nav-tabs mb-3" id="questionTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="unanswered-tab" data-bs-toggle="tab" data-bs-target="#unanswered" type="button" role="tab">
+                ⏳ Cevap Bekleyen (@unanswered.Count)
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="answered-tab" data-bs-toggle="tab" data-bs-target="#answered" type="button" role="tab">
+                ✅ Cevaplanmış (@answered.Count)
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- ✅ Cevap Bekleyen -->
+        <div class="tab-pane fade show active" id="unanswered" role="tabpanel">
+            @if (!unanswered.Any())
+            {
+                <div class="alert alert-success text-center">🎉 Tüm sorular cevaplanmış!</div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var q in unanswered)
+                    {
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card shadow-sm border-warning h-100">
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <img src="@q.AskedByUserPhoto" class="rounded-circle me-2" width="40" height="40" />
+                                        <div>
+                                            <strong>@q.AskedByUserName</strong>
+                                            <div class="text-muted small">🗓 @q.AskedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                                        </div>
+                                    </div>
+                                    <p class="fw-bold text-dark flex-grow-1">📌 @q.QuestionText</p>
+                                    <span class="badge bg-warning text-dark mb-2">⏳ Henüz cevaplanmadı</span>
+
+                                    <div class="mt-auto">
+                                        <a href="/Admin/CoachQuestion/Detail/@q.QuestionId" class="btn btn-sm btn-success w-100 mb-1">
+                                            ✏️ Cevapla
+                                        </a>
+                                        <a href="/Admin/User/Detail/@q.AskedByUserId" class="btn btn-sm btn-outline-primary w-100">
+                                            👤 Profil Detayını Gör
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- ✅ Cevaplanmış -->
+        <div class="tab-pane fade" id="answered" role="tabpanel">
+            @if (!answered.Any())
+            {
+                <div class="alert alert-info text-center">Henüz cevaplanmış soru yok.</div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var q in answered)
+                    {
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card shadow-sm border-success h-100">
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <img src="@q.AskedByUserPhoto" class="rounded-circle me-2" width="40" height="40" />
+                                        <div>
+                                            <strong>@q.AskedByUserName</strong>
+                                            <div class="text-muted small">🗓 @q.AskedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                                        </div>
+                                    </div>
+                                    <p class="fw-bold text-dark">📌 @q.QuestionText</p>
+                                    <p class="text-success mb-1">✅ @q.AnswerText</p>
+                                    <div class="text-muted small mb-2">
+                                        👨‍🏫 @q.AnsweredByCoachName
+                                        🗓 @q.AnsweredAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                    </div>
+
+                                    <div class="mt-auto">
+                                        <a href="/Admin/CoachQuestion/Detail/@q.QuestionId" class="btn btn-sm btn-warning w-100 mb-1">
+                                            ✏️ Cevabı Değiştir
+                                        </a>
+                                        <a href="/Admin/User/Detail/@q.AskedByUserId" class="btn btn-sm btn-outline-primary w-100">
+                                            👤 Profil Detayını Gör
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+</style>

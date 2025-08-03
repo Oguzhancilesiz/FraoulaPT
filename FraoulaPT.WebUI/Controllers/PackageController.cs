@@ -87,9 +87,23 @@ namespace FraoulaPT.WebUI.Controllers
             };
 
             var result = await _userPackageService.CreateAsync(dto);
-
             if (result)
             {
+                // 📌 2. İlk defa paket alıyorsa roller ekle
+                var user = await _userManager.FindByIdAsync(userId.ToString());
+                var currentRoles = await _userManager.GetRolesAsync(user);
+
+                var rolesToAdd = new List<string>();
+
+                if (!currentRoles.Contains("User"))
+                    rolesToAdd.Add("User");
+
+                if (!currentRoles.Contains("Ogrenci"))
+                    rolesToAdd.Add("Ogrenci");
+
+                if (rolesToAdd.Any())
+                    await _userManager.AddToRolesAsync(user, rolesToAdd);
+
                 ShowAlert("Başarılı", "Paket satın alma işlemi başarılı.", AlertType.success);
             }
             else

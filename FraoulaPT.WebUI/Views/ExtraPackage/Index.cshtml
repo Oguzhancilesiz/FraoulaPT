@@ -3,15 +3,17 @@
 
 @{
     ViewData["Title"] = "Ek Paketler";
-    Layout = "~/Views/Shared/_Layout.cshtml"; 
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container py-5">
-    <h2 class="text-center mb-4">🧩 Ek Paket Seçenekleri</h2>
+    <h2 class="text-center mb-4 fw-bold text-warning">🧩 Ek Paket Seçenekleri</h2>
 
     @if (Model == null || !Model.Any())
     {
-        <div class="alert alert-info text-center">Şu anda sunulan bir ek paket bulunmamaktadır.</div>
+        <div class="alert alert-warning text-center shadow-sm border-0 rounded-3">
+            Şu anda sunulan bir ek paket bulunmamaktadır.
+        </div>
     }
     else
     {
@@ -19,21 +21,23 @@
             @foreach (var item in Model)
             {
                 <div class="col">
-                    <div class="card h-100 shadow-sm border-primary">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title text-primary">@item.Name</h5>
-                            <p class="mb-2"><strong>Tür:</strong> @item.Type</p>
-                            <p class="mb-2"><strong>Adet:</strong> @item.Amount</p>
-                            <p class="mb-2"><strong>Fiyat:</strong> @($"{item.Price:C2}")</p>
-                        
-                            <div class="mt-auto text-center">
+                    <div class="card h-100 shadow-lg border-0" style="background-color: rgba(20,20,20,0.95); color: #f1f1f1; border-radius: 12px;">
+                        <div class="card-body d-flex flex-column p-4">
+                            <h5 class="card-title fw-bold text-warning mb-3">@item.Name</h5>
+                            <p class="mb-2"><strong class="text-light">Tür:</strong> <span class="text-secondary">@item.Type</span></p>
+                            <p class="mb-2"><strong class="text-light">Adet:</strong> <span class="text-secondary">@item.Amount</span></p>
+                            <p class="mb-3"><strong class="text-light">Fiyat:</strong> <span class="text-success fw-bold">@($"{item.Price:C2}")</span></p>
+
+                            <div class="mt-auto">
                                 <form method="post" asp-action="PurchaseExtraPackage" asp-controller="ExtraPackage">
                                     <input type="hidden" name="extraPackageOptionId" value="@item.Id" />
-                                    <button type="submit" class="btn btn-outline-success w-100">
+                                    <button type="submit" class="btn w-100 fw-semibold"
+                                            style="background-color: #cc6a00; border-color: #cc6a00; color: #fff;"
+                                            onmouseover="this.style.backgroundColor='#e6801a'"
+                                            onmouseout="this.style.backgroundColor='#cc6a00'">
                                         <i class="bi bi-cart-plus"></i> Satın Al
                                     </button>
                                 </form>
-
                             </div>
                         </div>
                     </div>

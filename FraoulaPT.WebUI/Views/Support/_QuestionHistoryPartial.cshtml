@@ -1,0 +1,67 @@
+﻿@model List<FraoulaPT.DTOs.UserQuestionDTOs.UserQuestionDTO>
+
+@{
+    var total = Model.Count;
+
+    // Önce cevabı olanları yukarı al, sonra tarih sıralaması
+    var latestQuestions = Model
+        .OrderByDescending(q => !string.IsNullOrWhiteSpace(q.AnswerText)) // cevaplı olanlar önce
+        .ThenByDescending(q => q.AnsweredAt ?? q.AskedAt) // sonra tarih
+        .Take(1)
+        .ToList();
+
+    var remainingCount = total - latestQuestions.Count;
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning text-center shadow-sm border-0">
+        <i class="bi bi-info-circle-fill me-1"></i> Daha önce bir soru sormadınız.
+    </div>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var question in latestQuestions)
+        {
+            <div class="list-group-item bg-dark text-light rounded shadow-sm mb-2 border border-secondary">
+                <p class="mb-2">
+                    <strong class="text-warning"><i class="bi bi-question-circle me-1"></i>Soru:</strong>
+                    @question.QuestionText
+                </p>
+
+                @if (!string.IsNullOrWhiteSpace(question.AnswerText))
+                {
+                    <p class="mb-2 text-success">
+                        <strong><i class="bi bi-chat-dots-fill me-1"></i>Cevap:</strong>
+                        @question.AnswerText
+                    </p>
+                    <small class="text-muted d-block mb-2">
+                        <i class="bi bi-person-badge me-1"></i>Yanıtlayan: @question.CoachName
+                        <span class="ms-2"><i class="bi bi-clock-history me-1"></i>@question.AnsweredAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</span>
+                    </small>
+                    <a href="@Url.Action("QuestionDetail", "Support", new { id = question.QuestionId })"
+                       class="btn btn-sm btn-outline-warning text-light border-warning">
+                        <i class="bi bi-eye me-1"></i> Görüntüle
+                    </a>
+                }
+                else
+                {
+                    <small class="text-warning">
+                        <i class="bi bi-hourglass-split me-1"></i> Bu soru henüz yanıtlanmadı.
+                    </small>
+                }
+            </div>
+        }
+
+        @if (remainingCount > 0)
+        {
+            <div class="text-center mt-3">
+                <a href="/Support/AllMyQuestions"
+                   class="btn btn-sm btn-outline-light border-secondary mt-2">
+                    <i class="bi bi-list-ul me-1"></i>+@remainingCount Tümünü Gör
+                </a>
+            </div>
+        }
+    </div>
+}

@@ -22,6 +22,10 @@ namespace FraoulaPT.Services.Concrete
             _unitOfWork = unitOfWork;
         }
 
+        /// <summary>
+        /// Tüm package'leri getirir.
+        /// </summary>
+        /// <returns></returns>
         public async Task<List<PackageListDTO>> GetAllAsync()
         {
             var entities = await _unitOfWork.Repository<Package>()
@@ -32,13 +36,21 @@ namespace FraoulaPT.Services.Concrete
             return entities.Adapt<List<PackageListDTO>>();
         }
 
-
+        /// <summary>
+        /// ID'sine göre bir package getirir.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<PackageDetailDTO> GetByIdAsync(Guid id)
         {
             var entity = await _unitOfWork.Repository<Package>().GetById(id);
             return entity?.Adapt<PackageDetailDTO>();
         }
-
+        /// <summary>
+        /// Yeni bir package ekler.
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         public async Task<bool> AddAsync(PackageCreateDTO dto)
         {
             var entity = dto.Adapt<Package>();
@@ -46,7 +58,11 @@ namespace FraoulaPT.Services.Concrete
             await _unitOfWork.Repository<Package>().AddAsync(entity);
             return await _unitOfWork.SaveChangesAsync() > 0;
         }
-
+        /// <summary>
+        /// Mevcut bir package'yi günceller.
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         public async Task<bool> UpdateAsync(PackageUpdateDTO dto)
         {
             // Aynı ID'ye sahip entity context içinde zaten varsa onu çekiyoruz
@@ -60,7 +76,11 @@ namespace FraoulaPT.Services.Concrete
             return await _unitOfWork.SaveChangesAsync() > 0;
         }
 
-
+        /// <summary>
+        /// Belirtilen ID'ye sahip package'yi soft delete yapar.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<bool> SoftDeleteAsync(Guid id)
         {
             var entity = await _unitOfWork.Repository<Package>().GetById(id);

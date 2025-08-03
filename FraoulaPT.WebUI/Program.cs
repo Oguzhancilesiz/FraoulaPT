@@ -1,12 +1,15 @@
 using FraoulaPT.Core.Abstracts;
+using FraoulaPT.Core.Enums;
 using FraoulaPT.Core.Tokens;
 using FraoulaPT.DAL;
 using FraoulaPT.Entity;
 using FraoulaPT.Services.Abstracts;
 using FraoulaPT.Services.Concrete;
+using FraoulaPT.WebUI.Hubs;
 using FraoulaPT.WebUI.Infrastructure.Auth;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Configuration;
@@ -21,17 +24,14 @@ namespace FraoulaPT.WebUI
 
             builder.Services.AddControllersWithViews();
 
-         
-
-
+            // DbContext
             builder.Services.AddDbContext<BaseContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // IEFContext’i DI Container’a kaydet
             builder.Services.AddScoped<IEFContext>(provider => provider.GetService<BaseContext>());
+            builder.Services.AddScoped<IEFContext, BaseContext>(); // Gerekliyse
 
-            builder.Services.AddSignalR();
-
+            // Identity
             builder.Services.AddIdentity<AppUser, AppRole>(option =>
             {
                 option.User.RequireUniqueEmail = true;
@@ -42,24 +42,30 @@ namespace FraoulaPT.WebUI
                 option.SignIn.RequireConfirmedEmail = true;
                 option.Password.RequireNonAlphanumeric = false;
                 option.Password.RequireLowercase = false;
-            }).AddEntityFrameworkStores<BaseContext>().AddDefaultTokenProviders();
+            })
+            .AddEntityFrameworkStores<BaseContext>()
+            .AddDefaultTokenProviders();
+
             builder.Services.ConfigureApplicationCookie(options =>
             {
                 options.LoginPath = "/Auth/Login";
                 options.AccessDeniedPath = "/Auth/AccessDenied";
                 options.EventsType = typeof(CustomRedirectHandler);
             });
-            builder.Services.AddScoped<CustomRedirectHandler>();
+
             builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
             {
-                options.TokenLifespan = TimeSpan.FromMinutes(2); // 2 dakika
+                options.TokenLifespan = TimeSpan.FromMinutes(2);
             });
 
-            //IOC -> Razor View Engine Dependency Injection yapmak için hangi interface hangi classla eþleþiyor buradan bilgi alýyor.
-            builder.Services.AddScoped<IEFContext, BaseContext>();
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<CustomRedirectHandler>();
 
-            // Application Service Registration
+            // SignalR + Custom UserIdProvider
+            builder.Services.AddSignalR();
+            builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+
+            // Service Registration
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IAppRoleService, AppRoleService>();
             builder.Services.AddScoped<IAppUserService, AppUserService>();
             builder.Services.AddScoped<IChatMediaService, ChatMediaService>();
@@ -82,7 +88,10 @@ namespace FraoulaPT.WebUI
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // SignalR Hub route
+            app.MapHub<ChatHub>("/chathub");
+
+            // Middleware pipeline
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -92,15 +101,14 @@ namespace FraoulaPT.WebUI
             app.UseHttpsRedirection();
             app.UseRouting();
 
-            app.UseAuthentication(); // GÝRÝÞ BURADA!
-            app.UseAuthorization();  // sonra authorization çalýþýr
+            app.UseAuthentication(); // Giriþ kontrolü
+            app.UseAuthorization();  // Rol/Yetki kontrolü
 
             app.MapStaticAssets();
 
             app.MapControllerRoute(
-                       name: "areas",
-                       pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
-                     );
+                name: "areas",
+                pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
             app.MapControllerRoute(
                 name: "default",
@@ -108,8 +116,6 @@ namespace FraoulaPT.WebUI
                 .WithStaticAssets();
 
             app.Run();
-
-
         }
     }
 }

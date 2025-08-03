@@ -17,13 +17,15 @@ namespace FraoulaPT.WebUI.Controllers
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IMailService _mailService;
         private readonly IMemoryCache _memoryCache;
+        private readonly IUserPackageService _userPackageService;
 
-        public AuthController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IMailService mailService, IMemoryCache memoryCache)
+        public AuthController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IMailService mailService, IMemoryCache memoryCache, IUserPackageService userPackageService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _mailService = mailService;
             _memoryCache = memoryCache;
+            _userPackageService = userPackageService;
         }
 
         // GET: /Auth/Register
@@ -71,11 +73,11 @@ namespace FraoulaPT.WebUI.Controllers
                             ";
                 await _mailService.SendAsync(user.Email, subject, body);
 
-                ShowMessage("Kayıt başarılı! E-posta adresine doğrulama bağlantısı gönderildi. Onayladıktan sonra giriş yapabilirsin.", MessageType.Success);
+                ShowAlert("Bilgi", "Kayıt başarılı! E-posta adresinize doğrulama linki gönderildi.", Core.Enums.AlertType.info);
                 return RedirectToAction("Login", "Auth");
             }
 
-            ShowMessage("Kayıt başarısız! Lütfen bilgilerinizi kontrol edin.", MessageType.Error);
+            ShowAlert("Hata", "Kayıt başarısız. Lütfen bilgilerinizi kontrol edin.", Core.Enums.AlertType.error);
             foreach (var error in result.Errors)
                 ModelState.AddModelError("", error.Description);
 
@@ -88,14 +90,14 @@ namespace FraoulaPT.WebUI.Controllers
         {
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
             {
-                ShowMessage("Geçersiz doğrulama isteği.", MessageType.Error);
+                ShowAlert("Hata", "Geçersiz doğrulama isteği.", Core.Enums.AlertType.error);
                 return RedirectToAction("Login");
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                ShowMessage("Kullanıcı bulunamadı.", MessageType.Error);
+                ShowAlert("Hata", "Kullanıcı bulunamadı.", Core.Enums.AlertType.error);
                 return RedirectToAction("Login");
             }
 
@@ -103,12 +105,12 @@ namespace FraoulaPT.WebUI.Controllers
 
             if (result.Succeeded)
             {
-                ShowMessage("E-posta doğrulama başarılı! Artık giriş yapabilirsin.", MessageType.Success);
+                ShowAlert("Başarılı", "E-posta adresiniz başarıyla doğrulandı. Giriş yapabilirsiniz.", Core.Enums.AlertType.success);
                 return RedirectToAction("Login");
             }
             else
             {
-                ShowMessage("E-posta doğrulama başarısız veya süresi dolmuş. Lütfen tekrar deneyin.", MessageType.Error);
+                ShowAlert("Hata", "E-posta doğrulama başarısız. Lütfen tekrar deneyin.", Core.Enums.AlertType.error);
                 return RedirectToAction("Login");
             }
         }
@@ -133,35 +135,52 @@ namespace FraoulaPT.WebUI.Controllers
 
             if (user == null || user.Status != FraoulaPT.Core.Enums.Status.Active)
             {
-                ShowMessage("Kullanıcı bulunamadı veya aktif değil.", MessageType.Error);
+                ShowAlert("Uyarı", "Kullanıcı bulunamadı veya aktif değil", Core.Enums.AlertType.warning);
                 return View(dto);
             }
 
             if (!await _userManager.IsEmailConfirmedAsync(user))
             {
-                ShowMessage("E-posta adresinizi doğrulamanız gerekiyor. Lütfen e-posta kutunuzu kontrol edin.", MessageType.Error);
+                ShowAlert("Uyarı", "E-posta adresiniz doğrulanmamış. Lütfen e-postanızı kontrol edin.", Core.Enums.AlertType.warning);
                 return View(dto);
             }
             var result = await _signInManager.PasswordSignInAsync(user.UserName, dto.Password, false, false);
 
             if (result.Succeeded)
             {
+                var userId = Guid.Parse(user.Id.ToString());
+                var remainingDays = await _userPackageService.GetRemainingDaysAsync(userId);
+
+                // ✅ Aktif paketi varsa kontrol et
+                if (remainingDays.HasValue)
+                {
+                    if (remainingDays.Value <= 3)
+                    {
+                        ShowAlert(
+                            "Uyarı",
+                            $"Paketinizin bitmesine {remainingDays.Value} gün kaldı. Yeni paket almayı unutmayın!",
+                            Core.Enums.AlertType.warning
+                        );
+                    }
+                }
+
                 // Kendi claim'lerini oluştur
                 var claims = new List<Claim>
                 {
-
                     new Claim("FullName", user.FullName ?? user.UserName),
                     new Claim("ProfilePhotoUrl", user.Profile?.ProfilePhotoUrl ?? "/uploads/user-default.jpg")
                 };
-                // Mevcut authentication'ı güncelle!
+
+                // Mevcut authentication'ı güncelle
                 await _signInManager.SignOutAsync();
                 await _signInManager.SignInWithClaimsAsync(user, false, claims);
 
-                ShowMessage("Giriş başarılı!", MessageType.Success);
+                ShowAlert("Başarılı", $"Hoşgeldin {user.FullName}", Core.Enums.AlertType.success);
                 return RedirectToAction("Index", "Home");
             }
 
-            ShowMessage("Giriş başarısız! Lütfen kullanıcı adı ve şifrenizi kontrol edin.", MessageType.Error);
+
+            ShowAlert("Uyarı", "Kullanıcı adı veya şifre hatalı", Core.Enums.AlertType.warning);
             return View(dto);
         }
 
@@ -183,14 +202,14 @@ namespace FraoulaPT.WebUI.Controllers
             var cacheKey = $"ForgotPwd_{dto.Email}";
             if (_memoryCache.TryGetValue(cacheKey, out _))
             {
-                ShowMessage("Son şifre yenileme talebiniz hâlâ geçerli. Lütfen birkaç dakika sonra tekrar deneyin.", MessageType.Warning);
+                ShowAlert("Uyarı", "Şifre yenileme isteği için lütfen 2 dakika bekleyin.", Core.Enums.AlertType.warning);
                 return View(dto);
             }
 
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
-                ShowMessage("Kullanıcı bulunamadı.", MessageType.Error);
+                ShowAlert("Hata", "Kullanıcı bulunamadı.", Core.Enums.AlertType.error);
                 return View(dto);
             }
 
@@ -212,7 +231,7 @@ namespace FraoulaPT.WebUI.Controllers
             // Limit Anahtarı setleniyor
             _memoryCache.Set(cacheKey, true, TimeSpan.FromMinutes(2));
             ViewBag.ResetPasswordWaitSeconds = 120; // 2 dakika
-            ShowMessage("Şifre yenileme bağlantısı e-posta adresine gönderildi.", MessageType.Success);
+            ShowAlert("Bilgi", "Şifre yenileme bağlantısı e-posta adresinize gönderildi. Lütfen e-postanızı kontrol edin.", Core.Enums.AlertType.info);
             return View();
         }
 

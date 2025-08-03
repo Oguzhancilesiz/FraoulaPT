@@ -6,137 +6,163 @@
 }
 
 <div class="container py-5">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-dark text-white fw-semibold text-center">
+    <div class="card shadow-lg border-0"
+         style="background-color: rgba(25,25,25,0.95); color: #f1f1f1; border-radius: 12px;">
+        <div class="card-header text-center fw-bold"
+             style="background: linear-gradient(90deg, #ff7b00, #cc6600); color: white; font-size: 1.2rem;">
             <i class="bi bi-person-lines-fill me-2"></i> Profilini Tamamla
         </div>
         <div class="card-body">
             <form asp-action="CompleteProfile" method="post" enctype="multipart/form-data">
                 <div asp-validation-summary="All" class="text-danger small mb-3"></div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Profil Fotoğrafı</label>
-                        <input type="file" name="ProfilePhotoUrl" class="form-control" />
+                <div class="row g-3">
+                    <!-- Profil Fotoğrafı -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Profil Fotoğrafı</label>
+                        <input type="file" name="ProfilePhotoUrl" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Instagram" class="form-label">Instagram</label>
-                        <input asp-for="Instagram" class="form-control" />
+
+                    <div class="col-md-6">
+                        <label asp-for="Instagram" class="form-label fw-semibold">Instagram</label>
+                        <input asp-for="Instagram" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Gender" class="form-label">Cinsiyet</label>
-                        <select asp-for="Gender" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.Gender>()"></select>
+                    <div class="col-md-6">
+                        <label asp-for="Gender" class="form-label fw-semibold">Cinsiyet</label>
+                        <select asp-for="Gender" class="form-select bg-dark text-light border-secondary"
+                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.Gender>()"></select>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="BirthDate" class="form-label">Doğum Tarihi</label>
-                        <input asp-for="BirthDate" type="date" class="form-control" />
+
+                    <div class="col-md-6">
+                        <label asp-for="BirthDate" class="form-label fw-semibold">Doğum Tarihi</label>
+                        <input asp-for="BirthDate" type="date" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="HeightCm" class="form-label">Boy (cm)</label>
-                        <input asp-for="HeightCm" class="form-control" />
+                    <div class="col-md-6">
+                        <label asp-for="HeightCm" class="form-label fw-semibold">Boy (cm)</label>
+                        <input asp-for="HeightCm" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="WeightKg" class="form-label">Kilo (kg)</label>
-                        <input asp-for="WeightKg" class="form-control" />
+
+                    <div class="col-md-6">
+                        <label asp-for="WeightKg" class="form-label fw-semibold">Kilo (kg)</label>
+                        <input asp-for="WeightKg" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="BodyType" class="form-label">Vücut Tipi</label>
-                        <select asp-for="BodyType" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.BodyType>()"></select>
+                    <div class="col-md-6">
+                        <label asp-for="BodyType" class="form-label fw-semibold">Vücut Tipi</label>
+                        <select asp-for="BodyType" class="form-select bg-dark text-light border-secondary"
+                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.BodyType>()"></select>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="BloodType" class="form-label">Kan Grubu</label>
-                        <select asp-for="BloodType" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.BloodType>()"></select>
+
+                    <div class="col-md-6">
+                        <label asp-for="BloodType" class="form-label fw-semibold">Kan Grubu</label>
+                        <select asp-for="BloodType" class="form-select bg-dark text-light border-secondary"
+                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.BloodType>()"></select>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="PhoneNumber" class="form-label">Telefon</label>
-                        <input asp-for="PhoneNumber" class="form-control" />
+                    <div class="col-md-6">
+                        <label asp-for="PhoneNumber" class="form-label fw-semibold">Telefon</label>
+                        <input asp-for="PhoneNumber" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Address" class="form-label">Adres</label>
-                        <input asp-for="Address" class="form-control" />
+
+                    <div class="col-12">
+                        <label asp-for="Address" class="form-label fw-semibold">Adres</label>
+                        <textarea asp-for="Address" rows="2" class="form-control bg-dark text-light border-secondary"></textarea>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="EmergencyContactName" class="form-label">Acil Durum Kişisi</label>
-                        <input asp-for="EmergencyContactName" class="form-control" />
+
+                    <div class="col-md-6">
+                        <label asp-for="EmergencyContactName" class="form-label fw-semibold">Acil Durum Kişisi</label>
+                        <input asp-for="EmergencyContactName" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="EmergencyContactPhone" class="form-label">Acil Durum Telefon</label>
-                        <input asp-for="EmergencyContactPhone" class="form-control" />
+                    <div class="col-md-6">
+                        <label asp-for="EmergencyContactPhone" class="form-label fw-semibold">Acil Durum Telefon</label>
+                        <input asp-for="EmergencyContactPhone" class="form-control bg-dark text-light border-secondary" />
                     </div>
                 </div>
 
-                <hr class="my-4">
+                <hr class="my-4 text-secondary">
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="MedicalHistory" class="form-label">Medikal Geçmiş</label>
-                        <input asp-for="MedicalHistory" class="form-control" />
+                <!-- Sağlık Bilgileri -->
+                <h5 class="text-warning fw-bold mb-3"><i class="bi bi-heart-pulse me-1"></i> Sağlık Bilgileri</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="MedicalHistory" class="form-label fw-semibold">Medikal Geçmiş</label>
+                        <input asp-for="MedicalHistory" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="ChronicDiseases" class="form-label">Kronik Hastalıklar</label>
-                        <input asp-for="ChronicDiseases" class="form-control" />
+                    <div class="col-md-6">
+                        <label asp-for="ChronicDiseases" class="form-label fw-semibold">Kronik Hastalıklar</label>
+                        <input asp-for="ChronicDiseases" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="CurrentMedications" class="form-label">Kullandığı İlaçlar</label>
-                        <input asp-for="CurrentMedications" class="form-control" />
+
+                    <div class="col-md-6">
+                        <label asp-for="CurrentMedications" class="form-label fw-semibold">Kullandığı İlaçlar</label>
+                        <input asp-for="CurrentMedications" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Allergies" class="form-label">Alerjiler</label>
-                        <input asp-for="Allergies" class="form-control" />
+                    <div class="col-md-6">
+                        <label asp-for="Allergies" class="form-label fw-semibold">Alerjiler</label>
+                        <input asp-for="Allergies" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="PastInjuries" class="form-label">Geçmiş Yaralanmalar</label>
-                        <input asp-for="PastInjuries" class="form-control" />
+
+                    <div class="col-md-6">
+                        <label asp-for="PastInjuries" class="form-label fw-semibold">Geçmiş Yaralanmalar</label>
+                        <input asp-for="PastInjuries" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="CurrentPain" class="form-label">Mevcut Ağrı</label>
-                        <input asp-for="CurrentPain" class="form-control" />
+                    <div class="col-md-6">
+                        <label asp-for="CurrentPain" class="form-label fw-semibold">Mevcut Ağrı</label>
+                        <input asp-for="CurrentPain" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="LastCheckResults" class="form-label">Son Sağlık Kontrolü</label>
-                        <input asp-for="LastCheckResults" class="form-control" />
+
+                    <div class="col-md-6">
+                        <label asp-for="LastCheckResults" class="form-label fw-semibold">Son Sağlık Kontrolü</label>
+                        <input asp-for="LastCheckResults" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="SmokingAlcohol" class="form-label">Sigara / Alkol</label>
-                        <input asp-for="SmokingAlcohol" class="form-control" />
+                    <div class="col-md-6">
+                        <label asp-for="SmokingAlcohol" class="form-label fw-semibold">Sigara / Alkol</label>
+                        <input asp-for="SmokingAlcohol" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Occupation" class="form-label">Meslek</label>
-                        <input asp-for="Occupation" class="form-control" />
+                </div>
+
+                <hr class="my-4 text-secondary">
+
+                <!-- Spor & Diğer Bilgiler -->
+                <h5 class="text-warning fw-bold mb-3"><i class="bi bi-bicycle me-1"></i> Spor & Diğer Bilgiler</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Occupation" class="form-label fw-semibold">Meslek</label>
+                        <input asp-for="Occupation" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="ExperienceLevel" class="form-label">Spor Deneyimi</label>
-                        <select asp-for="ExperienceLevel" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.ExperienceLevel>()"></select>
+                    <div class="col-md-6">
+                        <label asp-for="ExperienceLevel" class="form-label fw-semibold">Spor Deneyimi</label>
+                        <select asp-for="ExperienceLevel" class="form-select bg-dark text-light border-secondary"
+                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.ExperienceLevel>()"></select>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="FavoriteSports" class="form-label">Favori Sporlar</label>
-                        <input asp-for="FavoriteSports" class="form-control" />
+
+                    <div class="col-md-6">
+                        <label asp-for="FavoriteSports" class="form-label fw-semibold">Favori Sporlar</label>
+                        <input asp-for="FavoriteSports" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="Notes" class="form-label">Ek Notlar</label>
-                        <input asp-for="Notes" class="form-control" />
+                    <div class="col-md-6">
+                        <label asp-for="Notes" class="form-label fw-semibold">Ek Notlar</label>
+                        <input asp-for="Notes" class="form-control bg-dark text-light border-secondary" />
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label asp-for="DietType" class="form-label">Beslenme Tipi</label>
-                        <select asp-for="DietType" class="form-select" asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.DietType>()"></select>
+
+                    <div class="col-md-6">
+                        <label asp-for="DietType" class="form-label fw-semibold">Beslenme Tipi</label>
+                        <select asp-for="DietType" class="form-select bg-dark text-light border-secondary"
+                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.DietType>()"></select>
                     </div>
-                    <div class="col-md-6 mb-3 form-check">
+                    <div class="col-md-6 form-check mt-4">
                         <input type="hidden" name="PregnancyStatus" value="" />
-                        <input type="checkbox"
-                               class="form-check-input"
-                               id="PregnancyStatus"
-                               name="PregnancyStatus"
-                               value="true"
-                        @(Model.PregnancyStatus == true ? "checked" : "") />
+                        <input type="checkbox" class="form-check-input" id="PregnancyStatus" name="PregnancyStatus"
+                               value="true" @(Model.PregnancyStatus == true ? "checked" : "") />
                         <label class="form-check-label" for="PregnancyStatus">Hamilelik Durumu</label>
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between mt-4">
-                    <button type="submit" class="btn btn-success px-4" name="action" value="save">
+                <!-- Butonlar -->
+                <div class="d-flex flex-column flex-md-row justify-content-between mt-4 gap-2">
+                    <button type="submit" class="btn fw-semibold text-white" name="action" value="save"
+                            style="background: linear-gradient(90deg, #ff7b00, #cc6600);">
                         <i class="bi bi-check-circle me-1"></i> Kaydet
                     </button>
-                    <button type="submit" class="btn btn-secondary" name="action" value="skip">
+                    <button type="submit" class="btn btn-outline-light fw-semibold" name="action" value="skip">
                         Daha Sonra
                     </button>
                 </div>
