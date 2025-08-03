@@ -35,5 +35,22 @@ namespace FraoulaPT.DTOs.UserProfileDTOs
         public string FavoriteSports { get; set; }
         public string Notes { get; set; }
         public FraoulaPT.Core.Enums.DietType? DietType { get; set; }
+
+        // Kalori hesaplama için yeni alanlar
+        public FraoulaPT.Core.Enums.ActivityLevel? ActivityLevel { get; set; }
+        public FraoulaPT.Core.Enums.GoalType? GoalType { get; set; }
+        public double? TargetWeight { get; set; }
+        public int? DailyCalorieGoal { get; set; }
+        public int? DailyProteinGoal { get; set; }
+        public int? DailyCarbGoal { get; set; }
+        public int? DailyFatGoal { get; set; }
+        public double? BodyFatPercentage { get; set; }
+        public double? MuscleMassPercentage { get; set; }
+        public double? WaterPercentage { get; set; }
+        public double? BoneMass { get; set; }
+        public double? VisceralFat { get; set; }
+        public double? MetabolicAge { get; set; }
+        public double? BMR { get; set; } // Basal Metabolic Rate
+        public double? TDEE { get; set; } // Total Daily Energy Expenditure
     }
 }

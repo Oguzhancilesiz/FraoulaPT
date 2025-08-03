@@ -7,6 +7,7 @@ using FraoulaPT.Services.Abstracts;
 using FraoulaPT.Services.Concrete;
 using FraoulaPT.WebUI.Hubs;
 using FraoulaPT.WebUI.Infrastructure.Auth;
+using FraoulaPT.WebUI.Data;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
@@ -18,7 +19,7 @@ namespace FraoulaPT.WebUI
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -85,8 +86,21 @@ namespace FraoulaPT.WebUI
             builder.Services.AddScoped<IMailService, MailService>();
             builder.Services.AddScoped<IExtraPackageOptionService, ExtraPackageOptionService>();
             builder.Services.AddScoped<IExtraRightService, ExtraRightService>();
+            
+            // Kalori hesaplama servisi
+            builder.Services.AddScoped<ICalorieCalculationService, CalorieCalculationService>();
+            
+            // E-ticaret servisleri
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IShippingRateService, ShippingRateService>();
 
             var app = builder.Build();
+
+            // Seed Data - Geçici olarak devre dışı
+            // using (var scope = app.Services.CreateScope())
+            // {
+            //     await SeedData.Initialize(scope.ServiceProvider);
+            // }
 
             // SignalR Hub route
             app.MapHub<ChatHub>("/chathub");
@@ -101,8 +115,8 @@ namespace FraoulaPT.WebUI
             app.UseHttpsRedirection();
             app.UseRouting();
 
-            app.UseAuthentication(); // Giri� kontrol�
-            app.UseAuthorization();  // Rol/Yetki kontrol�
+            app.UseAuthentication(); // Giriş kontrolü
+            app.UseAuthorization();  // Rol/Yetki kontrolü
 
             app.MapStaticAssets();
 

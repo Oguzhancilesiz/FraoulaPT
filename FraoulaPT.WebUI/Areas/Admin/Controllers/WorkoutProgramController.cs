@@ -9,6 +9,7 @@ using FraoulaPT.Services.Abstracts;
 using FraoulaPT.Services.Concrete;
 using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.WorkoutProgramViewModels;
 using FraoulaPT.WebUI.Models.Enums;
+
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -55,7 +56,7 @@ namespace FraoulaPT.WebUI.Areas.Admin.Controllers
             updateDto.CoachFeedback = note;
             await _formService.UpdateAsync(updateDto);
             await _unitOfWork.SaveChangesAsync();
-            ShowMessage("Not Güncellendi", MessageType.Success);
+            ShowMessage("Not Güncellendi", FraoulaPT.WebUI.Models.Enums.MessageType.Success);
             return Ok();
         }
 
@@ -173,7 +174,7 @@ namespace FraoulaPT.WebUI.Areas.Admin.Controllers
                 // Loglama yapabilirsin
                 return BadRequest("Egzersiz eklenirken hata oluştu: " + ex.Message);
             }
-            ShowMessage("Egzersiz başarıyla eklendi.", MessageType.Success);
+            ShowMessage("Egzersiz başarıyla eklendi.", FraoulaPT.WebUI.Models.Enums.MessageType.Success);
             return Ok();
         }
         [HttpGet]
@@ -218,12 +219,12 @@ namespace FraoulaPT.WebUI.Areas.Admin.Controllers
             try
             {
                 var programId = await _workoutProgramService.CreateAsync(dto, coach.Id);
-                ShowMessage("Program Oluşturuldu", MessageType.Success);
+                ShowMessage("Program Oluşturuldu", FraoulaPT.WebUI.Models.Enums.MessageType.Success);
                 return RedirectToAction("Detail", "UserWeeklyForm", new { area = "Admin", id = dto.UserWeeklyFormId });
             }
             catch (Exception ex)
             {
-                ShowMessage("Beklenmeyen bir hata meydana geldi. Daha sonra tekrar deneyin", MessageType.Error);
+                ShowMessage("Beklenmeyen bir hata meydana geldi. Daha sonra tekrar deneyin", FraoulaPT.WebUI.Models.Enums.MessageType.Error);
                 return View(dto);
             }
         }
@@ -241,13 +242,13 @@ namespace FraoulaPT.WebUI.Areas.Admin.Controllers
             try
             {
                 await _workoutExerciseService.UpdateAsync(dto);
-                ShowMessage("Hareket Başarıyla güncellendi", MessageType.Success);
+                ShowMessage("Hareket Başarıyla güncellendi", FraoulaPT.WebUI.Models.Enums.MessageType.Success);
                 return Ok();
 
             }
             catch (Exception ex)
             {
-                ShowMessage(ex.Message, MessageType.Error);
+                ShowMessage(ex.Message, FraoulaPT.WebUI.Models.Enums.MessageType.Error);
                 return NotFound();
             }
         }
@@ -255,7 +256,7 @@ namespace FraoulaPT.WebUI.Areas.Admin.Controllers
         public async Task<IActionResult> DeleteExercise([FromForm] Guid id)
         {
             await _workoutExerciseService.SoftDeleteAsync(id);
-            ShowMessage("Kaldırıldı", MessageType.Warning);
+            ShowMessage("Kaldırıldı", FraoulaPT.WebUI.Models.Enums.MessageType.Warning);
             return Ok();
         }
         public async Task<IActionResult> Index()

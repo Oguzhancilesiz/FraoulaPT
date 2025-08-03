@@ -1,0 +1,354 @@
+@{
+    ViewData["Title"] = "Kalori Hesaplayıcı";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sol Panel - Hesaplama Formu -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-calculator me-2"></i>Kalori Hesaplayıcı</h4>
+                </div>
+                <div class="card-body">
+                    <form id="calorieForm">
+                        <!-- Temel Bilgiler -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Kilo (kg)</label>
+                                <input type="number" class="form-control" id="weight" step="0.1" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Boy (cm)</label>
+                                <input type="number" class="form-control" id="height" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Doğum Tarihi</label>
+                                <input type="date" class="form-control" id="birthDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Cinsiyet</label>
+                                <select class="form-select" id="gender" required>
+                                    <option value="">Seçiniz</option>
+                                    <option value="1">Erkek</option>
+                                    <option value="2">Kadın</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Aktivite Seviyesi -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Aktivite Seviyesi</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="activityLevel" id="sedentary" value="1">
+                                        <label class="form-check-label" for="sedentary">
+                                            <strong>Hareketsiz</strong><br>
+                                            <small class="text-muted">Günlük aktivite yok, masa başı iş</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="activityLevel" id="lightlyActive" value="2">
+                                        <label class="form-check-label" for="lightlyActive">
+                                            <strong>Az Hareketli</strong><br>
+                                            <small class="text-muted">Hafif egzersiz 1-3 gün/hafta</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="activityLevel" id="moderatelyActive" value="3">
+                                        <label class="form-check-label" for="moderatelyActive">
+                                            <strong>Orta Hareketli</strong><br>
+                                            <small class="text-muted">Orta egzersiz 3-5 gün/hafta</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="activityLevel" id="veryActive" value="4">
+                                        <label class="form-check-label" for="veryActive">
+                                            <strong>Çok Hareketli</strong><br>
+                                            <small class="text-muted">Yoğun egzersiz 6-7 gün/hafta</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="activityLevel" id="extremelyActive" value="5">
+                                        <label class="form-check-label" for="extremelyActive">
+                                            <strong>Aşırı Hareketli</strong><br>
+                                            <small class="text-muted">Çok yoğun egzersiz, fiziksel iş</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hedef -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Hedefiniz</label>
+                            <select class="form-select" id="goalType" required>
+                                <option value="">Seçiniz</option>
+                                <option value="1">Kilo Verme</option>
+                                <option value="2">Kilo Alma</option>
+                                <option value="3">Kilo Koruma</option>
+                                <option value="4">Kas Kazanma</option>
+                                <option value="5">Yağ Yakma</option>
+                            </select>
+                        </div>
+
+                        <!-- Hedef Kilo -->
+                        <div class="mb-4" id="targetWeightSection" style="display: none;">
+                            <label class="form-label fw-bold">Hedef Kilo (kg)</label>
+                            <input type="number" class="form-control" id="targetWeight" step="0.1">
+                        </div>
+
+                        <!-- Vücut Yağ Oranı -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Vücut Yağ Oranı (%)</label>
+                            <input type="number" class="form-control" id="bodyFatPercentage" step="0.1" placeholder="Bilmiyorsanız boş bırakın">
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-calculator me-2"></i>Hesapla
+                            </button>
+                            <button type="button" class="btn btn-success" id="saveProfile" style="display: none;">
+                                <i class="fas fa-save me-2"></i>Profili Güncelle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Panel - Sonuçlar -->
+        <div class="col-lg-6">
+            <div id="results" style="display: none;">
+                <!-- Ana Metrikler -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="stats-card text-center">
+                            <i class="fas fa-fire fa-2x mb-2"></i>
+                            <h3 id="bmr">0</h3>
+                            <p class="mb-0">BMR (Bazal Metabolizma)</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="stats-card text-center">
+                            <i class="fas fa-bolt fa-2x mb-2"></i>
+                            <h3 id="tdee">0</h3>
+                            <p class="mb-0">TDEE (Günlük Enerji İhtiyacı)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hedef Kalori -->
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <h2 class="text-primary mb-2" id="targetCalories">0</h2>
+                        <p class="mb-0 fw-bold">Günlük Hedef Kalori</p>
+                    </div>
+                </div>
+
+                <!-- Makro Besinler -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Makro Besin Hedefleri</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <div class="progress-circle mb-2">
+                                    <span class="fw-bold" id="proteinPercent">0%</span>
+                                </div>
+                                <h6 class="text-primary">Protein</h6>
+                                <p class="mb-0" id="proteinGrams">0g</p>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="progress-circle mb-2">
+                                    <span class="fw-bold" id="carbPercent">0%</span>
+                                </div>
+                                <h6 class="text-success">Karbonhidrat</h6>
+                                <p class="mb-0" id="carbGrams">0g</p>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="progress-circle mb-2">
+                                    <span class="fw-bold" id="fatPercent">0%</span>
+                                </div>
+                                <h6 class="text-warning">Yağ</h6>
+                                <p class="mb-0" id="fatGrams">0g</p>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="progress-circle mb-2">
+                                    <span class="fw-bold" id="fiberPercent">0%</span>
+                                </div>
+                                <h6 class="text-info">Fiber</h6>
+                                <p class="mb-0" id="fiberGrams">0g</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vücut Metrikleri -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-user me-2"></i>Vücut Metrikleri</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>BMI:</strong> <span id="bmi">0</span></p>
+                                <p><strong>Tahmini Yağ Oranı:</strong> <span id="estimatedBodyFat">0</span>%</p>
+                                <p><strong>Yağsız Vücut Kütlesi:</strong> <span id="leanBodyMass">0</span> kg</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Protein İhtiyacı:</strong> <span id="proteinNeeds">0</span> g</p>
+                                <p><strong>Yaş:</strong> <span id="age">0</span></p>
+                                <p><strong>Hedef Kilo:</strong> <span id="targetWeightDisplay">-</span> kg</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Başlangıç Mesajı -->
+            <div id="welcomeMessage" class="text-center py-5">
+                <i class="fas fa-calculator fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">Kalori Hesaplayıcı</h4>
+                <p class="text-muted">Sol taraftaki formu doldurarak kalori ihtiyacınızı hesaplayın.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Hedef seçimi değiştiğinde
+            $('#goalType').change(function() {
+                const goalType = $(this).val();
+                if (goalType == '1' || goalType == '2' || goalType == '4') {
+                    $('#targetWeightSection').show();
+                } else {
+                    $('#targetWeightSection').hide();
+                }
+            });
+
+            // Form gönderimi
+            $('#calorieForm').submit(function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    weight: parseFloat($('#weight').val()),
+                    height: parseFloat($('#height').val()),
+                    birthDate: $('#birthDate').val(),
+                    gender: parseInt($('#gender').val()),
+                    activityLevel: parseInt($('input[name="activityLevel"]:checked').val()),
+                    goalType: parseInt($('#goalType').val()),
+                    targetWeight: $('#targetWeight').val() ? parseFloat($('#targetWeight').val()) : null,
+                    bodyFatPercentage: $('#bodyFatPercentage').val() ? parseFloat($('#bodyFatPercentage').val()) : null
+                };
+
+                // Validation
+                if (!formData.weight || !formData.height || !formData.birthDate || 
+                    !formData.gender || !formData.activityLevel || !formData.goalType) {
+                    alert('Lütfen tüm gerekli alanları doldurun.');
+                    return;
+                }
+
+                // Hesaplama
+                $.ajax({
+                    url: '/Calorie/Calculate',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                        if (response.success) {
+                            displayResults(response.data);
+                            $('#saveProfile').show();
+                        } else {
+                            alert('Hesaplama hatası: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+                    }
+                });
+            });
+
+            // Profil kaydetme
+            $('#saveProfile').click(function() {
+                const formData = {
+                    weight: parseFloat($('#weight').val()),
+                    height: parseFloat($('#height').val()),
+                    birthDate: $('#birthDate').val(),
+                    gender: parseInt($('#gender').val()),
+                    activityLevel: parseInt($('input[name="activityLevel"]:checked').val()),
+                    goalType: parseInt($('#goalType').val()),
+                    targetWeight: $('#targetWeight').val() ? parseFloat($('#targetWeight').val()) : null,
+                    bodyFatPercentage: $('#bodyFatPercentage').val() ? parseFloat($('#bodyFatPercentage').val()) : null
+                };
+
+                $.ajax({
+                    url: '/Calorie/SaveProfile',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                        if (response.success) {
+                            alert('Profil başarıyla güncellendi!');
+                        } else {
+                            alert('Hata: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+                    }
+                });
+            });
+
+            function displayResults(data) {
+                // Ana metrikler
+                $('#bmr').text(data.bmr);
+                $('#tdee').text(data.tdee);
+                $('#targetCalories').text(data.targetCalories);
+
+                // Makro besinler
+                $('#proteinGrams').text(data.macros.protein + 'g');
+                $('#carbGrams').text(data.macros.carbohydrates + 'g');
+                $('#fatGrams').text(data.macros.fat + 'g');
+                $('#fiberGrams').text(data.macros.fiber + 'g');
+
+                // Yüzdeler
+                const totalCalories = data.macros.protein * 4 + data.macros.carbohydrates * 4 + data.macros.fat * 9;
+                $('#proteinPercent').text(Math.round((data.macros.protein * 4 / totalCalories) * 100) + '%');
+                $('#carbPercent').text(Math.round((data.macros.carbohydrates * 4 / totalCalories) * 100) + '%');
+                $('#fatPercent').text(Math.round((data.macros.fat * 9 / totalCalories) * 100) + '%');
+
+                // Vücut metrikleri
+                $('#bmi').text(data.bmi.toFixed(1));
+                $('#estimatedBodyFat').text(data.estimatedBodyFat.toFixed(1));
+                $('#leanBodyMass').text(data.leanBodyMass.toFixed(1));
+                $('#proteinNeeds').text(data.proteinNeeds.toFixed(1));
+                $('#age').text(data.age);
+                $('#targetWeightDisplay').text(data.targetWeight || '-');
+
+                // Sonuçları göster
+                $('#welcomeMessage').hide();
+                $('#results').show();
+
+                // Progress circle'ları güncelle
+                updateProgressCircles();
+            }
+
+            function updateProgressCircles() {
+                // Progress circle animasyonları burada yapılabilir
+                $('.progress-circle').each(function() {
+                    $(this).addClass('animate__animated animate__fadeIn');
+                });
+            }
+        });
+    </script>
+} 

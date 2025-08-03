@@ -6,6 +6,7 @@ using FraoulaPT.Services.Concrete;
 using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.AccountViewModels;
 using FraoulaPT.WebUI.Controllers;
 using FraoulaPT.WebUI.Models.Enums;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -88,7 +89,7 @@ namespace FraoulaPT.WebUI.Areas.Admin.Controllers
             user.Status = user.Status == Status.Active ? Status.DeActive : Status.Active;
 
             await _userManager.UpdateAsync(user);
-            ShowMessage("Kullanıcı durumu güncellendi.", user.Status == Status.Active ? MessageType.Success : MessageType.Warning);
+            ShowMessage("Kullanıcı durumu güncellendi.", user.Status == Status.Active ? FraoulaPT.WebUI.Models.Enums.MessageType.Success : FraoulaPT.WebUI.Models.Enums.MessageType.Warning);
             return RedirectToAction("Index");
         }
         // ROL ATA (GET)
@@ -115,7 +116,7 @@ namespace FraoulaPT.WebUI.Areas.Admin.Controllers
         public async Task<IActionResult> RoleAssign(AdminUserRoleAssignVM vm)
         {
             await _userService.UpdateUserRolesAsync(vm.UserId, vm.AssignedRoles);
-            ShowMessage("Kullanıcı rolleri güncellendi.", MessageType.Success);
+            ShowMessage("Kullanıcı rolleri güncellendi.", FraoulaPT.WebUI.Models.Enums.MessageType.Success);
             return RedirectToAction("Index");
         }
     }
