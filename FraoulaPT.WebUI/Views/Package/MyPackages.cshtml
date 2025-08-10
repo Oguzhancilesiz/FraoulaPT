@@ -1,8 +1,25 @@
-﻿@{
+﻿@using FraoulaPT.DTOs.UserPackageDTOs
+@{
     ViewData["Title"] = "Tüm Paketlerim";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @model List<FraoulaPT.DTOs.UserPackageDTOs.UserPackageDetailDTO>
+
+@{
+
+    // 🔸 Aktifliği tarih aralığıyla birlikte değerlendiren yardımcı fonksiyon
+    var now = DateTime.UtcNow; // yerel saklıyorsan DateTime.Now yap
+    Func<UserPackageDetailDTO, bool> isCurrentlyActive = p =>
+        p.IsActive &&
+        (p.StartDate == null || p.StartDate <= now) &&
+        (p.EndDate == null || p.EndDate >= now);
+
+    // 🔸 Gerçek aktif paket + eski paketler
+    var active = Model.OrderByDescending(p => p.StartDate).FirstOrDefault(isCurrentlyActive);
+    var old = Model.Where(p => !isCurrentlyActive(p))
+                      .OrderByDescending(p => p.StartDate)
+                      .ToList();
+}
 
 <div class="container py-5">
     <h2 class="text-center mb-4 text-warning fw-bold">📦 Paketlerim</h2>
@@ -15,8 +32,6 @@
     }
     else
     {
-        var active = Model.FirstOrDefault(p => p.IsActive);
-        var old = Model.Where(p => !p.IsActive).ToList();
 
         @* ✅ Aktif Paket *@
         @if (active != null)

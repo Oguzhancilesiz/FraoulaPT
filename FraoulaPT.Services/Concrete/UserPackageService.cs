@@ -25,6 +25,55 @@ namespace FraoulaPT.Services.Concrete
             _unitOfWork = unitOfWork;
             _userManager = userManager;
         }
+        // UserPackageService.cs
+        public async Task<bool> HasActivePackageAsync(Guid userId, DateTime? now = null)
+        {
+            var t = now ?? DateTime.UtcNow; // tarihleri UTC tutuyorsan UtcNow kullan
+            return await _unitOfWork.Repository<UserPackage>()
+                .Query().AsNoTracking()
+                .AnyAsync(p =>
+                    p.AppUserId == userId &&
+                    p.Status != Status.Deleted &&
+                    p.IsActive &&
+                    (p.StartDate == null || p.StartDate <= t) &&
+                    (p.EndDate == null || p.EndDate >= t)
+                );
+        }
+
+        public async Task<UserPackage?> GetCurrentActiveAsync(Guid userId, DateTime? now = null)
+        {
+            var t = now ?? DateTime.UtcNow;
+            return await _unitOfWork.Repository<UserPackage>()
+                .Query().AsNoTracking()
+                .Where(p =>
+                    p.AppUserId == userId &&
+                    p.Status != Status.Deleted &&
+                    p.IsActive &&
+                    (p.StartDate == null || p.StartDate <= t) &&
+                    (p.EndDate == null || p.EndDate >= t)
+                )
+                .OrderByDescending(p => p.StartDate)
+                .FirstOrDefaultAsync();
+        }
+
+        // Süresi bitmiş ama IsActive=true kalanları kapatmak için (opsiyonel)
+        public async Task<int> DeactivateExpiredAsync(DateTime? now = null)
+        {
+            var t = now ?? DateTime.UtcNow;
+            var repo = _unitOfWork.Repository<UserPackage>();
+            var expired = await repo.Query()
+                .Where(p => p.IsActive &&
+                            p.Status != Status.Deleted &&
+                            p.EndDate != null && p.EndDate < t)
+                .ToListAsync();
+
+            foreach (var p in expired) p.IsActive = false;
+            if (expired.Count > 0) await _unitOfWork.SaveChangesAsync();
+            return expired.Count;
+        }
+
+
+
         /// <summary>
         /// Yeni bir kullanıcı paketi oluşturur.
         /// </summary>

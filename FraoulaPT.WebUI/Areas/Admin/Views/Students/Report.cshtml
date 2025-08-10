@@ -1,0 +1,198 @@
+﻿@using FraoulaPT.DTOs.StudentReportDTOs
+@model StudentReportDTO
+@{
+    ViewData["Title"] = "Öğrenci Raporu";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    /* Grafikler için sabit yükseklikli sarmalayıcı: sonsuz uzamayı engeller */
+    .chart-wrap {
+        position: relative;
+        height: 280px;
+        width: 100%;
+    }
+    /* Kartlar taşmasın */
+    .card-body {
+        overflow: hidden;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="d-flex align-items-center mb-4">
+        <img src="@Model.ProfilePhotoUrl" class="rounded-circle me-3 shadow" width="64" height="64" alt="avatar" />
+        <div>
+            <h3 class="mb-0">@Model.FullName</h3>
+            <div class="text-muted small">@Model.Email</div>
+            <div class="text-muted small">Kayıt: @Model.RegisteredAt?.ToString("dd.MM.yyyy HH:mm")</div>
+        </div>
+        <div class="ms-auto">
+            <a class="btn btn-outline-secondary me-2"
+               asp-area="Admin" asp-controller="Students" asp-action="Report" asp-route-userId="@Model.UserId">
+                Yenile
+            </a>
+            <button class="btn btn-primary" disabled>PDF (yakında)</button>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <!-- Paket Kartı -->
+        <div class="col-xl-4 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">Aktif Paket</div>
+                    <div class="fw-bold">@Model.Package.Name</div>
+                    <div class="small text-muted">
+                        @Model.Package.Start?.ToString("dd.MM.yyyy") – @Model.Package.End?.ToString("dd.MM.yyyy")
+                    </div>
+                    <hr />
+                    <div>
+                        🟠 Soru: @Model.Package.UsedQuestions / @Model.Package.TotalQuestions
+                        <span class="text-muted">(Kalan: @Model.Package.AvailableQuestions)</span>
+                    </div>
+                    <div class="progress mt-1" style="height:8px">
+                        <div class="progress-bar" role="progressbar"
+                             style="width:@(Model.Package.TotalQuestions==0?0:(100*Model.Package.UsedQuestions/Model.Package.TotalQuestions))%"></div>
+                    </div>
+
+                    <div class="mt-3">
+                        💬 Mesaj: @Model.Package.UsedMessages / @Model.Package.TotalMessages
+                        <span class="text-muted">(Kalan: @Model.Package.AvailableMessages)</span>
+                    </div>
+                    <div class="progress mt-1" style="height:8px">
+                        <div class="progress-bar" role="progressbar"
+                             style="width:@(Model.Package.TotalMessages==0?0:(100*Model.Package.UsedMessages/Model.Package.TotalMessages))%"></div>
+                    </div>
+
+                    <div class="small text-muted mt-2">
+                        Aktif Ek Hak (gösterim): Soru +@Model.Package.ActiveExtraQuestionRights,
+                        Mesaj +@Model.Package.ActiveExtraMessageRights
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Son Ölçüm Kartı -->
+        <div class="col-xl-4 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">Son Ölçüm</div>
+                    <div class="fw-bold">@Model.WeeklyForm.LastFormDate?.ToString("dd.MM.yyyy")</div>
+                    <div class="mt-2">Kilo: <b>@(Model.WeeklyForm.Weight?.ToString("0.0") ?? "-")</b></div>
+                    <div>Bel: <b>@(Model.WeeklyForm.Waist?.ToString("0.0") ?? "-")</b></div>
+                    <div>Kalça: <b>@(Model.WeeklyForm.Hip?.ToString("0.0") ?? "-")</b></div>
+                    @if (Model.WeeklyForm.ProgressPhotoUrls?.Any() == true)
+                    {
+                        <div class="mt-3 d-flex flex-wrap gap-2">
+                            @foreach (var url in Model.WeeklyForm.ProgressPhotoUrls.Take(3))
+                            {
+                                <img src="@url" height="64" class="rounded shadow-sm" />
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- İletişim Özeti Kartı -->
+        <div class="col-xl-4 col-md-12">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">İletişim Özeti (30g)</div>
+                    <div class="d-flex align-items-center mt-2">
+                        <div class="me-3">
+                            <div class="fw-bold fs-4">@Model.Comms.Last30dMessageCount</div>
+                            <div class="text-muted small">Mesaj</div>
+                        </div>
+                        <div class="me-3">
+                            <div class="fw-bold fs-4">@Model.Comms.Last30dQuestionCount</div>
+                            <div class="text-muted small">Soru</div>
+                        </div>
+                        <div>
+                            <div class="small text-muted">Son mesaj:</div>
+                            <div>@Model.Comms.LastMessageAt?.ToString("dd.MM.yyyy HH:mm")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafikler -->
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted mb-2">Kilo Değişimi</div>
+                    <div class="chart-wrap">
+                        <canvas id="weightChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted mb-2">Bel / Kalça</div>
+                    <div class="chart-wrap">
+                        <canvas id="waistChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // LABEL dizileri
+        const weightLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        Model.WeightSeries?.Select(x => x.Date.ToString("dd.MM")) ?? Array.Empty<string>()
+    ));
+        const waistLabels  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        Model.WaistSeries?.Select(x => x.Date.ToString("dd.MM")) ?? Array.Empty<string>()
+    ));
+
+        // DATA dizileri (nullable double)
+        const weightData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        Model.WeightSeries?.Select(x => x.Value) ?? Array.Empty<double?>()
+    ));
+        const waistData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        Model.WaistSeries?.Select(x => x.Value) ?? Array.Empty<double?>()
+    ));
+        const hipData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        Model.HipSeries?.Select(x => x.Value) ?? Array.Empty<double?>()
+    ));
+
+        // Elemanlar
+        const wEl = document.getElementById('weightChart');
+        const wsEl = document.getElementById('waistChart');
+
+        // Kilo grafiği
+        if (wEl && weightLabels.length && weightData.length) {
+            new Chart(wEl, {
+                type: 'line',
+                data: {
+                    labels: weightLabels,
+                    datasets: [{ label: 'Kilo', data: weightData }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // Bel/Kalça grafiği
+        if (wsEl && waistLabels.length && (waistData.length || hipData.length)) {
+            new Chart(wsEl, {
+                type: 'line',
+                data: {
+                    labels: waistLabels,
+                    datasets: [
+                        { label: 'Bel', data: waistData },
+                        { label: 'Kalça', data: hipData }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    </script>
+}

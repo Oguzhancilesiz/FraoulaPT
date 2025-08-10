@@ -56,6 +56,7 @@ namespace FraoulaPT.WebUI.Controllers
         [HttpPost]
         public async Task<IActionResult> Purchase(Guid packageId)
         {
+
             var userId = Guid.Parse(_userManager.GetUserId(User)!);
 
             var hasActive = await _userPackageService.HasActivePackageAsync(userId);
