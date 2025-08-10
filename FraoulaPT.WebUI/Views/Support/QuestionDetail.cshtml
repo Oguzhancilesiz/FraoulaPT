@@ -1,60 +1,121 @@
 ﻿@model FraoulaPT.DTOs.UserQuestionDTOs.UserQuestionDTO
-
 @{
     ViewData["Title"] = "Soru Detayı";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    bool answered = !string.IsNullOrWhiteSpace(Model?.AnswerText);
+    var askedTxt = Model?.AskedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+    var ansTxt = Model?.AnsweredAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
+    var coach = string.IsNullOrWhiteSpace(Model?.CoachName) ? "Koç" : Model.CoachName;
 }
 
-<div class="container py-4">
-    <div class="card shadow-lg border-0 bg-dark text-light rounded-3">
-        <div class="card-header bg-warning text-dark fw-bold">
-            <i class="bi bi-chat-left-text-fill me-2"></i> Soru Detayı
-        </div>
-        <div class="card-body">
-
-            <!-- Soru -->
-            <p class="fw-semibold mb-1 text-warning">
-                <i class="bi bi-question-circle-fill me-1"></i> Sorduğunuz Soru:
-            </p>
-            <div class="p-3 rounded bg-secondary bg-opacity-25 border border-warning mb-3">
-                @Model.QuestionText
-            </div>
-
-            <!-- Cevap -->
-            @if (!string.IsNullOrWhiteSpace(Model.AnswerText))
-            {
-                <p class="fw-semibold mb-1 text-success">
-                    <i class="bi bi-check-circle-fill me-1"></i> Koçun Yanıtı:
-                </p>
-                <div class="p-3 rounded bg-success bg-opacity-25 border border-success mb-2">
-                    @Model.AnswerText
-                </div>
-                <small class="text-muted">
-                    <i class="bi bi-person-badge me-1"></i> Yanıtlayan:
-                    <b>@Model.CoachName</b> |
-                    <i class="bi bi-clock-history me-1"></i> @Model.AnsweredAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
-                </small>
-            }
-            else
-            {
-                <div class="alert alert-warning border-0 mt-3">
-                    <i class="bi bi-hourglass-split me-1"></i> Bu soru henüz yanıtlanmamış.
-                </div>
-            }
-
-            <hr class="border-secondary" />
-
-            <!-- Gönderim Tarihi -->
-            <p class="small mb-0 text-muted">
-                <i class="bi bi-calendar-event me-1"></i>
-                <strong>Gönderim Tarihi:</strong> @Model.AskedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
-            </p>
-        </div>
-
-        <div class="card-footer bg-dark border-0 text-end">
-            <a asp-action="AllMyQuestions" asp-controller="Support" class="btn btn-outline-warning">
-                <i class="bi bi-arrow-left-circle me-1"></i> Tüm Sorulara Dön
-            </a>
+@if (Model == null)
+{
+    <div class="container py-5">
+        <div class="alert alert-warning text-center shadow-sm border-0">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> Kayıt bulunamadı.
         </div>
     </div>
-</div>
+}
+else
+{
+    <style>
+        .q-card {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .bubble {
+            background: rgba(255,255,255,.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+
+        .prewrap {
+            white-space: pre-wrap;
+        }
+
+        .meta-pill {
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,.02);
+        }
+        @@media (max-width: 576px) {
+            .actions-stack
+
+        {
+            gap: .5rem;
+        }
+
+        }
+    </style>
+
+    <div class="container py-4">
+        <div class="card q-card shadow-lg border-0">
+            <div class="card-header d-flex align-items-center justify-content-between"
+                 style="background:var(--brand-grad); color:#fff; border-top-left-radius:12px; border-top-right-radius:12px;">
+                <div class="fw-bold">
+                    <i class="bi bi-chat-left-text-fill me-2"></i> Soru Detayı
+                </div>
+                <span class="badge @(answered ? "bg-success" : "bg-warning text-dark")">
+                    @(answered ? "Yanıtlandı" : "Yanıt Bekliyor")
+                </span>
+            </div>
+
+            <div class="card-body">
+                <!-- Meta -->
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <span class="badge rounded-pill meta-pill text-muted">
+                        <i class="bi bi-calendar-event me-1"></i>
+                        Gönderim: @askedTxt
+                    </span>
+                    @if (answered && !string.IsNullOrWhiteSpace(ansTxt))
+                    {
+                        <span class="badge rounded-pill meta-pill text-muted">
+                            <i class="bi bi-clock-history me-1"></i>
+                            Yanıt: @ansTxt
+                        </span>
+                        <span class="badge rounded-pill meta-pill text-muted">
+                            <i class="bi bi-person-badge me-1"></i>
+                            Yanıtlayan: @coach
+                        </span>
+                    }
+                </div>
+
+                <!-- Soru -->
+                <p class="fw-semibold mb-2 text-warning">
+                    <i class="bi bi-question-circle-fill me-1"></i> Sorduğunuz Soru
+                </p>
+                <div class="p-3 bubble mb-3 prewrap">
+                    @Model.QuestionText
+                </div>
+
+                <!-- Cevap -->
+                @if (answered)
+                {
+                    <p class="fw-semibold mb-2 text-success">
+                        <i class="bi bi-check-circle-fill me-1"></i> Koçun Yanıtı
+                    </p>
+                    <div class="p-3 bubble mb-2 prewrap" style="border-color:#19875433; background:rgba(25,135,84,.08);">
+                        @Model.AnswerText
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning border-0 mt-3">
+                        <i class="bi bi-hourglass-split me-1"></i> Bu soru henüz yanıtlanmamış.
+                    </div>
+                }
+            </div>
+
+            <div class="card-footer d-flex flex-wrap justify-content-end gap-2 bg-transparent border-0 actions-stack">
+                <a asp-action="AllMyQuestions" asp-controller="Support" class="btn btn-outline-light">
+                    <i class="bi bi-arrow-left-circle me-1"></i> Tüm Sorulara Dön
+                </a>
+                <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i> Yazdır
+                </button>
+            </div>
+        </div>
+    </div>
+}

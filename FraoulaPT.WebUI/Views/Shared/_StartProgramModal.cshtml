@@ -1,19 +1,22 @@
 ﻿@using System.Globalization
 
-<div class="modal fade" id="startProgramModal" tabindex="-1" role="dialog" aria-labelledby="startProgramModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content bg-dark text-light shadow-lg border-0 rounded-3">
-            <!-- Modal Başlık -->
-            <div class="modal-header bg-warning bg-opacity-75 text-dark rounded-top">
-                <h5 class="modal-title fw-bold">
+<div class="modal fade" id="startProgramModal" tabindex="-1" aria-labelledby="startProgramModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:12px;">
+
+            <!-- Başlık -->
+            <div class="modal-header" style="background:var(--brand-grad);color:#fff;border-top-left-radius:12px;border-top-right-radius:12px;">
+                <h5 id="startProgramModalLabel" class="modal-title fw-bold">
                     <i class="bi bi-play-circle-fill me-1"></i> Program Başlat
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
             </div>
 
-            <!-- Modal İçerik -->
+            <!-- İçerik -->
             <div class="modal-body">
-                <form id="startProgramForm">
+                <!-- İSTERSEN: asp-controller/asp-action’ı değiştir -->
+                <form id="startProgramForm" asp-controller="Workout" asp-action="StartProgram" method="post" novalidate>
+                    @Html.AntiForgeryToken()
                     <input type="hidden" name="UserWeeklyFormId" id="UserWeeklyFormId" />
 
                     <!-- Program Başlığı -->
@@ -21,47 +24,123 @@
                         <label class="form-label fw-semibold text-warning">
                             <i class="bi bi-type-bold me-1"></i> Program Başlığı
                         </label>
-                        <input type="text" class="form-control bg-secondary text-light border-0"
-                               name="ProgramTitle" placeholder="Örn: Kas Gelişim Programı" required />
+                        <input type="text" name="ProgramTitle" class="form-control ring bg-dark text-light border-secondary"
+                               placeholder="Örn: Kas Gelişim Programı" maxlength="100" required />
+                        <div class="invalid-feedback">Lütfen bir başlık girin (en az 2 karakter).</div>
                     </div>
 
                     <!-- Koç Notu -->
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-warning">
-                            <i class="bi bi-journal-text me-1"></i> Koç Notu
+                            <i class="bi bi-journal-text me-1"></i> Koç Notu (opsiyonel)
                         </label>
-                        <textarea class="form-control bg-secondary text-light border-0"
-                                  name="CoachNote" rows="2" placeholder="İsteğe bağlı koç notu yazın..."></textarea>
+                        <textarea name="CoachNote" rows="2" class="form-control ring bg-dark text-light border-secondary"
+                                  placeholder="İsteğe bağlı koç notu yazın..." maxlength="1000"></textarea>
                     </div>
 
                     <!-- Program Günleri -->
                     <div class="mb-2">
-                        <label class="form-label fw-semibold text-warning">
-                            <i class="bi bi-calendar-week me-1"></i> Program Günleri:
-                        </label>
-                        <div class="row">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <label class="form-label fw-semibold text-warning mb-0">
+                                <i class="bi bi-calendar-week me-1"></i> Program Günleri
+                            </label>
+                            <div class="small">
+                                <button type="button" class="btn btn-sm btn-outline-light me-1" id="selectAllDays">Tümünü Seç</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="clearAllDays">Temizle</button>
+                            </div>
+                        </div>
+
+                        <div class="row" id="daysWrapper">
                             @for (int i = 1; i <= 7; i++)
                             {
                                 var dayName = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName((DayOfWeek)(i % 7));
-                                <div class="col-6 col-md-4">
+                                <div class="col-6 col-md-4 mb-1">
                                     <div class="form-check text-light">
-                                        <input class="form-check-input bg-warning border-0" type="checkbox"
+                                        <input class="form-check-input bg-warning border-0 day-check" type="checkbox"
                                                name="SelectedDays" value="@i" id="day_@i" />
                                         <label class="form-check-label" for="day_@i">@dayName</label>
                                     </div>
                                 </div>
                             }
                         </div>
+                        <div class="invalid-feedback d-block" id="daysError" style="display:none;">
+                            Lütfen en az bir gün seçin.
+                        </div>
                     </div>
                 </form>
             </div>
 
-            <!-- Modal Footer -->
+            <!-- Footer -->
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-warning fw-semibold text-dark w-100" id="submitProgramBtn">
-                    <i class="bi bi-save-fill me-1"></i> Kaydet
+                <button type="submit" form="startProgramForm" class="btn fw-semibold text-white w-100" id="submitProgramBtn"
+                        style="background:var(--brand-grad);border:0;">
+                    <span class="btn-label"><i class="bi bi-save-fill me-1"></i> Kaydet</span>
+                    <span class="btn-spinner d-none">
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Kaydediliyor...
+                    </span>
                 </button>
             </div>
+
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function(){
+          const form = document.getElementById('startProgramForm');
+          const submitBtn = document.getElementById('submitProgramBtn');
+          const daysWrapper = document.getElementById('daysWrapper');
+          const daysError = document.getElementById('daysError');
+          const selectAll = document.getElementById('selectAllDays');
+          const clearAll = document.getElementById('clearAllDays');
+
+          // Tümünü Seç / Temizle
+          selectAll?.addEventListener('click', () => {
+            daysWrapper.querySelectorAll('.day-check').forEach(c => c.checked = true);
+            daysError.style.display = 'none';
+          });
+          clearAll?.addEventListener('click', () => {
+            daysWrapper.querySelectorAll('.day-check').forEach(c => c.checked = false);
+            daysError.style.display = 'block';
+          });
+
+          // Bootstrap benzeri client-side doğrulama
+          form?.addEventListener('submit', function(e){
+            // Title min kontrol (örnek)
+            const title = form.querySelector('input[name="ProgramTitle"]');
+            const hasTitle = title && title.value.trim().length >= 2;
+
+            // En az bir gün
+            const anyDay = !!form.querySelector('.day-check:checked');
+
+            // Görsel geri bildirim
+            if (!hasTitle) {
+              title.classList.add('is-invalid');
+            } else {
+              title.classList.remove('is-invalid');
+            }
+
+            daysError.style.display = anyDay ? 'none' : 'block';
+
+            if (!hasTitle || !anyDay) {
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+
+            // Loading durumu
+            submitBtn.disabled = true;
+            submitBtn.querySelector('.btn-label')?.classList.add('d-none');
+            submitBtn.querySelector('.btn-spinner')?.classList.remove('d-none');
+          });
+
+          // Kullanıcı yazarken invalid kaldır
+          const title = form?.querySelector('input[name="ProgramTitle"]');
+          title?.addEventListener('input', () => title.classList.remove('is-invalid'));
+          daysWrapper?.addEventListener('change', () => {
+            if (form.querySelector('.day-check:checked')) daysError.style.display = 'none';
+          });
+        })();
+    </script>
+}

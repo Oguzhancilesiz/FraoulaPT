@@ -1,122 +1,167 @@
-﻿@using FraoulaPT.Entity
+﻿@using System.Globalization
+@using FraoulaPT.Entity
 @model WorkoutDay
+
 @{
     ViewData["Title"] = "Antrenmana Başla";
 
-    var groupedByCategory = Model.Exercises
-        .GroupBy(e => e.Exercise.Category)
-        .OrderBy(g => g.Key?.Name)
-        .ToList();
+    // TR gün adı (1=Pts...7=Paz)
+    var tr = CultureInfo.GetCultureInfo("tr-TR");
+    int dayNum = Model?.DayOfWeek ?? 1;
+    int dayIndex = dayNum == 7 ? 0 : dayNum; // 0=Pazar
+    string dayName = tr.DateTimeFormat.DayNames[dayIndex];
+
+    // Egzersizleri eklenme sırasıyla al
+    var exercises = (Model?.Exercises ?? Enumerable.Empty<WorkoutExercise>()).ToList();
 }
 
 <div class="container py-4">
-    <!-- Başlık -->
-    <h2 class="fw-bold text-warning mb-3">
-        🏋️‍♂️ @((DayOfWeek)Model.DayOfWeek) Antrenmanı
-    </h2>
-    @if (!string.IsNullOrWhiteSpace(Model.Description))
+    <h2 class="fw-bold text-warning mb-2">🏋️‍♂️ @dayName Antrenmanı</h2>
+    @if (!string.IsNullOrWhiteSpace(Model?.Description))
     {
         <p class="text-light bg-dark rounded px-3 py-2 shadow-sm d-inline-block">
             <i class="bi bi-info-circle me-1"></i> @Model.Description
         </p>
     }
 
-    @if (!Model.Exercises.Any())
+    @if (!exercises.Any())
     {
         <div class="alert alert-warning text-center mt-4 shadow-sm">
             <i class="bi bi-exclamation-triangle"></i> Bu güne ait egzersiz bulunmamaktadır.
         </div>
     }
 
-    <!-- Egzersiz Grupları -->
-    @foreach (var categoryGroup in groupedByCategory)
+    @foreach (var we in exercises)
     {
-        <div class="card mb-4 shadow-lg border-0 bg-dark text-light rounded-3">
-            <div class="card-header border-0 bg-dark text-warning fw-bold fs-5">
-                <i class="bi bi-list-ul me-1"></i> @categoryGroup.Key?.Name
-            </div>
-            <div class="card-body">
-                @foreach (var ex in categoryGroup)
+        var ex = we.Exercise;
+        var exId = we.Id;
+        var collapseId = $"ex_{exId}_c";
+        var timerId = $"ex_{exId}_t";
+        var progId = $"ex_{exId}_p";
+        var sets = we.SetCount <= 0 ? 1 : we.SetCount;
+
+        // 🔧 Artık modelden okumuyoruz; varsayılan 90 sn
+        const int defaultRestSeconds = 90;
+
+        <div class="card mb-3 shadow-lg border-0 bg-dark text-light rounded-3 exercise-card" data-ex-id="@exId">
+            <div class="card-header border-0 bg-dark d-flex flex-wrap gap-2 align-items-center">
+                <h5 class="mb-0 text-warning me-auto">
+                    @(string.IsNullOrWhiteSpace(ex?.Name) ? "Egzersiz" : ex.Name)
+                </h5>
+
+                <span class="badge bg-secondary">
+                    @(ex?.Category?.Name ?? "Kategori yok")
+                </span>
+
+                @if (!string.IsNullOrEmpty(ex?.VideoUrl))
                 {
-                    var exercise = ex.Exercise;
-                    <div class="row mb-3 align-items-center gy-2 p-2 rounded bg-secondary bg-opacity-25">
-                        <!-- Görsel -->
-                        <div class="col-3 col-md-2 text-center">
-                            @if (!string.IsNullOrEmpty(exercise.ImageUrl))
-                            {
-                                <img src="@exercise.ImageUrl"
-                                     class="img-fluid rounded shadow-sm border border-warning"
-                                     style="max-height: 80px; object-fit: cover;"
-                                     alt="@exercise.Name" />
-                            }
-                            else
-                            {
-                                <div class="bg-dark text-muted small rounded p-2">📷 Yok</div>
-                            }
-                        </div>
-
-                        <!-- Egzersiz Bilgi -->
-                        <div class="col-9 col-md-10">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <strong class="text-warning">@exercise.Name</strong>
-                                @if (!string.IsNullOrEmpty(exercise.VideoUrl))
-                                {
-                                    <a class="btn btn-sm btn-outline-light border-warning"
-                                       target="_blank"
-                                       href="@exercise.VideoUrl">
-                                        🎥 İzle
-                                    </a>
-                                }
-                            </div>
-                            <div class="small text-light opacity-75">
-                                @ex.SetCount set x @ex.Repetition tekrar
-                                @if (ex.Weight.HasValue)
-                                {
-                                    <span> | @ex.Weight kg</span>
-                                }
-                                @if (!string.IsNullOrWhiteSpace(ex.Note))
-                                {
-                                    <div class="mt-1">📝 <em>@ex.Note</em></div>
-                                }
-                            </div>
-                        </div>
-
-                        <!-- Geri Bildirim Formu -->
-                        <form class="feedback-form mt-3" data-exercise-id="@ex.Id">
-                            <div class="row g-2 align-items-end">
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label small text-light">📝 Geri Bildirim</label>
-                                    <textarea name="FeedbackText" class="form-control form-control-sm bg-dark text-light border-warning" rows="2" placeholder="Bu set zor geldi, tekrar azalttım..."></textarea>
-                                </div>
-                                <div class="col-4 col-md-2">
-                                    <label class="form-label small text-light">✅ Tekrar</label>
-                                    <input name="ActualReps" type="number" class="form-control form-control-sm bg-dark text-light border-warning" placeholder="gerçek" />
-                                </div>
-                                <div class="col-4 col-md-2">
-                                    <label class="form-label small text-light">🏋️‍♂️ Kilo</label>
-                                    <input name="ActualWeight" type="number" step="0.1" class="form-control form-control-sm bg-dark text-light border-warning" placeholder="kg" />
-                                </div>
-                                <div class="col-4 col-md-2">
-                                    <label class="form-label small text-light">📊 RPE</label>
-                                    <select name="RPE" class="form-select form-select-sm bg-dark text-light border-warning">
-                                        <option value="">Seç</option>
-                                        @for (int i = 1; i <= 10; i++)
-                                        {
-                                            <option value="@i">@i</option>
-                                        }
-                                    </select>
-                                </div>
-                                <div class="col-12 mt-2">
-                                    <button type="submit" class="btn btn-sm btn-warning fw-semibold text-dark">
-                                        ✔️ Kaydet
-                                    </button>
-                                    <span class="text-success small ms-2 feedback-success" style="display:none;">Kaydedildi ✅</span>
-                                    <span class="text-danger small ms-2 feedback-error" style="display:none;">Hata oluştu ❌</span>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
+                    <a class="btn btn-sm btn-outline-light border-warning" target="_blank" rel="noopener" href="@ex.VideoUrl">
+                        🎥 İzle
+                    </a>
                 }
+
+                <button class="btn btn-sm btn-warning text-dark fw-semibold" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="true" aria-controls="@collapseId">
+                    Detay
+                </button>
+            </div>
+
+            <div id="@collapseId" class="collapse show">
+                <div class="card-body">
+                    <!-- Plan Bilgisi -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-md-6">
+                            <div class="p-2 rounded bg-secondary bg-opacity-25">
+                                <div class="small text-muted">Plan</div>
+                                <div class="fw-semibold">
+                                    @we.SetCount set × @we.Repetition tekrar
+                                    @if (we.Weight.HasValue)
+                                    {
+                                        <span> | @we.Weight kg</span>
+                                    }
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(we.Note))
+                                {
+                                    <div class="small mt-1">📝 <em>@we.Note</em></div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Dinlenme Sayacı -->
+                        <div class="col-12 col-md-6">
+                            <div class="p-2 rounded bg-secondary bg-opacity-25 d-flex flex-column gap-2">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="small text-muted">Dinlenme Sayacı</div>
+                                    <div id="@timerId" class="fs-5 fw-bold">01:30</div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="number" class="form-control form-control-sm bg-dark text-light border-warning rest-secs"
+                                           min="10" step="5" value="@defaultRestSeconds" style="max-width:110px" />
+                                    <span class="small">sn</span>
+                                    <button type="button" class="btn btn-sm btn-warning text-dark start-rest">Başlat</button>
+                                    <button type="button" class="btn btn-sm btn-outline-light border-warning pause-rest">Duraklat</button>
+                                    <button type="button" class="btn btn-sm btn-outline-light border-warning reset-rest">Sıfırla</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Set Takibi -->
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="small text-muted">Set Takibi</div>
+                            <div class="small"><span class="done-count">0</span>/<span class="total-count">@sets</span> set</div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            @for (int i = 1; i <= sets; i++)
+                            {
+                                <label class="form-check form-check-inline align-items-center px-2 py-1 rounded bg-secondary bg-opacity-25">
+                                    <input type="checkbox" class="form-check-input set-check me-2" />
+                                    <span class="small">Set @i</span>
+                                </label>
+                            }
+                        </div>
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div id="@progId" class="progress-bar bg-warning" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Geri Bildirim Formu -->
+                    <form class="feedback-form" data-exercise-id="@exId">
+                        @Html.AntiForgeryToken()
+                        <div class="row g-2 align-items-end">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label small text-light">📝 Geri Bildirim</label>
+                                <textarea name="FeedbackText" class="form-control form-control-sm bg-dark text-light border-warning" rows="2" placeholder="Bu set zor geldi, tekrar azalttım..."></textarea>
+                            </div>
+                            <div class="col-4 col-md-2">
+                                <label class="form-label small text-light">✅ Tekrar</label>
+                                <input name="ActualReps" type="number" min="0" class="form-control form-control-sm bg-dark text-light border-warning" placeholder="gerçek" />
+                            </div>
+                            <div class="col-4 col-md-2">
+                                <label class="form-label small text-light">🏋️‍♂️ Kilo</label>
+                                <input name="ActualWeight" type="number" step="0.1" min="0" class="form-control form-control-sm bg-dark text-light border-warning" placeholder="kg" />
+                            </div>
+                            <div class="col-4 col-md-2">
+                                <label class="form-label small text-light">📊 RPE</label>
+                                <select name="RPE" class="form-select form-select-sm bg-dark text-light border-warning">
+                                    <option value="">Seç</option>
+                                    @for (int i = 1; i <= 10; i++)
+                                    {
+                                        <option value="@i">@i</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <button type="submit" class="btn btn-sm btn-warning fw-semibold text-dark">
+                                    ✔️ Kaydet
+                                </button>
+                                <span class="text-success small ms-2 feedback-success" style="display:none;">Kaydedildi ✅</span>
+                                <span class="text-danger small ms-2 feedback-error" style="display:none;">Hata oluştu ❌</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     }
@@ -124,6 +169,95 @@
 
 @section Scripts {
     <script>
+        // --- Set Takibi ve Progress ---
+        document.querySelectorAll('.exercise-card').forEach(card => {
+            const checks = card.querySelectorAll('.set-check');
+            const doneEl = card.querySelector('.done-count');
+            const totalEl = card.querySelector('.total-count');
+            const prog = card.querySelector('.progress-bar');
+
+            const total = parseInt(totalEl?.textContent || '0', 10);
+            function updateProgress() {
+                const done = Array.from(checks).filter(c => c.checked).length;
+                doneEl.textContent = done;
+                const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                if (prog) prog.style.width = pct + '%';
+            }
+            checks.forEach(c => c.addEventListener('change', updateProgress));
+        });
+
+        // --- Dinlenme Sayacı (her kart bağımsız) ---
+        const timers = new Map(); // exId -> {left, id}
+        function fmt(s) {
+            s = Math.max(0, s);
+            const m = Math.floor(s / 60).toString().padStart(2, '0');
+            const ss = (s % 60).toString().padStart(2, '0');
+            return m + ':' + ss;
+        }
+
+        document.querySelectorAll('.exercise-card').forEach(card => {
+            const exId = card.getAttribute('data-ex-id');
+            const timerEl = card.querySelector('[id$="_t"]');
+            const restInput = card.querySelector('.rest-secs');
+            const startBtn = card.querySelector('.start-rest');
+            const pauseBtn = card.querySelector('.pause-rest');
+            const resetBtn = card.querySelector('.reset-rest');
+
+            function render() {
+                const state = timers.get(exId);
+                if (timerEl && state) timerEl.textContent = fmt(state.left);
+            }
+
+            function ensureState() {
+                if (!timers.has(exId)) {
+                    const d = parseInt(restInput?.value || '90', 10);
+                    timers.set(exId, { left: isNaN(d) ? 90 : d, id: null });
+                    render();
+                }
+            }
+
+            ensureState();
+            if (timerEl && restInput) timerEl.textContent = fmt(parseInt(restInput.value || '90', 10));
+
+            startBtn?.addEventListener('click', () => {
+                ensureState();
+                const st = timers.get(exId);
+                if (st.id) return;
+                st.id = setInterval(() => {
+                    st.left--;
+                    render();
+                    if (st.left <= 0) {
+                        clearInterval(st.id);
+                        st.id = null;
+                    }
+                }, 1000);
+            });
+
+            pauseBtn?.addEventListener('click', () => {
+                const st = timers.get(exId);
+                if (st?.id) { clearInterval(st.id); st.id = null; }
+            });
+
+            resetBtn?.addEventListener('click', () => {
+                const d = parseInt(restInput?.value || '90', 10);
+                const st = timers.get(exId) || { left: 0, id: null };
+                if (st.id) { clearInterval(st.id); st.id = null; }
+                st.left = isNaN(d) ? 90 : d;
+                timers.set(exId, st);
+                render();
+            });
+
+            restInput?.addEventListener('change', () => {
+                const st = timers.get(exId) || { left: 0, id: null };
+                const d = parseInt(restInput.value || '90', 10);
+                st.left = isNaN(d) ? 90 : d;
+                if (st.id) { clearInterval(st.id); st.id = null; }
+                timers.set(exId, st);
+                render();
+            });
+        });
+
+        // --- Geri Bildirim POST ---
         document.querySelectorAll('.feedback-form').forEach(form => {
             form.addEventListener('submit', async function (e) {
                 e.preventDefault();
@@ -137,18 +271,19 @@
                 const errorMsg = form.querySelector('.feedback-error');
 
                 submitButton.disabled = true;
-                submitButton.innerText = "Gönderiliyor...";
+                const prevText = submitButton.textContent;
+                submitButton.textContent = "Gönderiliyor...";
 
                 try {
-                    const response = await fetch('/Workout/SubmitFeedback', {
+                    const resp = await fetch('/Workout/SubmitFeedback', {
                         method: 'POST',
                         body: formData
                     });
-
-                    if (response.ok) {
+                    if (resp.ok) {
                         successMsg.style.display = 'inline';
                         errorMsg.style.display = 'none';
-                        setTimeout(() => successMsg.style.display = 'none', 3000);
+                        setTimeout(() => successMsg.style.display = 'none', 2500);
+                        form.reset();
                     } else {
                         errorMsg.style.display = 'inline';
                     }
@@ -156,7 +291,7 @@
                     errorMsg.style.display = 'inline';
                 } finally {
                     submitButton.disabled = false;
-                    submitButton.innerText = "✔️ Kaydet";
+                    submitButton.textContent = prevText;
                 }
             });
         });

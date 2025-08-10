@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace FraoulaPT.WebUI.Controllers
 {
@@ -31,41 +32,87 @@ namespace FraoulaPT.WebUI.Controllers
             _signInManager = signInManager;
         }
 
-        // GET: /Profile/CompleteProfile
+        [RequestFormLimits(MultipartBodyLengthLimit = 6L * 1024 * 1024)] // 6MB
         [HttpGet]
         public async Task<IActionResult> CompleteProfile()
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login", "Auth");
+
             var profile = await _userProfileService.GetByAppUserIdAsync(user.Id);
-            if (profile != null)
-                return RedirectToAction("Edit"); // zaten profil oluşturduysa Edit'e yönlendir
+            if (profile != null) return RedirectToAction("Edit");
 
             return View(new UserProfileCreateDTO());
         }
 
-        // POST: /Profile/CompleteProfile
+        // --- Güvenli dosya kabulü için yardımcılar ---
+        private static readonly string[] _permittedExt = [".jpg", ".jpeg", ".png", ".webp"];
+        private const long _fileSizeLimit = 5L * 1024 * 1024; // 5MB
+
+        private static bool LooksLikeImage(byte[] header)
+        {
+            // JPEG FF D8, PNG 89 50 4E 47, WEBP "RIFF....WEBP"
+            if (header.Length >= 2 && header[0] == 0xFF && header[1] == 0xD8) return true; // JPEG
+            if (header.Length >= 8 && header[0] == 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47) return true; // PNG
+            if (header.Length >= 12 && header[0] == 0x52 && header[1] == 0x49 && header[2] == 0x46 && header[3] == 0x46 &&
+                header[8] == 0x57 && header[9] == 0x45 && header[10] == 0x42 && header[11] == 0x50) return true; // WEBP
+            return false;
+        }
+
+        private async Task<(bool ok, string? msg, string url)> SaveProfilePhotoAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return (true, null, "/uploads/user-default.jpg");
+
+            if (file.Length > _fileSizeLimit)
+                return (false, "Dosya çok büyük (en fazla 5MB).", null!);
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (string.IsNullOrEmpty(ext) || !_permittedExt.Contains(ext))
+                return (false, "İzin verilmeyen dosya türü. (jpg, jpeg, png, webp)", null!);
+
+            if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                return (false, "Geçersiz içerik türü.", null!);
+
+            // magic byte kontrolü
+            using var s = file.OpenReadStream();
+            var header = new byte[12];
+            var read = await s.ReadAsync(header.AsMemory(0, header.Length));
+            if (read < 2 || !LooksLikeImage(header))
+                return (false, "Dosya görüntü formatında görünmüyor.", null!);
+            s.Position = 0;
+
+            var uploads = Path.Combine(_env.WebRootPath, "uploads");
+            Directory.CreateDirectory(uploads);
+            var fileName = $"{Guid.NewGuid()}{ext}";
+            var path = Path.Combine(uploads, fileName);
+
+            using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+                await s.CopyToAsync(fs);
+
+            return (true, null, "/uploads/" + fileName);
+        }
+
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CompleteProfile(UserProfileCreateDTO dto, IFormFile profilePhoto, string action)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return RedirectToAction("Login", "Auth");
+            if (user == null) return RedirectToAction("Login", "Auth");
 
+            // Zaten profili varsa doğrudan Edit
             var exists = await _userProfileService.GetByAppUserIdAsync(user.Id);
-            if (exists != null)
-                return RedirectToAction("Edit", "Profile");
+            if (exists != null) return RedirectToAction("Edit", "Profile");
 
-            // Eğer "Daha Sonra" butonu seçildiyse:
-            if (action == "skip")
+            // "Daha sonra" akışı: minimum güvenli default
+            if (string.Equals(action, "skip", StringComparison.OrdinalIgnoreCase))
             {
                 var defaultDto = new UserProfileCreateDTO
                 {
                     AppUserId = user.Id,
                     ProfilePhotoUrl = "/uploads/user-default.jpg",
                     Gender = Gender.Other,
-                    BirthDate = DateTime.UtcNow,
-                    HeightCm = null,
-                    WeightKg = null,
+                    BirthDate = DateTime.UtcNow.Date,
                     BodyType = BodyType.None,
                     BloodType = BloodType.None,
                     Instagram = "İsteğe Bağlı",
@@ -85,48 +132,82 @@ namespace FraoulaPT.WebUI.Controllers
                     Occupation = "İsteğe Bağlı",
                     ExperienceLevel = ExperienceLevel.None,
                     FavoriteSports = "İsteğe Bağlı",
-                    Notes = "İsteğe Bağlo",
+                    Notes = "İsteğe Bağlı",
                     DietType = DietType.Custom
                 };
-                await _userProfileService.AddAsync(defaultDto);
-                ShowAlert("Bilgilendirme", "Profil daha sonra düzenlenmek icin oluşturuldu... Lütfen bilgileri doldurmayı unutmmayın",AlertType.warning);
+
+                var id = await _userProfileService.AddAsync(defaultDto);
+                ShowAlert("Bilgilendirme", "Profil daha sonra düzenlenmek üzere oluşturuldu. Lütfen bilgileri doldurun.", AlertType.warning);
                 return RedirectToAction("Index", "Home");
             }
 
-            // Fotoğraf yükleme işlemi
-            if (profilePhoto != null && profilePhoto.Length > 0)
+            // ---------- Sunucu tarafı doğrulamalar ----------
+            // Enum doğrulamaları
+            if (dto.Gender.HasValue && !Enum.IsDefined(typeof(Gender), dto.Gender.Value))
+                ModelState.AddModelError(nameof(dto.Gender), "Geçersiz cinsiyet değeri.");
+            if (dto.BodyType.HasValue && !Enum.IsDefined(typeof(BodyType), dto.BodyType.Value))
+                ModelState.AddModelError(nameof(dto.BodyType), "Geçersiz vücut tipi.");
+            if (dto.BloodType.HasValue && !Enum.IsDefined(typeof(BloodType), dto.BloodType.Value))
+                ModelState.AddModelError(nameof(dto.BloodType), "Geçersiz kan grubu.");
+            if (dto.ExperienceLevel.HasValue && !Enum.IsDefined(typeof(ExperienceLevel), dto.ExperienceLevel.Value))
+                ModelState.AddModelError(nameof(dto.ExperienceLevel), "Geçersiz deneyim seviyesi.");
+            if (dto.DietType.HasValue && !Enum.IsDefined(typeof(DietType), dto.DietType.Value))
+                ModelState.AddModelError(nameof(dto.DietType), "Geçersiz beslenme tipi.");
+
+            // Tarih: gelecekte olmasın
+            if (dto.BirthDate.HasValue && dto.BirthDate.Value.Date > DateTime.UtcNow.Date)
+                ModelState.AddModelError(nameof(dto.BirthDate), "Doğum tarihi gelecekte olamaz.");
+
+            // Sayısal aralıklar (isteğe göre daraltılabilir)
+            if (dto.HeightCm is < 50 or > 250)
+                ModelState.AddModelError(nameof(dto.HeightCm), "Boy 50-250 cm aralığında olmalıdır.");
+            if (dto.WeightKg is < 20 or > 400)
+                ModelState.AddModelError(nameof(dto.WeightKg), "Kilo 20-400 kg aralığında olmalıdır.");
+
+            // Instagram handle basit temizlik: sadece kullanıcı adı tut
+            if (!string.IsNullOrWhiteSpace(dto.Instagram))
             {
-                var uploads = Path.Combine(_env.WebRootPath, "uploads");
-                Directory.CreateDirectory(uploads);
-                var fileName = Guid.NewGuid() + Path.GetExtension(profilePhoto.FileName);
-                var filePath = Path.Combine(uploads, fileName);
-                using (var fs = new FileStream(filePath, FileMode.Create))
-                {
-                    await profilePhoto.CopyToAsync(fs);
-                }
-                dto.ProfilePhotoUrl = "/uploads/" + fileName;
-            }
-            else
-            {
-                dto.ProfilePhotoUrl = "/uploads/user-default.jpg";
+                var handle = dto.Instagram.Trim().TrimStart('@', '/');
+                // boşluk ve URL parçası temizle
+                handle = Regex.Replace(handle, @"\s+", "");
+                // isterseniz daha sıkı filtre: sadece harf/rakam/._ allow
+                handle = Regex.Replace(handle, @"[^A-Za-z0-9._]", "");
+                dto.Instagram = handle;
             }
 
+            if (!ModelState.IsValid) return View(dto);
+
+            // Overposting kapalı: AppUserId server'da set
             dto.AppUserId = user.Id;
 
-            var newProfileId = await _userProfileService.AddAsync(dto);
-
-            if (newProfileId != Guid.Empty)
+            // --- Fotoğraf yükleme güvenli ---
+            var (ok, msg, savedUrl) = await SaveProfilePhotoAsync(profilePhoto);
+            if (!ok)
             {
-                ShowAlert("Başarılı", "Profil Başarıyla oluşturuldu", AlertType.success);
+                ModelState.AddModelError(nameof(profilePhoto), msg!);
+                return View(dto);
+            }
+            dto.ProfilePhotoUrl = savedUrl;
+
+            try
+            {
+                var newProfileId = await _userProfileService.AddAsync(dto);
+                if (newProfileId == Guid.Empty)
+                {
+                    ShowAlert("Hata", "Profil oluşturulurken bir hata oluştu.", AlertType.error);
+                    return View(dto);
+                }
+
+                ShowAlert("Başarılı", "Profil başarıyla oluşturuldu.", AlertType.success);
                 return RedirectToAction("Index", "Home");
             }
-            else
+            catch (Exception ex)
             {
-                ShowAlert("Hata", "Profil oluşturulurken bir hata oluştu", AlertType.error);
+                // Log ex
+                ShowAlert("Hata", "Beklenmeyen bir hata oluştu.", AlertType.error);
                 return View(dto);
             }
         }
-
         // GET: /Profile/Edit
         public async Task<IActionResult> Edit()
         {
@@ -197,17 +278,25 @@ namespace FraoulaPT.WebUI.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
-                RedirectToAction("Login", "Auth");
-            var profile = await _userProfileService.GetByAppUserIdAsync(user.Id);
+                return RedirectToAction("Login", "Auth");
 
+            var profile = await _userProfileService.GetByAppUserIdAsync(user.Id);
             if (profile == null)
             {
                 ShowAlert("Uyarı", "Profil bilgisi bulunamadı. Lütfen profilinizi tamamlayın.", AlertType.warning);
                 return RedirectToAction("CompleteProfile");
             }
 
-            // ProfileDetailDTO dönecek şekilde maplediğini varsayıyorum
-            return View(profile.Adapt<UserProfileDetailDTO>());
+            var dto = profile.Adapt<UserProfileDetailDTO>();
+            // AppUser alanlarını ekle
+            dto.FullName = user.FullName;           // projenizdeki alan adı buysa
+            dto.UserName = user.UserName;
+            dto.Email = user.Email;
+
+            // Varsa oluşturulma tarihi (profile.CreatedDate) buraya set edilir
+            dto.CreatedDate = profile.CreatedDate;
+
+            return View(dto);
         }
     }
 }

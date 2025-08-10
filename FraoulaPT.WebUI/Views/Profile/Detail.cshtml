@@ -1,83 +1,205 @@
-﻿@using Microsoft.AspNetCore.Html
+﻿@using FraoulaPT.DTOs.UserProfileDTOs
+@using Microsoft.AspNetCore.Html
+@model UserProfileDetailDTO
 @{
     ViewData["Title"] = "Profilim";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Instagram handle temizleme
+    string ig = Model.Instagram?.Trim();
+    if (!string.IsNullOrEmpty(ig))
+    {
+        if (ig.StartsWith("@")) ig = ig.Substring(1);
+        ig = System.Text.RegularExpressions.Regex.Replace(ig, @"[^A-Za-z0-9._]", "");
+    }
+    var igUrl = string.IsNullOrWhiteSpace(ig) ? null : $"https://instagram.com/{ig}";
+
+    string PregnancyText() =>
+        Model.PregnancyStatus == null ? "-" : (Model.PregnancyStatus == true ? "Evet" : "Hayır");
 }
-@model FraoulaPT.DTOs.UserProfileDTOs.UserProfileDetailDTO
 
 <div class="container py-5">
-    <div class="card shadow-lg border-0 rounded-3"
-         style="background-color: rgba(25,25,25,0.95); color: #f1f1f1;">
-        <div class="card-body">
-            <!-- Profil Fotoğrafı ve Ad -->
-            <div class="text-center mb-4">
-                <img src="@Model.ProfilePhotoUrl"
-                     alt="Profil Fotoğrafı"
-                     class="rounded-circle border border-3 shadow-sm"
-                     style="border-color: #ff8800 !important; width:140px; height:140px; object-fit: cover; background:#111;" />
+    <!-- Hero -->
+    <div class="card shadow-lg border-0 rounded-3" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">
+        <div class="card-body p-4 p-md-5">
+            <div class="d-flex flex-column flex-md-row align-items-center gap-3">
+                <img src="@Model.ProfilePhotoUrl" alt="Profil" class="rounded-circle shadow"
+                     style="width:120px;height:120px;object-fit:cover;border:2px solid var(--accent)" />
 
-                <h3 class="mt-3 fw-bold text-warning">@* @Model.FullName *@ Ad soyad gelecek </h3>
+                <div class="text-center text-md-start">
+                    <h3 class="fw-bold m-0 text-warning">
+                        @(string.IsNullOrWhiteSpace(Model.FullName) ? Model.UserName : Model.FullName)
+                    </h3>
+                    <div class="small opacity-75">@Model.Email</div>
 
-                @if (!string.IsNullOrWhiteSpace(Model.Instagram))
-                {
-                    <a href="https://instagram.com/@Model.Instagram" target="_blank"
-                       class="text-light opacity-75 text-decoration-none d-inline-flex align-items-center mt-1">
-                        <i class="bi bi-instagram me-1"></i> @Model.Instagram
+                    @if (!string.IsNullOrWhiteSpace(igUrl))
+                    {
+                        <div class="mt-1">
+                            <a href="@igUrl" target="_blank" rel="noopener"
+                               class="text-light opacity-75 text-decoration-none d-inline-flex align-items-center">
+                                <i class="bi bi-instagram me-1"></i>@($"@{ig}")
+                            </a>
+                        </div>
+                    }
+                </div>
+
+                <div class="ms-md-auto d-flex flex-wrap gap-2">
+                    <a asp-controller="Auth" asp-action="ChangeEmail" class="btn btn-outline-light">
+                        <i class="bi bi-envelope"></i> E-posta
                     </a>
-                }
+                    <a asp-controller="Auth" asp-action="ChangePassword" class="btn btn-outline-warning">
+                        <i class="bi bi-key"></i> Şifre
+                    </a>
+                    <a asp-controller="Profile" asp-action="Edit" class="btn btn-accent text-white">
+                        <i class="bi bi-pencil-square"></i> Profili Düzenle
+                    </a>
+                </div>
             </div>
+        </div>
+    </div>
 
-            <hr class="border-secondary mb-4" />
-
-            <!-- Bilgiler -->
-            <div class="row g-3">
-                <div class="col-12 col-md-6">@InfoCard("bi-gender-ambiguous", "Cinsiyet", Model.Gender?.ToString())</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-calendar3", "Doğum Tarihi", Model.BirthDate?.ToString("dd.MM.yyyy"))</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-rulers", "Boy / Kilo", $"{Model.HeightCm} cm / {Model.WeightKg} kg")</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-body-text", "Vücut Tipi", Model.BodyType?.ToString())</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-droplet-half", "Kan Grubu", Model.BloodType?.ToString())</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-telephone", "Telefon", Model.PhoneNumber)</div>
-                <div class="col-12">@InfoCard("bi-geo-alt", "Adres", Model.Address)</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-person-lines-fill", "Acil Durum Kişisi", $"{Model.EmergencyContactName} {Model.EmergencyContactPhone}")</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-journal-medical", "Medikal Geçmiş", Model.MedicalHistory)</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-activity", "Kronik Hastalıklar", Model.ChronicDiseases)</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-capsule", "Sürekli İlaçlar", Model.CurrentMedications)</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-allergies", "Alerjiler", Model.Allergies)</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-bandaid", "Geçmiş Yaralanmalar", Model.PastInjuries)</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-emoji-frown", "Mevcut Ağrılar", Model.CurrentPain)</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-gender-female", "Hamilelik Durumu", Model.PregnancyStatus == true ? "Evet" : "Hayır")</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-heart-pulse", "Sağlık Kontrolü", Model.LastCheckResults)</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-cup-straw", "Sigara / Alkol", Model.SmokingAlcohol)</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-briefcase", "Meslek", Model.Occupation)</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-award", "Deneyim", Model.ExperienceLevel?.ToString())</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-trophy", "Favori Sporlar", Model.FavoriteSports)</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-pencil", "Notlar", Model.Notes)</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-egg-fried", "Diyet Tipi", Model.DietType?.ToString())</div>
-                <div class="col-12 col-md-6">@InfoCard("bi-clock-history", "Oluşturulma Tarihi", Model.CreatedDate.ToString("dd.MM.yyyy HH:mm"))</div>
+    <!-- İçerik: Akordeon -->
+    <div class="accordion mt-4" id="profileAccordion">
+        <!-- Kişisel Bilgiler -->
+        <div class="accordion-item" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                        aria-expanded="false" aria-controls="collapseOne"
+                        style="background:var(--surface);color:var(--text);">
+                    <i class="bi bi-person me-2 text-warning"></i> Kişisel Bilgiler
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#profileAccordion">
+                <div class="accordion-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">@InfoCard("bi-person-badge", "Ad Soyad", Model.FullName)</div>
+                        <div class="col-12 col-md-6">
+                            @InfoCardWithAction("bi-at", "Kullanıcı Adı", Model.UserName, "Kopyala", new { id = "copyUser" })
+                        </div>
+                        <div class="col-12 col-md-6">
+                            @InfoCardWithAction("bi-envelope", "E-posta", Model.Email, "Kopyala", new { id = "copyMail" })
+                        </div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-gender-ambiguous", "Cinsiyet", Model.Gender?.ToString())</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-calendar3", "Doğum Tarihi", Model.BirthDate?.ToString("dd.MM.yyyy"))</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-rulers", "Boy / Kilo", $"{Model.HeightCm} cm / {Model.WeightKg} kg")</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-body-text", "Vücut Tipi", Model.BodyType?.ToString())</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-droplet-half", "Kan Grubu", Model.BloodType?.ToString())</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-telephone", "Telefon", Model.PhoneNumber)</div>
+                        <div class="col-12">@InfoCard("bi-geo-alt", "Adres", Model.Address)</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-clock-history", "Oluşturulma", Model.CreatedDate.ToString("dd.MM.yyyy HH:mm"))</div>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <!-- Düzenle Butonu -->
-            <div class="mt-4 text-end">
-                <a asp-action="Edit" asp-controller="Profile"
-                   class="btn fw-semibold text-white px-4"
-                   style="background: linear-gradient(90deg, #ff8800, #cc6600); border: none;">
-                    <i class="bi bi-pencil-square me-1"></i> Profili Düzenle
-                </a>
+        <!-- Sağlık Bilgileri -->
+        <div class="accordion-item mt-3" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">
+            <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo"
+                        aria-expanded="false" aria-controls="collapseTwo"
+                        style="background:var(--surface);color:var(--text);">
+                    <i class="bi bi-heart-pulse me-2 text-warning"></i> Sağlık Bilgileri
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#profileAccordion">
+                <div class="accordion-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">@InfoCard("bi-journal-medical", "Medikal Geçmiş", Model.MedicalHistory)</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-activity", "Kronik Hastalıklar", Model.ChronicDiseases)</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-capsule", "Sürekli İlaçlar", Model.CurrentMedications)</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-allergies", "Alerjiler", Model.Allergies)</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-bandaid", "Geçmiş Yaralanmalar", Model.PastInjuries)</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-emoji-frown", "Mevcut Ağrılar", Model.CurrentPain)</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-gender-female", "Hamilelik Durumu", PregnancyText())</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-heart-pulse", "Sağlık Kontrolü", Model.LastCheckResults)</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-cup-straw", "Sigara / Alkol", Model.SmokingAlcohol)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diğer & Tercihler -->
+        <div class="accordion-item mt-3" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">
+            <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree"
+                        aria-expanded="false" aria-controls="collapseThree"
+                        style="background:var(--surface);color:var(--text);">
+                    <i class="bi bi-gear me-2 text-warning"></i> Diğer Bilgiler
+                </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#profileAccordion">
+                <div class="accordion-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">@InfoCard("bi-briefcase", "Meslek", Model.Occupation)</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-award", "Deneyim", Model.ExperienceLevel?.ToString())</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-trophy", "Favori Sporlar", Model.FavoriteSports)</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-pencil", "Notlar", Model.Notes)</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-egg-fried", "Diyet Tipi", Model.DietType?.ToString())</div>
+                        <div class="col-12 col-md-6">@InfoCard("bi-person-lines-fill", "Acil Kişi", $"{Model.EmergencyContactName} {Model.EmergencyContactPhone}")</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
 @functions {
     private IHtmlContent InfoCard(string icon, string title, string value)
     {
+        var safe = string.IsNullOrWhiteSpace(value) ? "-" : value;
         var html = $@"
-            <div class='p-3 rounded shadow-sm h-100 d-flex align-items-start' style='background-color: rgba(40,40,40,0.9); border-left: 4px solid #ff8800;'>
-                             <i class='bi {icon} text-warning fs-4 me-2'></i>
-                <div>
-                    <small class='text-light opacity-75'>{title}</small>
-                    <div class='fw-semibold text-white'>{(string.IsNullOrWhiteSpace(value) ? '-' : value)}</div>
-                </div>
-            </div>";
+<div class='p-3 rounded shadow-sm h-100 d-flex align-items-start'
+     style=""background-color:rgba(40,40,40,0.9);border:1px solid var(--border);border-left:4px solid var(--accent);"">
+  <i class='bi {icon} text-warning fs-5 me-2'></i>
+  <div>
+    <small class='text-light opacity-75 d-block mb-1'>{title}</small>
+    <div class='fw-semibold text-white'>{safe}</div>
+  </div>
+</div>";
         return new HtmlString(html);
     }
+
+    // Aksiyon butonlu kart (kopyala vb.)
+    private IHtmlContent InfoCardWithAction(string icon, string title, string value, string actionText, object htmlAttrs)
+    {
+        var safe = string.IsNullOrWhiteSpace(value) ? "-" : value;
+        var attrs = string.Join(" ", htmlAttrs.GetType().GetProperties()
+            .Select(p => $"{p.Name}=\"{p.GetValue(htmlAttrs)}\""));
+        var html = $@"
+<div class='p-3 rounded shadow-sm h-100 d-flex align-items-start justify-content-between'
+     style=""background-color:rgba(40,40,40,0.9);border:1px solid var(--border);border-left:4px solid var(--accent);"">
+  <div class='me-2 d-flex'>
+    <i class='bi {icon} text-warning fs-5 me-2'></i>
+    <div>
+      <small class='text-light opacity-75 d-block mb-1'>{title}</small>
+      <div class='fw-semibold text-white'>{safe}</div>
+    </div>
+  </div>
+  <button type='button' class='btn btn-sm btn-outline-secondary' {attrs} data-value='{System.Net.WebUtility.HtmlEncode(value ?? "")}'>
+    <i class='bi bi-clipboard'></i>
+  </button>
+</div>";
+        return new HtmlString(html);
+    }
+}
+
+@section Scripts {
+    <script>
+        // Kopyalama butonları
+        document.addEventListener('click', (e) => {
+          const btn = e.target.closest('#copyMail, #copyUser');
+          if (!btn) return;
+          const val = btn.getAttribute('data-value') || '';
+          if (!val || val === '-') return;
+
+          navigator.clipboard.writeText(val).then(() => {
+            // basit toast
+            const el = document.createElement('div');
+            el.textContent = 'Kopyalandı';
+            el.style.cssText = 'position:fixed;right:16px;bottom:16px;background:#333;color:#fff;padding:8px 12px;border-radius:8px;z-index:1055';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1200);
+          });
+        });
+    </script>
 }

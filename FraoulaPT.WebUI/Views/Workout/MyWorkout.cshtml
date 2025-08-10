@@ -1,10 +1,17 @@
-﻿@using FraoulaPT.WebUI.Models.ViewModels.WorkoutProgramViewModel
+﻿@using System.Linq
+@using FraoulaPT.WebUI.Models.ViewModels.WorkoutProgramViewModel
 @model MyWorkoutProgramVM
 
 @{
     ViewData["Title"] = "Antrenmanım";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // 1..7  =>  Pzt..Paz
     string[] gunler = { "", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar" };
+
+    // Bugün vurgusu için: .NET Sunday=0 => 7'e map’liyoruz
+    var dow = (int)DateTime.Now.DayOfWeek; // 0..6
+    int todayIndex = dow == 0 ? 7 : dow;
 }
 
 <div class="container py-4">
@@ -13,14 +20,16 @@
         <div class="alert alert-warning text-center shadow-sm p-4">
             <i class="bi bi-exclamation-triangle-fill fs-1 text-warning mb-3"></i>
             <h4 class="fw-bold text-warning">Henüz antrenman programınız oluşturulmamış</h4>
-            <p class="fw-semibold text-danger">Koçunuz size özel bir program tanımladığında burada göreceksiniz.</p>
+            <p class="fw-semibold text-secondary mb-0">
+                Koçunuz size özel bir program tanımladığında burada göreceksiniz.
+            </p>
         </div>
     }
     else
     {
         <!-- Başlık -->
         <div class="text-center mb-4">
-            <h2 class="fw-bold text-warning">@Model.ProgramTitle</h2>
+            <h2 class="fw-bold text-warning">@(!string.IsNullOrWhiteSpace(Model.ProgramTitle) ? Model.ProgramTitle : "Antrenman Programım")</h2>
             @if (!string.IsNullOrWhiteSpace(Model.CoachNote))
             {
                 <p class="text-light small bg-dark rounded px-3 py-2 d-inline-block shadow-sm">
@@ -34,17 +43,24 @@
             @for (int i = 1; i <= 7; i++)
             {
                 var day = Model.Days.FirstOrDefault(d => d.DayOfWeek == i);
-                var isRestDay = day == null;
-                var hasExercises = day?.Exercises != null && day.Exercises.Any();
+                bool isRestDay = day == null;
+                bool hasExercises = day?.Exercises != null && day.Exercises.Any();
+                bool isToday = i == todayIndex;
 
                 <div class="col">
                     <div class="card h-100 shadow-sm border-0 rounded-3 bg-dark text-light">
                         <!-- Gün Başlık -->
                         <div class="card-header border-0 bg-dark text-center pb-1">
-                            <h5 class="card-title fw-bold text-warning mb-1">@gunler[i]</h5>
+                            <h5 class="card-title fw-bold text-warning mb-1">
+                                @gunler[i]
+                                @if (isToday)
+                                {
+                                    <span class="badge bg-warning text-dark ms-2">Bugün</span>
+                                }
+                            </h5>
                             @if (!isRestDay && !string.IsNullOrWhiteSpace(day.Description))
                             {
-                                <p class="text-muted small">@day.Description</p>
+                                <p class="text-muted small mb-0">@day.Description</p>
                             }
                         </div>
 
@@ -64,9 +80,10 @@
                                 <!-- Henüz hareket eklenmemiş -->
                                 <div class="text-center my-auto">
                                     <i class="bi bi-exclamation-triangle fs-1 text-warning mb-2"></i>
-                                    <p class="fw-semibold text-warning">Henüz hareket eklenmemiş</p>
+                                    <p class="fw-semibold text-warning mb-2">Henüz hareket eklenmemiş</p>
+                                    <small class="text-muted d-block mb-3">Koçunuzdan bu güne egzersiz eklemesini isteyebilirsiniz.</small>
                                 </div>
-                                <a asp-action="StartDay" asp-route-id="@day.Id" class="btn btn-outline-warning fw-semibold mt-auto w-100">
+                                <a asp-action="StartDay" asp-route-id="@(day.Id)" class="btn btn-outline-warning fw-semibold mt-auto w-100">
                                     <i class="bi bi-play-fill"></i> Antrenmana Başla
                                 </a>
                             }
@@ -82,13 +99,15 @@
                                         </li>
                                     }
                                 </ul>
-                                @if (day.Exercises.Count > 3)
+
+                                @if (day.Exercises.Count() > 3)
                                 {
                                     <small class="text-muted mb-2">
-                                        + @(day.Exercises.Count - 3) hareket daha...
+                                        + @(day.Exercises.Count() - 3) hareket daha...
                                     </small>
                                 }
-                                <a asp-action="StartDay" asp-route-id="@day.Id" class="btn btn-warning fw-semibold mt-auto w-100 text-dark">
+
+                                <a asp-action="StartDay" asp-route-id="@(day.Id)" class="btn btn-warning fw-semibold mt-auto w-100 text-dark">
                                     <i class="bi bi-play-fill"></i> Antrenmana Başla
                                 </a>
                             }

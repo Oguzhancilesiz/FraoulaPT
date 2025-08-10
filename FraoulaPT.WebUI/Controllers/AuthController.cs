@@ -1,4 +1,5 @@
-﻿using FraoulaPT.DTOs.AuthDTOs;
+﻿using FraoulaPT.Core.Enums;
+using FraoulaPT.DTOs.AuthDTOs;
 using FraoulaPT.Entity;
 using FraoulaPT.Services.Abstracts;
 using FraoulaPT.Services.Concrete;
@@ -294,6 +295,113 @@ namespace FraoulaPT.WebUI.Controllers
         public IActionResult AccessDenied()
         {
             return View();
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult ChangePassword() => View(new ChangePasswordDTO());
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDTO dto)
+        {
+            if (!ModelState.IsValid) return View(dto);
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login");
+
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            if (result.Succeeded)
+            {
+                await _signInManager.RefreshSignInAsync(user);
+                ShowAlert("Başarılı", "Şifreniz güncellendi.", AlertType.success);
+                return RedirectToAction("Detail", "Profile");
+            }
+
+            foreach (var e in result.Errors) ModelState.AddModelError("", e.Description);
+            ShowAlert("Hata", "Şifre güncellenemedi.", AlertType.error);
+            return View(dto);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult ChangeEmail() => View(new ChangeEmailDTO());
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeEmail(ChangeEmailDTO dto)
+        {
+            if (!ModelState.IsValid) return View(dto);
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Login");
+
+            if (string.Equals(user.Email, dto.NewEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError("", "Yeni e-posta, mevcut e-postanızla aynı.");
+                return View(dto);
+            }
+
+            // E-posta zaten kullanılıyor mu?
+            var exists = await _userManager.FindByEmailAsync(dto.NewEmail);
+            if (exists != null && exists.Id != user.Id)
+            {
+                ModelState.AddModelError("", "Bu e-posta başka bir hesap tarafından kullanılıyor.");
+                return View(dto);
+            }
+
+            // Onay bağlantısı için token üret
+            var token = await _userManager.GenerateChangeEmailTokenAsync(user, dto.NewEmail);
+            var link = Url.Action("ConfirmChangeEmail", "Auth",
+                new { userId = user.Id, newEmail = dto.NewEmail, token },
+                Request.Scheme);
+
+            var subject = "FraoulaPT - E-posta Değiştirme Onayı";
+            var body = $@"
+        <p>Merhaba {user.FullName ?? user.UserName},</p>
+        <p>E-posta adresinizi <b>{dto.NewEmail}</b> olarak değiştirmek için bağlantıya tıklayın:</p>
+        <p><a href='{link}'>E-postamı Değiştir</a></p>
+        <p>Bağlantı kısa süreli geçerlidir.</p>";
+
+            await _mailService.SendAsync(dto.NewEmail, subject, body);
+
+            ShowAlert("Bilgi", "Onay bağlantısı yeni e-posta adresinize gönderildi.", AlertType.info);
+            return RedirectToAction("Detail", "Profile");
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> ConfirmChangeEmail(string userId, string newEmail, string token)
+        {
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(newEmail) || string.IsNullOrWhiteSpace(token))
+            {
+                ShowAlert("Hata", "Geçersiz istek.", AlertType.error);
+                return RedirectToAction("Login");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                ShowAlert("Hata", "Kullanıcı bulunamadı.", AlertType.error);
+                return RedirectToAction("Login");
+            }
+
+            // E-posta değişimini tamamla
+            var result = await _userManager.ChangeEmailAsync(user, newEmail, token);
+            if (!result.Succeeded)
+            {
+                ShowAlert("Hata", "E-posta değiştirilemedi. Bağlantının süresi dolmuş olabilir.", AlertType.error);
+                return RedirectToAction("Login");
+            }
+
+            // (Opsiyonel) E-posta = kullanıcı adı kuralın varsa:
+            // await _userManager.SetUserNameAsync(user, newEmail);
+
+            await _signInManager.RefreshSignInAsync(user);
+            ShowAlert("Başarılı", "E-posta adresiniz güncellendi.", AlertType.success);
+            return RedirectToAction("Detail", "Profile");
         }
     }
 }

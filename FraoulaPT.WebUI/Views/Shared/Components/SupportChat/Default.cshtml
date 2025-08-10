@@ -3,53 +3,163 @@
 @if (Model?.Coaches != null && Model.Coaches.Any())
 {
     <!-- Koç Seçimi -->
-    <div id="chatCoachSelection" class="bg-dark text-light p-3 rounded shadow-sm mb-3">
-        <label for="chatCoach" class="form-label fw-semibold text-warning">
-            🎯 Görüşmek istediğin koçu seç:
+    <div id="chatCoachSelection"
+         class="p-3 rounded shadow-sm mb-3"
+         style="background:var(--surface);color:var(--text);border:1px solid var(--border);">
+        <label for="chatCoach" class="form-label fw-semibold text-warning mb-1">
+            🎯 Görüşmek istediğin koçu seç
         </label>
-        <select id="chatCoach" class="form-select bg-dark text-light border-secondary mb-3">
-            <option value="">-- Seçiniz --</option>
-            @foreach (var coach in Model.Coaches)
-            {
-                <option value="@coach.Id" data-photo="@coach.ProfilePhotoUrl">@coach.FullName</option>
-            }
-        </select>
-        <button class="btn btn-warning w-100 fw-semibold" id="startChatBtn" disabled>
-            🟢 Sohbete Başla
-        </button>
+
+        <div class="row g-2 align-items-center">
+            <div class="col-12 col-sm-8">
+                <select id="chatCoach"
+                        class="form-select ring bg-dark text-light border-secondary"
+                        aria-label="Koç seçiniz">
+                    <option value="">-- Seçiniz --</option>
+                    @foreach (var coach in Model.Coaches)
+                    {
+                        <option value="@coach.Id" data-photo="@coach.ProfilePhotoUrl">@coach.FullName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-sm-4">
+                <button class="btn w-100 fw-semibold" id="startChatBtn" disabled
+                        style="background:var(--brand-grad);border:0;color:#fff">
+                    🟢 Sohbete Başla
+                </button>
+            </div>
+        </div>
+
+        <!-- Seçili koç önizleme -->
+        <div id="coachMiniCard" class="d-flex align-items-center gap-2 mt-2 small" style="opacity:.9;display:none;">
+            <img id="coachMiniPhoto" src="" alt="Koç" class="rounded-circle"
+                 width="28" height="28" style="object-fit:cover;border:1px solid var(--border)">
+            <span id="coachMiniName"></span>
+        </div>
     </div>
 }
 else
 {
-    <div class="text-muted p-3 bg-dark rounded shadow-sm small">⚠️ Sistemde tanımlı koç bulunamadı.</div>
+    <div class="text-muted p-3 rounded shadow-sm small"
+         style="background:var(--surface);border:1px solid var(--border);">
+        ⚠️ Sistemde tanımlı koç bulunamadı.
+    </div>
 }
 
 <!-- Sohbet Alanı -->
 <div id="chatBoxArea" class="d-none">
     <!-- Mesajlar -->
     <div id="chatMessages"
-         class="border border-secondary p-3 mb-3 rounded bg-dark text-light small"
-         style="max-height: 250px; overflow-y: auto;">
+         class="p-3 mb-2 rounded"
+         style="background:var(--surface);color:var(--text);border:1px solid var(--border);max-height:260px;overflow-y:auto;">
         <div class="text-muted text-center">💬 Sohbet başlatılıyor...</div>
     </div>
 
+    <!-- Görsel önizlemeleri -->
+    <div id="attachPreview" class="d-flex flex-wrap gap-2 mb-2" style="display:none;"></div>
+
     <!-- Mesaj Giriş Alanı -->
     <div class="input-group">
-        <input type="text" id="chatInput" class="form-control bg-dark text-light border-secondary"
-               placeholder="✏️ Mesaj yaz..." />
-
+        <input type="text" id="chatInput"
+               class="form-control ring bg-dark text-light border-secondary"
+               maxlength="500" placeholder="Mesaj yaz... (Enter ile gönder)">
         <!-- Ataç Butonu -->
         <button class="btn btn-outline-light border-secondary" type="button" id="attachImageBtn"
                 title="Görsel Ekle">
             <i class="bi bi-paperclip"></i>
         </button>
-
         <!-- Gönder Butonu -->
-        <button class="btn btn-warning text-dark fw-semibold" id="sendMessageBtn">
+        <button class="btn fw-semibold text-white" id="sendMessageBtn"
+                style="background:var(--brand-grad);border:0;">
             <i class="bi bi-send-fill"></i>
         </button>
-
         <!-- Gizli Çoklu Dosya Input -->
         <input type="file" id="imageInput" accept="image/*" multiple hidden />
     </div>
+
+    <div class="d-flex justify-content-between small mt-1">
+        <span class="text-muted">Maks. 500 karakter</span>
+        <span id="msgCounter" class="text-muted">0/500</span>
+    </div>
 </div>
+
+<script>
+    /* =============== Koç seçimi mini kart + buton enable =============== */
+    (function(){
+      const select = document.getElementById('chatCoach');
+      const startBtn = document.getElementById('startChatBtn');
+      const card = document.getElementById('coachMiniCard');
+      const img = document.getElementById('coachMiniPhoto');
+      const nameEl = document.getElementById('coachMiniName');
+
+      if (!select) return;
+
+      select.addEventListener('change', function () {
+        const hasVal = !!this.value;
+        if (startBtn) startBtn.disabled = !hasVal;
+
+        if (hasVal) {
+          const opt = this.selectedOptions[0];
+          const photo = opt.getAttribute('data-photo') || '';
+          const name = opt.textContent || '';
+          if (img) img.src = photo;
+          if (nameEl) nameEl.textContent = name;
+          if (card) card.style.display = 'flex';
+        } else {
+          if (card) card.style.display = 'none';
+        }
+      });
+    })();
+
+    /* =============== Mesaj karakter sayacı & Enter ile gönderme =============== */
+    (function(){
+      const input = document.getElementById('chatInput');
+      const counter = document.getElementById('msgCounter');
+      const sendBtn = document.getElementById('sendMessageBtn');
+
+      if (!input) return;
+
+      input.addEventListener('input', function () {
+        const len = this.value.length;
+        if (counter) counter.textContent = len + '/500';
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendBtn?.click();
+        }
+      });
+    })();
+
+    /* =============== Görsel Ekleme (Önizleme) =============== */
+    /* Not: Backend SignalR mesaj gönderimi şu an sadece metin.
+       Burada sadece kullanıcıya küçük önizleme gösteriyoruz. */
+    (function(){
+      const btn = document.getElementById('attachImageBtn');
+      const picker = document.getElementById('imageInput');
+      const preview = document.getElementById('attachPreview');
+
+      btn?.addEventListener('click', () => picker?.click());
+
+      picker?.addEventListener('change', function () {
+        if (!this.files || this.files.length === 0) return;
+        preview.innerHTML = '';
+        Array.from(this.files).slice(0, 5).forEach(file => {
+          const url = URL.createObjectURL(file);
+          const wrap = document.createElement('div');
+          wrap.className = 'position-relative';
+          wrap.innerHTML = `
+            <img src="${url}" class="rounded shadow" style="width:64px;height:64px;object-fit:cover;border:1px solid var(--border)">
+            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                    style="line-height:1;padding:.05rem .25rem;">×</button>`;
+          wrap.querySelector('button').addEventListener('click', () => {
+            wrap.remove();
+            // input’tan da kaldırmak istenirse: yeni FileList oluşturmak gerekir (ileride)
+          });
+          preview.appendChild(wrap);
+        });
+        preview.style.display = 'flex';
+      });
+    })();
+</script>
