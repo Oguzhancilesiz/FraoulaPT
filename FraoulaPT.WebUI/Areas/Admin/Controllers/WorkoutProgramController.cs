@@ -19,7 +19,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FraoulaPT.WebUI.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin,Coach")]
+    [Authorize(Roles = "Koc,Admin")]
     public class WorkoutProgramController : BaseController
     {
         private readonly IWorkoutProgramService _workoutProgramService;

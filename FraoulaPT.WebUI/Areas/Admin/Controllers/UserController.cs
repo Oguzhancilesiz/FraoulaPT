@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FraoulaPT.WebUI.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin,Coach")]
+    [Authorize(Roles = "Koc,Admin")]
     public class UserController : BaseController
     {
         private readonly IAppUserService _userService;

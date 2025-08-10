@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FraoulaPT.WebUI.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Koc,Admin")]
     public class DashboardController : Controller
     {
         private readonly IUserPackageService _userPackageService;

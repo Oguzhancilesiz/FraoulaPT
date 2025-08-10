@@ -25,11 +25,11 @@ namespace FraoulaPT.WebUI.Hubs
             if (!Guid.TryParse(toUserId, out Guid receiverId)) return;
 
             var roles = Context.User?.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
-            var userPackage = await _userPackageService.GetActivePackageStatusAsync(senderId);
-            // 🔒 Sadece öğrenci için paket kontrolü yapılır
-            if (roles != null && roles.Contains("Ogrenci"))
-            {
+            if (roles == null || roles.Count == 0) return;
 
+            if (roles.Contains("Ogrenci"))
+            {
+                var userPackage = await _userPackageService.GetActivePackageStatusAsync(senderId);
                 if (userPackage == null)
                 {
                     await Clients.User(senderId.ToString())
@@ -38,7 +38,6 @@ namespace FraoulaPT.WebUI.Hubs
                 }
 
                 var now = DateTime.UtcNow;
-
                 if (userPackage.EndDate < now)
                 {
                     await Clients.User(senderId.ToString())
@@ -55,31 +54,26 @@ namespace FraoulaPT.WebUI.Hubs
 
                 await _userPackageService.IncrementUsedMessageAsync(senderId);
 
-                // 💬 Öğrenci ise paketi mesajla ilişkilendir
                 var chat = await _chatMessageService.CreateAsync(senderId, receiverId, messageText, userPackage.UserPackageId);
 
                 var messageDto = new
                 {
                     messageText = chat.MessageText,
                     sentAt = chat.SentAt.ToString("o")
-
                 };
 
                 await Clients.User(senderId.ToString()).SendAsync("ReceiveMessage", receiverId.ToString(), messageDto, true);
                 await Clients.User(receiverId.ToString()).SendAsync("ReceiveMessage", senderId.ToString(), messageDto, false);
             }
-            else if(roles != null && roles.Contains("Koc"))
+            else if (roles.Contains("Koc"))
             {
-                Guid? packageId = roles.Contains("Ogrenci") ? userPackage?.UserPackageId : null;
-
-                var chat = await _chatMessageService.CreateAsync(senderId, receiverId, messageText, packageId);
-
+                // 🆕 Koç için paket kontrolü yok
+                var chat = await _chatMessageService.CreateAsync(senderId, receiverId, messageText, null);
 
                 var messageDto = new
                 {
                     messageText = chat.MessageText,
                     sentAt = chat.SentAt.ToString("o")
-
                 };
 
                 await Clients.User(senderId.ToString()).SendAsync("ReceiveMessage", receiverId.ToString(), messageDto, true);
@@ -88,10 +82,10 @@ namespace FraoulaPT.WebUI.Hubs
             else
             {
                 await Clients.User(senderId.ToString())
-                       .SendAsync("QuotaExceeded", "Boşa deneme sen kullanamazsın");
-                return;
+                    .SendAsync("QuotaExceeded", "Bu özelliği kullanamazsınız.");
             }
         }
+
 
     }
 }

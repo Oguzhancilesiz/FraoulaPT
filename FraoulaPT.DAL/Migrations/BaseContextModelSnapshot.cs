@@ -245,7 +245,7 @@ namespace FraoulaPT.DAL.Migrations
                     b.Property<Guid?>("UpdatedByUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("UserPackageId")
+                    b.Property<Guid?>("UserPackageId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -578,7 +578,7 @@ namespace FraoulaPT.DAL.Migrations
                     b.Property<DateTime>("ModifiedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("PackageId")
+                    b.Property<Guid?>("PackageId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("PaymentId")
@@ -760,7 +760,6 @@ namespace FraoulaPT.DAL.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("AnswerText")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
@@ -1364,9 +1363,7 @@ namespace FraoulaPT.DAL.Migrations
 
                     b.HasOne("FraoulaPT.Entity.UserPackage", "UserPackage")
                         .WithMany("ChatMessages")
-                        .HasForeignKey("UserPackageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserPackageId");
 
                     b.Navigation("Receiver");
 
@@ -1435,9 +1432,7 @@ namespace FraoulaPT.DAL.Migrations
 
                     b.HasOne("Package", "Package")
                         .WithMany("UserPackages")
-                        .HasForeignKey("PackageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PackageId");
 
                     b.Navigation("AppUser");
 

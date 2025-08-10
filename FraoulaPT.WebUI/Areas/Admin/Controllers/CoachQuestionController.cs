@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FraoulaPT.WebUI.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Koc")]
+    [Authorize(Roles = "Koc,Admin")]
     public class CoachQuestionController : Controller
     {
         private readonly IUserQuestionService _userQuestionService;
