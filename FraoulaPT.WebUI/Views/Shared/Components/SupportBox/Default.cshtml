@@ -1,53 +1,121 @@
 ﻿@using FraoulaPT.WebUI.Models.ViewModels.QuestionAnsverViewModel
 @model SupportBoxViewModel
 
-<!-- 🟠 Tab 1: Soru Sor -->
-<div class="tab-pane fade show active" id="tab-question" role="tabpanel">
-    <form id="questionForm" class="bg-dark text-light p-3 rounded shadow-sm">
-        <input type="hidden" name="UserPackageId" value="@Model.UserPackageId" />
-        <input type="hidden" name="AskedByUserId" value="@Model.CurrentUserId" />
+<form id="questionForm" class="p-3 rounded shadow-sm"
+      style="background:var(--surface);color:var(--text);border:1px solid var(--border);">
+    @Html.AntiForgeryToken()
 
-        <!-- Koç Seçimi -->
-        <div class="mb-3">
-            <label for="coach-select" class="form-label fw-semibold text-warning">
-                🎯 Koç Seç
-            </label>
-            @if (Model?.Coaches != null && Model.Coaches.Any())
-            {
-                <select class="form-select bg-dark text-light border-secondary" id="coach-select" name="AnsweredByCoachId" required>
-                    @foreach (var coach in Model.Coaches)
-                    {
-                        <option value="@coach.Id" data-image="@coach.ProfilePhotoUrl">@coach.FullName</option>
-                    }
-                </select>
-            }
-            else
-            {
-                <select class="form-select bg-dark text-light border-secondary" disabled>
-                    <option>Koç bulunamadı</option>
-                </select>
-            }
-        </div>
+    <input type="hidden" name="UserPackageId" value="@Model.UserPackageId" />
+    <input type="hidden" name="AskedByUserId" value="@Model.CurrentUserId" />
 
-        <!-- Soru Metni -->
-        <div class="mb-3">
-            <label for="questionText" class="form-label fw-semibold text-warning">
-                ✏️ Sorunuz
-            </label>
-            <textarea class="form-control bg-dark text-light border-secondary" name="QuestionText" rows="3" placeholder="Sorunuzu buraya yazın..." required></textarea>
-        </div>
+    <!-- Koç Seçimi -->
+    <div class="mb-3">
+        <label for="coach-select" class="form-label fw-semibold text-warning mb-1">
+            🎯 Koç Seç
+        </label>
 
-        <!-- Gönder Butonu -->
-        <div class="d-grid">
-            <button type="submit" class="btn btn-warning fw-semibold">
-                📤 Soruyu Gönder
-            </button>
-        </div>
-    </form>
+        @if (Model?.Coaches != null && Model.Coaches.Any())
+        {
+            <select class="form-select ring bg-dark text-light border-secondary"
+                    id="coach-select" name="AnsweredByCoachId" required>
+                @foreach (var coach in Model.Coaches)
+                {
+                    <option value="@coach.Id" data-image="@coach.ProfilePhotoUrl">@coach.FullName</option>
+                }
+            </select>
 
-    <!-- Geçmiş Sorular -->
-    <hr class="border-secondary" />
-    <div id="questionHistory" class="bg-dark text-light p-3 rounded shadow-sm">
-        <div class="text-center my-2 text-muted">Sorular yükleniyor...</div>
+            <!-- Seçili koç önizleme -->
+            <div id="coachPreview" class="d-flex align-items-center gap-2 mt-2 small"
+                 style="opacity:.9">
+                <img src="@Model.Coaches.First().ProfilePhotoUrl"
+                     alt="Koç" class="rounded-circle" width="28" height="28"
+                     style="object-fit:cover;border:1px solid var(--border)">
+                <span>@Model.Coaches.First().FullName</span>
+            </div>
+        }
+        else
+        {
+            <select class="form-select bg-dark text-light border-secondary" disabled>
+                <option>Koç bulunamadı</option>
+            </select>
+        }
     </div>
+
+    <!-- Soru Metni -->
+    <div class="mb-3">
+        <label for="questionText" class="form-label fw-semibold text-warning mb-1">
+            ✏️ Sorunuz
+        </label>
+
+        <textarea class="form-control ring bg-dark text-light border-secondary"
+                  id="questionText" name="QuestionText" rows="3"
+                  placeholder="Sorunuzu buraya yazın..."
+                  maxlength="500" required></textarea>
+
+        <div class="d-flex justify-content-between mt-1 small">
+            <span class="text-muted">En fazla 500 karakter</span>
+            <span id="qCounter" class="text-muted">0/500</span>
+        </div>
+    </div>
+
+    <!-- Gönder Butonu -->
+    <div class="d-grid">
+        <button type="submit" id="askBtn" class="btn fw-semibold text-white"
+                style="background:var(--brand-grad);border:0;">
+            <span class="btn-label"><i class="bi bi-send"></i> Soruyu Gönder</span>
+            <span class="btn-spinner d-none">
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                Gönderiliyor...
+            </span>
+        </button>
+    </div>
+</form>
+
+<!-- Geçmiş Sorular -->
+<hr class="border-secondary" />
+<div id="questionHistory" class="p-3 rounded shadow-sm"
+     style="background:var(--surface);color:var(--text);border:1px solid var(--border);">
+    <div class="text-center my-2 text-muted">Sorular yükleniyor...</div>
 </div>
+
+@section Scripts {
+    <script>
+        // Koç önizleme güncelle
+        document.getElementById('coach-select')?.addEventListener('change', function () {
+            const opt = this.selectedOptions?.[0];
+            if (!opt) return;
+            const img = opt.getAttribute('data-image') || '';
+            const name = opt.textContent || '';
+            const preview = document.getElementById('coachPreview');
+            if (!preview) return;
+            preview.innerHTML = `
+              <img src="${img}" alt="Koç" class="rounded-circle" width="28" height="28"
+                   style="object-fit:cover;border:1px solid var(--border)">
+              <span>${name}</span>`;
+        });
+
+        // Karakter sayacı
+        const qArea = document.getElementById('questionText');
+        const qCounter = document.getElementById('qCounter');
+        qArea?.addEventListener('input', () => {
+            const len = qArea.value.length;
+            if (qCounter) qCounter.textContent = `${len}/500`;
+        });
+
+        // Gönder butonu loading durumu (layout'taki AJAX akışına uyumlu)
+        const askBtn = document.getElementById('askBtn');
+        document.getElementById('questionForm')?.addEventListener('submit', () => {
+            if (!askBtn) return;
+            askBtn.disabled = true;
+            askBtn.querySelector('.btn-label')?.classList.add('d-none');
+            askBtn.querySelector('.btn-spinner')?.classList.remove('d-none');
+
+            // Layout'taki AJAX success/fail sonrası geri almak için:
+            setTimeout(() => {
+              askBtn.disabled = false;
+              askBtn.querySelector('.btn-label')?.classList.remove('d-none');
+              askBtn.querySelector('.btn-spinner')?.classList.add('d-none');
+            }, 3000); // sunucu yanıtı gelmeden de güvenlik ağı
+        });
+    </script>
+}

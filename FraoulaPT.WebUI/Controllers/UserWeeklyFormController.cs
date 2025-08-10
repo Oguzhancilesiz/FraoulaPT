@@ -33,6 +33,7 @@ namespace FraoulaPT.WebUI.Controllers
         }
 
         [HttpGet]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create()
         {
             var userIdString = _userManager.GetUserId(User);

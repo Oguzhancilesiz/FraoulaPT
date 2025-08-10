@@ -3,16 +3,19 @@
 @{
     ViewData["Title"] = "Profilini Düzenle";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var today = DateTime.Now.ToString("yyyy-MM-dd");
 }
 
-<div class="container py-4">
-    <div class="card shadow-lg border-0 rounded-3 bg-dark text-light">
-        <div class="card-header bg-warning text-dark fw-semibold text-center py-3">
+<div class="container py-5" style="max-width: 920px">
+    <div class="card shadow-lg border-0 rounded-3"
+         style="background:var(--surface);color:var(--text);border:1px solid var(--border);">
+        <div class="card-header text-center fw-semibold"
+             style="background:var(--brand-grad);color:#fff;border-top-left-radius:12px;border-top-right-radius:12px;">
             <i class="bi bi-pencil-square me-2"></i> Profilini Düzenle
         </div>
 
-        <div class="card-body p-4">
-            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <div class="card-body p-4 p-md-5">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data" id="editProfileForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Id" />
                 <div asp-validation-summary="All" class="text-danger small mb-3"></div>
@@ -21,147 +24,202 @@
                 <div class="mb-4 text-center position-relative d-inline-block">
                     <img id="photoPreview"
                          src="@(!string.IsNullOrWhiteSpace(Model.ProfilePhotoUrl) ? Model.ProfilePhotoUrl : "/uploads/user-default.jpg")"
-                         class="rounded-circle shadow-sm border border-3 border-warning"
-                         style="width: 140px; height: 140px; object-fit: cover; background:#f5f5f5;" />
+                         class="rounded-circle shadow"
+                         style="width:140px;height:140px;object-fit:cover;border:2px solid var(--accent);background:#111;" />
 
                     <label for="profilePhoto"
-                           class="position-absolute bottom-0 end-0 bg-warning text-white rounded-circle shadow d-flex align-items-center justify-content-center"
-                           style="width: 40px; height: 40px; cursor: pointer; border: 2px solid white;">
-                        <i class="bi bi-plus-lg fs-5"></i>
+                           class="position-absolute bottom-0 end-0 rounded-circle d-flex align-items-center justify-content-center"
+                           style="width:42px;height:42px;cursor:pointer;background:var(--brand-grad);border:2px solid #fff;">
+                        <i class="bi bi-camera text-white"></i>
                     </label>
-
+                    <!-- DİKKAT: name="profilePhoto" controller ile uyumlu -->
                     <input type="file" name="profilePhoto" id="profilePhoto"
-                           class="d-none" accept="image/*" onchange="previewPhoto(event)" />
+                           class="d-none" accept="image/*" />
+                    <div class="form-text mt-2" style="color:var(--muted)">JPG/PNG/WebP • maks. 5MB</div>
                 </div>
 
                 <!-- Kişisel Bilgiler -->
-                <h5 class="fw-bold text-warning mt-3 mb-2">Kişisel Bilgiler</h5>
+                <h5 class="fw-bold text-warning mt-3 mb-2"><i class="bi bi-person me-1"></i> Kişisel Bilgiler</h5>
                 <div class="row g-3">
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Instagram</label>
-                        <input asp-for="Instagram" class="form-control bg-dark text-light border-secondary" />
+                        <label asp-for="Instagram" class="form-label fw-semibold">Instagram</label>
+                        <input asp-for="Instagram" class="form-control ring" placeholder="kullaniciadi (sadece ad, @@ koymayın)" />
+                        <span asp-validation-for="Instagram" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Cinsiyet</label>
-                        <select asp-for="Gender" class="form-select bg-dark text-light border-secondary"
-                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.Gender>()"></select>
+                        <label asp-for="Gender" class="form-label fw-semibold">Cinsiyet</label>
+                        <select asp-for="Gender" class="form-select ring"
+                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.Gender>()">
+                            <option value="">Seçiniz</option>
+                        </select>
+                        <span asp-validation-for="Gender" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Doğum Tarihi</label>
-                        <input asp-for="BirthDate" type="date" class="form-control bg-dark text-light border-secondary"
-                               value="@(Model.BirthDate?.ToString("yyyy-MM-dd"))" />
+                        <label asp-for="BirthDate" class="form-label fw-semibold">Doğum Tarihi</label>
+                        <input asp-for="BirthDate" type="date" class="form-control ring" max="@today" value="@(Model.BirthDate?.ToString("yyyy-MM-dd"))" />
+                        <span asp-validation-for="BirthDate" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Boy (cm)</label>
-                        <input asp-for="HeightCm" class="form-control bg-dark text-light border-secondary" />
+                        <label asp-for="HeightCm" class="form-label fw-semibold">Boy (cm)</label>
+                        <input asp-for="HeightCm" type="number" inputmode="decimal" step="0.1" min="50" max="250"
+                               class="form-control ring" placeholder="örn: 175" />
+                        <span asp-validation-for="HeightCm" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Kilo (kg)</label>
-                        <input asp-for="WeightKg" class="form-control bg-dark text-light border-secondary" />
+                        <label asp-for="WeightKg" class="form-label fw-semibold">Kilo (kg)</label>
+                        <input asp-for="WeightKg" type="number" inputmode="decimal" step="0.1" min="20" max="400"
+                               class="form-control ring" placeholder="örn: 72.5" />
+                        <span asp-validation-for="WeightKg" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Vücut Tipi</label>
-                        <select asp-for="BodyType" class="form-select bg-dark text-light border-secondary"
-                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.BodyType>()"></select>
+                        <label asp-for="BodyType" class="form-label fw-semibold">Vücut Tipi</label>
+                        <select asp-for="BodyType" class="form-select ring"
+                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.BodyType>()">
+                            <option value="">Seçiniz</option>
+                        </select>
+                        <span asp-validation-for="BodyType" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Kan Grubu</label>
-                        <select asp-for="BloodType" class="form-select bg-dark text-light border-secondary"
-                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.BloodType>()"></select>
+                        <label asp-for="BloodType" class="form-label fw-semibold">Kan Grubu</label>
+                        <select asp-for="BloodType" class="form-select ring"
+                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.BloodType>()">
+                            <option value="">Seçiniz</option>
+                        </select>
+                        <span asp-validation-for="BloodType" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Telefon</label>
-                        <input asp-for="PhoneNumber" class="form-control bg-dark text-light border-secondary" />
+                        <label asp-for="PhoneNumber" class="form-label fw-semibold">Telefon</label>
+                        <input asp-for="PhoneNumber" class="form-control ring" placeholder="+90 5xx xxx xx xx" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12">
-                        <label class="form-label">Adres</label>
-                        <input asp-for="Address" class="form-control bg-dark text-light border-secondary" />
+                        <label asp-for="Address" class="form-label fw-semibold">Adres</label>
+                        <input asp-for="Address" class="form-control ring" placeholder="İsteğe bağlı" />
+                        <span asp-validation-for="Address" class="text-danger small"></span>
                     </div>
                 </div>
 
-                <hr class="border-secondary" />
+                <hr class="my-4" style="border-color:var(--border)">
 
-                <!-- Sağlık ve Acil Durum Bilgileri -->
-                <h5 class="fw-bold text-warning mb-2">Sağlık ve Acil Durum Bilgileri</h5>
+                <!-- Sağlık & Acil Durum -->
+                <h5 class="fw-bold text-warning mb-2"><i class="bi bi-heart-pulse me-1"></i> Sağlık ve Acil Durum</h5>
                 <div class="row g-3">
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Acil Durum Kişisi</label>
-                        <input asp-for="EmergencyContactName" class="form-control bg-dark text-light border-secondary" />
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label">Acil Durum Telefonu</label>
-                        <input asp-for="EmergencyContactPhone" class="form-control bg-dark text-light border-secondary" />
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label">Medikal Geçmiş</label>
-                        <textarea asp-for="MedicalHistory" class="form-control bg-dark text-light border-secondary" rows="2"></textarea>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label">Kronik Hastalıklar</label>
-                        <input asp-for="ChronicDiseases" class="form-control bg-dark text-light border-secondary" />
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label">Kullandığı İlaçlar</label>
-                        <input asp-for="CurrentMedications" class="form-control bg-dark text-light border-secondary" />
+                        <label asp-for="EmergencyContactName" class="form-label fw-semibold">Acil Durum Kişisi</label>
+                        <input asp-for="EmergencyContactName" class="form-control ring" placeholder="Ad Soyad" />
+                        <span asp-validation-for="EmergencyContactName" class="text-danger small"></span>
                     </div>
 
-                    <!-- EKLENEN ZORUNLU ALANLAR -->
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Alerjiler</label>
-                        <input asp-for="Allergies" class="form-control bg-dark text-light border-secondary" />
+                        <label asp-for="EmergencyContactPhone" class="form-label fw-semibold">Acil Durum Telefon</label>
+                        <input asp-for="EmergencyContactPhone" class="form-control ring" placeholder="+90 ..." />
+                        <span asp-validation-for="EmergencyContactPhone" class="text-danger small"></span>
                     </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label">Geçmiş Yaralanmalar</label>
-                        <input asp-for="PastInjuries" class="form-control bg-dark text-light border-secondary" />
+
+                    <div class="col-12">
+                        <label asp-for="MedicalHistory" class="form-label fw-semibold">Medikal Geçmiş</label>
+                        <textarea asp-for="MedicalHistory" class="form-control ring" rows="2" placeholder="İsteğe bağlı"></textarea>
+                        <span asp-validation-for="MedicalHistory" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Mevcut Ağrı</label>
-                        <input asp-for="CurrentPain" class="form-control bg-dark text-light border-secondary" />
+                        <label asp-for="ChronicDiseases" class="form-label fw-semibold">Kronik Hastalıklar</label>
+                        <input asp-for="ChronicDiseases" class="form-control ring" placeholder="İsteğe bağlı" />
+                        <span asp-validation-for="ChronicDiseases" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Son Sağlık Kontrolü</label>
-                        <input asp-for="LastCheckResults" class="form-control bg-dark text-light border-secondary" />
+                        <label asp-for="CurrentMedications" class="form-label fw-semibold">Kullandığı İlaçlar</label>
+                        <input asp-for="CurrentMedications" class="form-control ring" placeholder="İsteğe bağlı" />
+                        <span asp-validation-for="CurrentMedications" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Sigara / Alkol</label>
-                        <input asp-for="SmokingAlcohol" class="form-control bg-dark text-light border-secondary" />
+                        <label asp-for="Allergies" class="form-label fw-semibold">Alerjiler</label>
+                        <input asp-for="Allergies" class="form-control ring" placeholder="İsteğe bağlı" />
+                        <span asp-validation-for="Allergies" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="PastInjuries" class="form-label fw-semibold">Geçmiş Yaralanmalar</label>
+                        <input asp-for="PastInjuries" class="form-control ring" placeholder="İsteğe bağlı" />
+                        <span asp-validation-for="PastInjuries" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="CurrentPain" class="form-label fw-semibold">Mevcut Ağrı</label>
+                        <input asp-for="CurrentPain" class="form-control ring" placeholder="İsteğe bağlı" />
+                        <span asp-validation-for="CurrentPain" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="LastCheckResults" class="form-label fw-semibold">Son Sağlık Kontrolü</label>
+                        <input asp-for="LastCheckResults" class="form-control ring" placeholder="İsteğe bağlı" />
+                        <span asp-validation-for="LastCheckResults" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="SmokingAlcohol" class="form-label fw-semibold">Sigara / Alkol</label>
+                        <input asp-for="SmokingAlcohol" class="form-control ring" placeholder="İsteğe bağlı" />
+                        <span asp-validation-for="SmokingAlcohol" class="text-danger small"></span>
                     </div>
                 </div>
 
-                <hr class="border-secondary" />
+                <hr class="my-4" style="border-color:var(--border)">
 
                 <!-- Diğer Bilgiler -->
-                <h5 class="fw-bold text-warning mb-2">Diğer Bilgiler</h5>
+                <h5 class="fw-bold text-warning mb-2"><i class="bi bi-gear me-1"></i> Diğer Bilgiler</h5>
                 <div class="row g-3">
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Meslek</label>
-                        <input asp-for="Occupation" class="form-control bg-dark text-light border-secondary" />
+                        <label asp-for="Occupation" class="form-label fw-semibold">Meslek</label>
+                        <input asp-for="Occupation" class="form-control ring" placeholder="İsteğe bağlı" />
+                        <span asp-validation-for="Occupation" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Deneyim Seviyesi</label>
-                        <select asp-for="ExperienceLevel" class="form-select bg-dark text-light border-secondary"
-                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.ExperienceLevel>()"></select>
+                        <label asp-for="ExperienceLevel" class="form-label fw-semibold">Deneyim Seviyesi</label>
+                        <select asp-for="ExperienceLevel" class="form-select ring"
+                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.ExperienceLevel>()">
+                            <option value="">Seçiniz</option>
+                        </select>
+                        <span asp-validation-for="ExperienceLevel" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Favori Sporlar</label>
-                        <input asp-for="FavoriteSports" class="form-control bg-dark text-light border-secondary" />
+                        <label asp-for="FavoriteSports" class="form-label fw-semibold">Favori Sporlar</label>
+                        <input asp-for="FavoriteSports" class="form-control ring" placeholder="İsteğe bağlı" />
+                        <span asp-validation-for="FavoriteSports" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12 col-md-6">
-                        <label class="form-label">Diyet Tipi</label>
-                        <select asp-for="DietType" class="form-select bg-dark text-light border-secondary"
-                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.DietType>()"></select>
+                        <label asp-for="DietType" class="form-label fw-semibold">Diyet Tipi</label>
+                        <select asp-for="DietType" class="form-select ring"
+                                asp-items="Html.GetEnumSelectList<FraoulaPT.Core.Enums.DietType>()">
+                            <option value="">Seçiniz</option>
+                        </select>
+                        <span asp-validation-for="DietType" class="text-danger small"></span>
                     </div>
+
                     <div class="col-12">
-                        <label class="form-label">Ek Notlar</label>
-                        <textarea asp-for="Notes" class="form-control bg-dark text-light border-secondary" rows="2"></textarea>
+                        <label asp-for="Notes" class="form-label fw-semibold">Ek Notlar</label>
+                        <textarea asp-for="Notes" class="form-control ring" rows="2" placeholder="İsteğe bağlı"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger small"></span>
                     </div>
                 </div>
 
-                <div class="mt-4 text-end">
-                    <button type="submit" class="btn btn-success btn-lg px-4">
+                <div class="d-flex flex-column flex-md-row justify-content-end gap-2 mt-4">
+                    <a asp-action="Detail" class="btn btn-outline-secondary px-4">İptal</a>
+                    <button type="submit" class="btn text-white px-4" style="background:var(--brand-grad);border:0;">
                         <i class="bi bi-save me-1"></i> Kaydet
                     </button>
-                    <a asp-action="Detail" class="btn btn-outline-light btn-lg ms-2 px-4">İptal</a>
                 </div>
             </form>
         </div>
@@ -169,16 +227,24 @@
 </div>
 
 @section Scripts {
-    <script>
-        function previewPhoto(event) {
-            const input = event.target;
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('photoPreview').src = e.target.result;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-    </script>
+  <partial name="_ValidationScriptsPartial" />
+  <script>
+    // Foto önizleme
+    document.getElementById('profilePhoto')?.addEventListener('change', function () {
+      const file = this.files?.[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      const img = document.getElementById('photoPreview');
+      if (img) img.src = url;
+    });
+
+    // Instagram handle basitleştirme (client-side) — Razor-safe
+    document.querySelector('input[name="Instagram"]')?.addEventListener('blur', function () {
+      let v = (this.value || '').trim();
+
+      if (v.startsWith('\u0040')) v = v.substring(1);
+      v = v.replace(/\s+/g, '').replace(/[^A-Za-z0-9._]/g, '');
+      this.value = v;
+    });
+  </script>
 }

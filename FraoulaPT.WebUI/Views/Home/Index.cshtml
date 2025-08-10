@@ -1,61 +1,71 @@
 ﻿@{
     ViewData["Title"] = "FraoulaPT - Ana Sayfa";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var isAuth = User?.Identity?.IsAuthenticated ?? false;
 }
 
-<!-- Hero Section -->
-<section class="text-center py-5 mb-4"
-         style="background: linear-gradient(135deg, #000 0%, #1a1a1a 50%, #c05a00 100%);
-                color: #fff; border-radius: 12px;">
-    <div class="container">
-        <h1 class="display-4 fw-bold">🏋️‍♂️ FraoulaPT</h1>
-        <p class="lead opacity-75">Online sporcu takip ve danışmanlık platformu</p>
-        <a href="/Package/Index" class="btn btn-warning btn-lg mt-3 fw-semibold shadow">
-            📦 Paketlerimizi Keşfet
-        </a>
-    </div>
-</section>
-
-<!-- Hakkımızda -->
-<section class="py-5 rounded-4 mb-4"
-         style="background-color: rgba(20,20,20,0.95); color: #f1f1f1;">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4 text-warning">Biz Kimiz?</h2>
-        <p class="opacity-85">
-            FraoulaPT, sporculara özel olarak hazırlanmış antrenman ve beslenme programları sunan modern bir online platformdur.
-            Profesyonel koçlarımızla hedefinize ulaşmanız artık çok daha kolay!
-        </p>
+<!-- Hero -->
+<section class="hero-wrap text-center text-lg-start py-5 mb-4">
+    <div class="container d-flex flex-column flex-lg-row align-items-center gap-4">
+        <div class="flex-fill">
+            <div class="badge text-bg-dark mb-3" style="border:1px solid var(--border)">Sporcu Takip & Online Koçluk</div>
+            <h1 class="display-5 fw-bold mb-2">🏋️‍♂️ Fraoula<span class="text-gradient">PT</span></h1>
+            <p class="lead text-muted mb-4">
+                Kişiye özel programlar, ölçüm takibi ve anlık iletişim ile hedeflerine emin adımlarla.
+            </p>
+            <div class="d-flex flex-column flex-sm-row gap-2">
+                <a asp-controller="Package" asp-action="Index" class="btn btn-accent btn-lg fw-semibold">
+                    📦 Paketlerimizi Keşfet
+                </a>
+                @if (!isAuth)
+                {
+                    <a asp-controller="Auth" asp-action="Register" class="btn btn-outline-light btn-lg">
+                        🚀 Ücretsiz Kayıt Ol
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-light btn-lg">
+                        📊 Panelime Git
+                    </a>
+                }
+            </div>
+        </div>
+        <div class="flex-fill d-none d-lg-block">
+            <div class="hero-visual rounded-4 shadow-lg"></div>
+        </div>
     </div>
 </section>
 
 <!-- Özellikler -->
-<section class="py-5" style="background-color: rgba(15,15,15,0.92); border-radius: 12px;">
+<section class="py-5">
     <div class="container">
-        <div class="row text-center g-4">
+        <h2 class="fw-bold text-center mb-4">Neden FraoulaPT?</h2>
+        <div class="row g-3">
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100"
-                     style="background-color: rgba(30,30,30,0.95); color: #f1f1f1;">
+                <div class="card feature-card h-100">
                     <div class="card-body">
-                        <h3 class="text-warning">💪 Kişiye Özel Programlar</h3>
-                        <p class="small">Sana özel antrenman ve beslenme planları ile hedeflerine ulaş.</p>
+                        <div class="icon-pill mb-2"><i class="bi bi-activity"></i></div>
+                        <h5 class="fw-semibold mb-1">Kişiye Özel Programlar</h5>
+                        <p class="text-muted mb-0">Hedef ve seviyene göre esnek antrenman & beslenme planları.</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100"
-                     style="background-color: rgba(30,30,30,0.95); color: #f1f1f1;">
+                <div class="card feature-card h-100">
                     <div class="card-body">
-                        <h3 class="text-warning">📊 İlerleme Takibi</h3>
-                        <p class="small">Gelişimini takip et, motivasyonunu yüksek tut!</p>
+                        <div class="icon-pill mb-2"><i class="bi bi-graph-up-arrow"></i></div>
+                        <h5 class="fw-semibold mb-1">İlerleme Takibi</h5>
+                        <p class="text-muted mb-0">Kilo, bel/kalça ölçülerin ve fotoğraflarınla gelişimini izle.</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm h-100"
-                     style="background-color: rgba(30,30,30,0.95); color: #f1f1f1;">
+                <div class="card feature-card h-100">
                     <div class="card-body">
-                        <h3 class="text-warning">👨‍🏫 Canlı Destek</h3>
-                        <p class="small">Koçlarımızla anlık olarak iletişime geç, sorularını sor.</p>
+                        <div class="icon-pill mb-2"><i class="bi bi-chat-dots"></i></div>
+                        <h5 class="fw-semibold mb-1">Anlık İletişim</h5>
+                        <p class="text-muted mb-0">Koçunla sohbet et, soru gönder; haklarını panelinden yönet.</p>
                     </div>
                 </div>
             </div>
@@ -63,31 +73,174 @@
     </div>
 </section>
 
-<!-- Referanslar -->
-<section class="py-5 rounded-4 my-4"
-         style="background-color: rgba(20,20,20,0.95); color: #f1f1f1;">
+<!-- Nasıl Çalışır -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="fw-bold text-center mb-4">Nasıl Çalışır?</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="card step-card h-100">
+                    <div class="card-body">
+                        <div class="step-num">1</div>
+                        <h6 class="fw-semibold">Kayıt & Profil</h6>
+                        <p class="text-muted mb-0">Hızlıca hesap oluştur, profilini tamamla.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card step-card h-100">
+                    <div class="card-body">
+                        <div class="step-num">2</div>
+                        <h6 class="fw-semibold">Paketini Seç</h6>
+                        <p class="text-muted mb-0">İhtiyacına göre paket ya da ek hakları al.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card step-card h-100">
+                    <div class="card-body">
+                        <div class="step-num">3</div>
+                        <h6 class="fw-semibold">Takip & İletişim</h6>
+                        <p class="text-muted mb-0">Ölçümlerini gir, programını uygula, koçunla iletişimde kal.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Markalar -->
+<section class="py-5">
     <div class="container text-center">
-        <h2 class="fw-bold mb-4 text-warning">Bize Güvenen Markalar</h2>
-        <div class="d-flex flex-wrap justify-content-center gap-4">
-            <img src="/uploads/52560b68-c31c-4e1d-8bbf-46a01d1c4ad7.jpg"
-                 alt="Marka 1" class="brand-logo shadow" style="max-height:100px; border-radius: 8px;">
-            <img src="/uploads/52560b68-c31c-4e1d-8bbf-46a01d1c4ad7.jpg"
-                 alt="Marka 2" class="brand-logo shadow" style="max-height:100px; border-radius: 8px;">
-            <img src="/uploads/52560b68-c31c-4e1d-8bbf-46a01d1c4ad7.jpg"
-                 alt="Marka 3" class="brand-logo shadow" style="max-height:100px; border-radius: 8px;">
+        <h2 class="fw-bold mb-4">Bize Güvenenler</h2>
+        <div class="d-flex flex-wrap justify-content-center gap-4 brand-row">
+            <img src="/uploads/52560b68-c31c-4e1d-8bbf-46a01d1c4ad7.jpg" alt="Marka 1" class="brand-logo">
+            <img src="/uploads/52560b68-c31c-4e1d-8bbf-46a01d1c4ad7.jpg" alt="Marka 2" class="brand-logo">
+            <img src="/uploads/52560b68-c31c-4e1d-8bbf-46a01d1c4ad7.jpg" alt="Marka 3" class="brand-logo">
         </div>
     </div>
 </section>
 
-<!-- Call to Action -->
-<section class="text-center py-5 mt-4"
-         style="background: linear-gradient(135deg, #000 0%, #1a1a1a 50%, #c05a00 100%);
-                border-radius: 12px; color: #fff;">
+<!-- CTA -->
+<section class="cta-wrap text-center py-5 mt-2">
     <div class="container">
-        <h2 class="fw-bold">Hemen Başla!</h2>
-        <p class="mb-4">Hedeflerine ulaşmak için ilk adımı at. Ücretsiz hesap oluştur ve koçlarımızla çalışmaya başla.</p>
-        <a href="/Auth/Register" class="btn btn-warning btn-lg fw-semibold shadow">
-            🚀 Ücretsiz Kayıt Ol
-        </a>
+        <h2 class="fw-bold mb-2">Hemen Başla!</h2>
+        <p class="text-muted mb-4">Hedeflerine ulaşmak için ilk adımı at.</p>
+        @if (!isAuth)
+        {
+            <a asp-controller="Auth" asp-action="Register" class="btn btn-accent btn-lg fw-semibold">🚀 Ücretsiz Kayıt Ol</a>
+        }
+        else
+        {
+            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-accent btn-lg fw-semibold">📊 Panelime Git</a>
+        }
     </div>
 </section>
+
+<style>
+    .text-gradient {
+        background: var(--brand-grad);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .hero-wrap {
+        background: linear-gradient(135deg, rgba(16,20,29,.8), rgba(16,20,29,.2));
+        border: 1px solid var(--border);
+        border-radius: 16px;
+    }
+
+    .hero-visual {
+        height: 280px;
+        background: var(--brand-grad);
+        opacity: .9;
+    }
+
+    .feature-card, .step-card {
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+        .feature-card:hover, .step-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0,0,0,.25);
+        }
+
+    .icon-pill {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        background: rgba(255,255,255,.04);
+        border: 1px solid var(--border);
+        font-size: 1.1rem
+    }
+
+    .step-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        display: inline-grid;
+        place-items: center;
+        background: var(--brand-grad);
+        color: #fff;
+        font-weight: 700;
+        margin-bottom: .5rem
+    }
+
+    .brand-logo {
+        max-height: 80px;
+        border-radius: 10px;
+        filter: grayscale(100%) contrast(95%);
+        opacity: .9;
+        transition: filter .2s, opacity .2s, transform .2s;
+        border: 1px solid var(--border)
+    }
+
+        .brand-logo:hover {
+            filter: none;
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+
+    .cta-wrap {
+        background: linear-gradient(135deg, rgba(124,58,237,.15), rgba(22,163,74,.12));
+        border: 1px solid var(--border);
+        border-radius: 16px;
+    }
+
+    /* Giriş yap butonlarını hero’da tek kolona düşür */
+    @@media (max-width: 576px) {
+        .hero-visual
+
+    {
+        display: none;
+    }
+
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Basit görünürlük animasyonu (scroll ile fade-in)
+        (function(){
+          const opts = { threshold: .12 };
+          const io = 'IntersectionObserver' in window ? new IntersectionObserver((es)=>{
+            es.forEach(e=>{
+              if(e.isIntersecting){ e.target.style.opacity=1; e.target.style.transform='none'; io.unobserve(e.target); }
+            });
+          }, opts) : null;
+
+          document.querySelectorAll('.feature-card, .step-card, .brand-logo').forEach(el=>{
+            el.style.opacity = .0;
+            el.style.transform = 'translateY(12px)';
+            if(io) io.observe(el);
+            else { el.style.opacity = 1; el.style.transform = 'none'; }
+          });
+        })();
+    </script>
+}

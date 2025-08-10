@@ -3,31 +3,59 @@
     ViewData["Title"] = "Form Detayı";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
-    var kalanGun = 30 - (DateTime.UtcNow - Model.FormDate).Days;
-    kalanGun = kalanGun < 0 ? 0 : kalanGun;
+    // 30 gün kuralı
+    var formLocalDate = Model.FormDate.ToLocalTime().Date;
+    var daysSince = (DateTime.Now.Date - formLocalDate).Days;
+    var kalanGun = Math.Max(0, 30 - daysSince);
 
-    var statusBadgeClass = Model.Status == FraoulaPT.Core.Enums.Status.Active ? "success" :
-                           Model.Status == FraoulaPT.Core.Enums.Status.Pending ? "secondary" :
-                           "danger";
+    var statusBadgeClass =
+        Model.Status == FraoulaPT.Core.Enums.Status.Active ? "success" :
+        Model.Status == FraoulaPT.Core.Enums.Status.Pending ? "secondary" :
+                                                              "danger";
 }
 
+<style>
+    .metric-list .list-group-item {
+        background: transparent;
+        color: var(--text);
+        border-color: var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .photo-card {
+        height: 220px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden
+    }
+
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block
+        }
+</style>
+
 <div class="container py-4">
-    <div class="card shadow-lg border-0 bg-dark text-light rounded-3">
-        <div class="card-header bg-warning text-dark fw-bold">
-            📅 Form Detayı - @Model.FormDate.ToString("dd.MM.yyyy")
+    <div class="card shadow-lg border-0 rounded-3" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">
+        <div class="card-header fw-bold" style="background:var(--brand-grad);color:#fff;border-top-left-radius:12px;border-top-right-radius:12px;">
+            📅 Form Detayı – @Model.FormDate.ToLocalTime().ToString("dd.MM.yyyy")
             <span class="badge bg-@statusBadgeClass ms-2">@Model.Status</span>
         </div>
 
         <div class="card-body">
             @if (kalanGun > 0)
             {
-                <div class="alert alert-warning">
+                <div class="alert alert-warning border-0">
                     🕒 Yeni form gönderebilmeniz için <strong>@kalanGun gün</strong> kaldı.
                 </div>
             }
             else
             {
-                <div class="alert alert-success">
+                <div class="alert alert-success border-0">
                     ✅ Yeni form gönderebilirsiniz!
                 </div>
             }
@@ -35,25 +63,31 @@
             <div class="row g-4 mt-2">
                 <!-- Ölçümler -->
                 <div class="col-md-6">
-                    <ul class="list-group list-group-flush bg-dark">
-                        <li class="list-group-item bg-dark text-light"><strong>Kilo:</strong> @Model.Weight kg</li>
-                        <li class="list-group-item bg-dark text-light"><strong>Yağ Oranı:</strong> @Model.FatPercent %</li>
-                        <li class="list-group-item bg-dark text-light"><strong>Kas Kütlesi:</strong> @Model.MuscleMass kg</li>
-                        <li class="list-group-item bg-dark text-light"><strong>Bel:</strong> @Model.Waist cm</li>
-                        <li class="list-group-item bg-dark text-light"><strong>Kalça:</strong> @Model.Hip cm</li>
-                        <li class="list-group-item bg-dark text-light"><strong>Göğüs:</strong> @Model.Chest cm</li>
-                        <li class="list-group-item bg-dark text-light"><strong>Kol:</strong> @Model.Arm cm</li>
-                        <li class="list-group-item bg-dark text-light"><strong>Bacak:</strong> @Model.Leg cm</li>
-                        <li class="list-group-item bg-dark text-light"><strong>Dinlenme Nabzı:</strong> @Model.RestingPulse bpm</li>
-                        <li class="list-group-item bg-dark text-light"><strong>Tansiyon:</strong> @Model.BloodPressure</li>
-                        <li class="list-group-item bg-dark text-light"><strong>Vo2 Max:</strong> @Model.Vo2Max</li>
-                    </ul>
+                    <div class="card bg-dark text-light border-0 h-100" style="border:1px solid var(--border)!important;">
+                        <div class="card-header bg-transparent border-0 fw-semibold text-warning">📏 Ölçümler</div>
+                        <ul class="list-group list-group-flush metric-list">
+                            <li class="list-group-item"><span>Kilo</span><strong>@(Model.Weight?.ToString("0.0") ?? "-") kg</strong></li>
+                            <li class="list-group-item"><span>Yağ Oranı</span><strong>@(Model.FatPercent?.ToString("0.0") ?? "-") %</strong></li>
+                            <li class="list-group-item"><span>Kas Kütlesi</span><strong>@(Model.MuscleMass?.ToString("0.0") ?? "-") kg</strong></li>
+                            <li class="list-group-item"><span>Bel</span><strong>@(Model.Waist?.ToString("0.0") ?? "-") cm</strong></li>
+                            <li class="list-group-item"><span>Kalça</span><strong>@(Model.Hip?.ToString("0.0") ?? "-") cm</strong></li>
+                            <li class="list-group-item"><span>Göğüs</span><strong>@(Model.Chest?.ToString("0.0") ?? "-") cm</strong></li>
+                            <li class="list-group-item"><span>Kol</span><strong>@(Model.Arm?.ToString("0.0") ?? "-") cm</strong></li>
+                            <li class="list-group-item"><span>Bacak</span><strong>@(Model.Leg?.ToString("0.0") ?? "-") cm</strong></li>
+                            <li class="list-group-item"><span>Dinlenik Nabız</span><strong>@(Model.RestingPulse?.ToString("0") ?? "-") bpm</strong></li>
+                            <li class="list-group-item">
+                                <span>Tansiyon</span>
+                                <strong>@(Model.BloodPressure?.ToString("0") ?? "-")</strong>
+                            </li>
+                            <li class="list-group-item"><span>VO2 Max</span><strong>@(Model.Vo2Max?.ToString("0.0") ?? "-")</strong></li>
+                        </ul>
+                    </div>
                 </div>
 
                 <!-- Notlar -->
                 <div class="col-md-6">
-                    <div class="card bg-secondary text-light mb-3">
-                        <div class="card-header">🧘 Esneklik Notları</div>
+                    <div class="card bg-dark text-light border-0 mb-3" style="border:1px solid var(--border)!important;">
+                        <div class="card-header bg-transparent border-0 fw-semibold text-warning">🧘 Esneklik Notları</div>
                         <div class="card-body">
                             @if (string.IsNullOrWhiteSpace(Model.FlexibilityNotes))
                             {
@@ -61,13 +95,13 @@
                             }
                             else
                             {
-                                <p>@Model.FlexibilityNotes</p>
+                                @Model.FlexibilityNotes
                             }
                         </div>
                     </div>
 
-                    <div class="card bg-secondary text-light mb-3">
-                        <div class="card-header">📝 Kullanıcı Notu</div>
+                    <div class="card bg-dark text-light border-0 mb-3" style="border:1px solid var(--border)!important;">
+                        <div class="card-header bg-transparent border-0 fw-semibold text-warning">📝 Kullanıcı Notu</div>
                         <div class="card-body">
                             @if (string.IsNullOrWhiteSpace(Model.UserNote))
                             {
@@ -75,13 +109,13 @@
                             }
                             else
                             {
-                                <p>@Model.UserNote</p>
+                                @Model.UserNote
                             }
                         </div>
                     </div>
 
-                    <div class="card bg-secondary text-light">
-                        <div class="card-header">🎯 Koç Geri Bildirimi</div>
+                    <div class="card bg-dark text-light border-0" style="border:1px solid var(--border)!important;">
+                        <div class="card-header bg-transparent border-0 fw-semibold text-warning">🎯 Koç Geri Bildirimi</div>
                         <div class="card-body">
                             @if (string.IsNullOrWhiteSpace(Model.CoachFeedback))
                             {
@@ -89,7 +123,7 @@
                             }
                             else
                             {
-                                <p>@Model.CoachFeedback</p>
+                                @Model.CoachFeedback
                             }
                         </div>
                     </div>
@@ -100,16 +134,37 @@
             @if (Model.ProgressPhotoUrls != null && Model.ProgressPhotoUrls.Any())
             {
                 <div class="mt-4">
-                    <h5 class="text-warning">📸 Gelişim Fotoğrafları</h5>
-                    <div class="row g-2">
+                    <h5 class="text-warning fw-semibold">📸 Gelişim Fotoğrafları</h5>
+                    <div class="row g-3">
                         @foreach (var url in Model.ProgressPhotoUrls)
                         {
                             <div class="col-6 col-md-4 col-lg-3">
-                                <img src="@url" class="img-fluid rounded shadow-sm border border-secondary" alt="Progress Photo" />
+                                <div class="photo-card shadow-sm">
+                                    <img src="@url" alt="Progress Photo" />
+                                </div>
                             </div>
                         }
                     </div>
                 </div>
+            }
+        </div>
+
+        <div class="card-footer bg-transparent border-0 d-flex justify-content-between">
+            <a asp-controller="UserWeeklyForm" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Listeye Dön
+            </a>
+
+            @if (kalanGun > 0)
+            {
+                <button class="btn btn-warning fw-semibold" type="button" disabled title="Yeni form için gün bekleniyor">
+                    <i class="bi bi-plus-circle"></i> Yeni Form Oluştur
+                </button>
+            }
+            else
+            {
+                <a asp-controller="UserWeeklyForm" asp-action="Create" class="btn btn-warning fw-semibold">
+                    <i class="bi bi-plus-circle"></i> Yeni Form Oluştur
+                </a>
             }
         </div>
     </div>

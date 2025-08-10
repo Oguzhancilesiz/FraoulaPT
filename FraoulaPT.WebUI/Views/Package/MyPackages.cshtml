@@ -1,30 +1,30 @@
 ﻿@using FraoulaPT.DTOs.UserPackageDTOs
+@model List<UserPackageDetailDTO>
 @{
     ViewData["Title"] = "Tüm Paketlerim";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Veriyi yerelde tutuyorsan DateTime.Now kullan
+    var now = DateTime.UtcNow;
+
+    bool IsActiveNow(UserPackageDetailDTO p) =>
+        p != null && p.IsActive && p.StartDate <= now && p.EndDate >= now;
+
+    bool IsUpcoming(UserPackageDetailDTO p) =>
+        p != null && p.StartDate > now;
+
+    var list = Model ?? new List<UserPackageDetailDTO>();
+    var active = list.OrderByDescending(p => p.EndDate).FirstOrDefault(IsActiveNow);
+    var upcoming = list.Where(IsUpcoming).OrderBy(p => p.StartDate).ToList();
+    var old = list.Where(p => !IsActiveNow(p) && !IsUpcoming(p))
+                       .OrderByDescending(p => p.StartDate).ToList();
+
+    int Pct(int used, int total) => total <= 0 ? 0 : Math.Min(100, (int)Math.Round(100.0 * used / total));
 }
-@model List<FraoulaPT.DTOs.UserPackageDTOs.UserPackageDetailDTO>
-
-@{
-
-    // 🔸 Aktifliği tarih aralığıyla birlikte değerlendiren yardımcı fonksiyon
-    var now = DateTime.UtcNow; // yerel saklıyorsan DateTime.Now yap
-    Func<UserPackageDetailDTO, bool> isCurrentlyActive = p =>
-        p.IsActive &&
-        (p.StartDate == null || p.StartDate <= now) &&
-        (p.EndDate == null || p.EndDate >= now);
-
-    // 🔸 Gerçek aktif paket + eski paketler
-    var active = Model.OrderByDescending(p => p.StartDate).FirstOrDefault(isCurrentlyActive);
-    var old = Model.Where(p => !isCurrentlyActive(p))
-                      .OrderByDescending(p => p.StartDate)
-                      .ToList();
-}
-
 <div class="container py-5">
     <h2 class="text-center mb-4 text-warning fw-bold">📦 Paketlerim</h2>
 
-    @if (!Model.Any())
+    @if (!list.Any())
     {
         <div class="alert alert-info text-center shadow-sm">
             Henüz bir paket satın almadınız.
@@ -32,14 +32,22 @@
     }
     else
     {
-
         @* ✅ Aktif Paket *@
-        @if (active != null)
+        if (active != null)
         {
-            <div class="card mb-4 shadow-lg border-0"
-                 style="background-color: rgba(25,25,25,0.95); color: #f1f1f1; border-radius: 12px;">
-                <div class="card-header bg-success text-white fw-semibold">
-                    <i class="bi bi-lightning-charge-fill"></i> Aktif Paketiniz: <span class="fw-bold">@active.PackageName</span>
+            var usedMsg = active.UsedMessages.GetValueOrDefault();
+            var totalMsg = active.TotalMessages.GetValueOrDefault();
+            var usedQ = active.UsedQuestions.GetValueOrDefault();
+            var totalQ = active.TotalQuestions.GetValueOrDefault();
+
+            // kalan gün (int)
+            var remainDays = (int)Math.Ceiling((active.EndDate.Date - now.Date).TotalDays);
+            var isEndingSoon = remainDays <= 3 && remainDays >= 0;
+
+            <div class="card mb-4 shadow-lg border-0" style="background-color: rgba(25,25,25,0.95); color: #f1f1f1; border-radius: 12px;">
+                <div class="card-header bg-success text-white fw-semibold d-flex justify-content-between">
+                    <span><i class="bi bi-lightning-charge-fill"></i> Aktif Paketiniz: <b>@active.PackageName</b></span>
+                    <span class="badge bg-light text-dark">Kalan Gün: @(remainDays < 0 ? 0 : remainDays)</span>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
@@ -47,37 +55,32 @@
                         <div class="col-md-6"><strong>Bitiş:</strong> @active.EndDate.ToShortDateString()</div>
                     </div>
 
+                    @if (isEndingSoon)
+                    {
+                        <div class="alert alert-warning py-2">
+                            ⏳ Paketiniz yakında bitiyor. <a href="/Package/Index" class="fw-bold">Paket yenileyin</a>.
+                        </div>
+                    }
+
                     <!-- Mesaj Hakkı -->
                     <div class="mb-3">
-                        @{
-                            int usedMsg = active.UsedMessages.GetValueOrDefault();
-                            int totalMsg = active.TotalMessages.GetValueOrDefault();
-                            int percentMsg = totalMsg == 0 ? 0 : usedMsg * 100 / totalMsg;
-                        }
                         <div class="d-flex justify-content-between small">
                             <span><strong>Mesaj Hakkı:</strong> @usedMsg / @totalMsg</span>
-                            <span>@($"{Math.Min(100, percentMsg)}%")</span>
+                            <span>@($"{Pct(usedMsg, totalMsg)}%")</span>
                         </div>
                         <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-info" role="progressbar"
-                                 style="width:@(Math.Min(100, percentMsg))%"></div>
+                            <div class="progress-bar bg-info" style="width:@Pct(usedMsg,totalMsg)%"></div>
                         </div>
                     </div>
 
                     <!-- Soru Hakkı -->
                     <div class="mb-3">
-                        @{
-                            int usedQ = active.UsedQuestions.GetValueOrDefault();
-                            int totalQ = active.TotalQuestions.GetValueOrDefault();
-                            int percentQ = totalQ == 0 ? 0 : usedQ * 100 / totalQ;
-                        }
                         <div class="d-flex justify-content-between small">
                             <span><strong>Soru Hakkı:</strong> @usedQ / @totalQ</span>
-                            <span>@($"{Math.Min(100, percentQ)}%")</span>
+                            <span>@($"{Pct(usedQ, totalQ)}%")</span>
                         </div>
                         <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-warning" role="progressbar"
-                                 style="width:@(Math.Min(100, percentQ))%"></div>
+                            <div class="progress-bar bg-warning" style="width:@Pct(usedQ,totalQ)%"></div>
                         </div>
                     </div>
 
@@ -90,7 +93,7 @@
                                 📥 Ek Paket Al
                             </a>
                         </div>
-                        @if (active.ExtraRights.Any())
+                        @if (active.ExtraRights?.Any() == true)
                         {
                             <ul class="list-group small">
                                 @foreach (var extra in active.ExtraRights)
@@ -117,78 +120,90 @@
             </div>
         }
 
-        @* 📜 Eski Paketler *@
-        @if (old.Any())
+        @* ⏳ Bekleyen Paketler *@
+        if (upcoming.Any())
         {
-            <h5 class="text-warning mb-3">📜 Önceki Paketler</h5>
+            <h5 class="text-warning mb-3"><i class="bi bi-hourglass-split me-1"></i> Başlamayı Bekleyen Paketler</h5>
+            <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                @foreach (var p in upcoming)
+                {
+                    <div class="col">
+                        <div class="card h-100 shadow-sm border-0" style="background-color: rgba(30,30,30,0.95); color: #f1f1f1; border-radius: 12px;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="fw-semibold">@p.PackageName</div>
+                                    <span class="badge bg-secondary">Bekliyor</span>
+                                </div>
+                                <div class="small text-muted">Süre: @p.StartDate.ToShortDateString() - @p.EndDate.ToShortDateString()</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
         }
 
-        @foreach (var package in old)
+        @* 📜 Eski Paketler *@
+        if (old.Any())
         {
-            <div class="card mb-3 shadow-sm border-0"
-                 style="background-color: rgba(30,30,30,0.95); color: #f1f1f1; border-radius: 12px;">
-                <div class="card-header bg-secondary text-white">
-                    Önceki Paket: <strong>@package.PackageName</strong>
-                </div>
-                <div class="card-body small">
-                    <p><strong>Süre:</strong> @package.StartDate.ToShortDateString() - @package.EndDate.ToShortDateString()</p>
+            <h5 class="text-warning mb-3">📜 Önceki Paketler</h5>
+            @foreach (var package in old)
+            {
+                var usedMsg = package.UsedMessages.GetValueOrDefault();
+                var totalMsg = package.TotalMessages.GetValueOrDefault();
+                var usedQ = package.UsedQuestions.GetValueOrDefault();
+                var totalQ = package.TotalQuestions.GetValueOrDefault();
 
-                    <!-- Mesaj Hakkı -->
-                    <div class="mb-3">
-                        @{
-                            int usedMsg = package.UsedMessages.GetValueOrDefault();
-                            int totalMsg = package.TotalMessages.GetValueOrDefault();
-                            int percentMsg = totalMsg == 0 ? 0 : usedMsg * 100 / totalMsg;
-                        }
-                        <div class="d-flex justify-content-between">
-                            <span><strong>Mesaj Hakkı:</strong> @usedMsg / @totalMsg</span>
-                            <span>@($"{Math.Min(100, percentMsg)}%")</span>
-                        </div>
-                        <div class="progress" style="height: 6px;">
-                            <div class="progress-bar bg-info" role="progressbar"
-                                 style="width:@(Math.Min(100, percentMsg))%"></div>
-                        </div>
+                <div class="card mb-3 shadow-sm border-0" style="background-color: rgba(30,30,30,0.95); color: #f1f1f1; border-radius: 12px;">
+                    <div class="card-header bg-secondary text-white">
+                        Önceki Paket: <strong>@package.PackageName</strong>
                     </div>
+                    <div class="card-body small">
+                        <p><strong>Süre:</strong> @package.StartDate.ToShortDateString() - @package.EndDate.ToShortDateString()</p>
 
-                    <!-- Soru Hakkı -->
-                    <div class="mb-3">
-                        @{
-                            int usedQ = package.UsedQuestions.GetValueOrDefault();
-                            int totalQ = package.TotalQuestions.GetValueOrDefault();
-                            int percentQ = totalQ == 0 ? 0 : usedQ * 100 / totalQ;
+                        <!-- Mesaj Hakkı -->
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span><strong>Mesaj Hakkı:</strong> @usedMsg / @totalMsg</span>
+                                <span>@($"{Pct(usedMsg, totalMsg)}%")</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-info" style="width:@Pct(usedMsg,totalMsg)%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Soru Hakkı -->
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span><strong>Soru Hakkı:</strong> @usedQ / @totalQ</span>
+                                <span>@($"{Pct(usedQ, totalQ)}%")</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-warning" style="width:@Pct(usedQ,totalQ)%"></div>
+                            </div>
+                        </div>
+
+                        @if (package.ExtraRights?.Any() == true)
+                        {
+                            <h6 class="mt-3 text-warning"><i class="bi bi-plus-circle"></i> Ek Haklar</h6>
+                            <ul class="list-group small">
+                                @foreach (var extra in package.ExtraRights)
+                                {
+                                    <li class="list-group-item bg-dark text-light d-flex justify-content-between align-items-center">
+                                        <span><strong>@extra.RightType:</strong> @extra.Amount adet</span>
+                                        <span class="badge bg-light text-dark">
+                                            @extra.PurchaseDate.ToShortDateString()
+                                            @if (!string.IsNullOrWhiteSpace(extra.Note))
+                                            {
+                                                <small class="text-muted">- @extra.Note</small>
+                                            }
+                                        </span>
+                                    </li>
+                                }
+                            </ul>
                         }
-                        <div class="d-flex justify-content-between">
-                            <span><strong>Soru Hakkı:</strong> @usedQ / @totalQ</span>
-                            <span>@($"{Math.Min(100, percentQ)}%")</span>
-                        </div>
-                        <div class="progress" style="height: 6px;">
-                            <div class="progress-bar bg-warning" role="progressbar"
-                                 style="width:@(Math.Min(100, percentQ))%"></div>
-                        </div>
                     </div>
-
-                    <!-- Ek Haklar -->
-                    @if (package.ExtraRights.Any())
-                    {
-                        <h6 class="mt-3 text-warning"><i class="bi bi-plus-circle"></i> Ek Haklar</h6>
-                        <ul class="list-group small">
-                            @foreach (var extra in package.ExtraRights)
-                            {
-                                <li class="list-group-item bg-dark text-light d-flex justify-content-between align-items-center">
-                                    <span><strong>@extra.RightType:</strong> @extra.Amount adet</span>
-                                    <span class="badge bg-light text-dark">
-                                        @extra.PurchaseDate.ToShortDateString()
-                                        @if (!string.IsNullOrWhiteSpace(extra.Note))
-                                        {
-                                            <small class="text-muted">- @extra.Note</small>
-                                        }
-                                    </span>
-                                </li>
-                            }
-                        </ul>
-                    }
                 </div>
-            </div>
+            }
         }
     }
 </div>

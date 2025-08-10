@@ -2,65 +2,66 @@
 @model UserLoginDTO
 @{
     ViewData["Title"] = "Giriş Yap";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow-lg border-0" style="background-color: rgba(20,20,20,0.95); color: #f1f1f1; border-radius: 12px;">
-                <div class="card-header text-center fw-semibold"
-                     style="background: linear-gradient(90deg, #000, #cc6a00); color: #fff; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                    <i class="bi bi-person-check-fill me-2"></i> Giriş Yap
+<div class="container py-5" style="max-width:640px">
+    <div class="card border-0 shadow-lg" style="background:var(--surface);color:var(--text);border:1px solid var(--border)">
+        <div class="card-body p-4 p-md-5">
+
+            <!-- Başlık -->
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="rounded-3 d-grid place-items-center" style="width:56px;height:56px;background:var(--brand-grad);color:#fff">
+                    <i class="bi bi-person-check-fill fs-4"></i>
                 </div>
-                <div class="card-body p-4">
-                    <form asp-action="Login" method="post">
-                        <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+                <div>
+                    <h3 class="mb-1">Giriş Yap</h3>
+                    <div class="text-muted">Kullanıcı adı/e-posta ve şifren ile devam et.</div>
+                </div>
+            </div>
 
-                        <!-- Kullanıcı Adı / Email -->
-                        <div class="mb-3">
-                            <label asp-for="UserNameOrEmail" class="form-label fw-semibold">Kullanıcı Adı veya Email</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark text-light border-secondary">
-                                    <i class="bi bi-envelope-at"></i>
-                                </span>
-                                <input asp-for="UserNameOrEmail" class="form-control bg-dark text-light border-secondary" placeholder="kullanici@eposta.com" />
-                            </div>
-                            <span asp-validation-for="UserNameOrEmail" class="text-danger small"></span>
-                        </div>
+            <form asp-action="Login" method="post" id="loginForm" novalidate>
+                @Html.AntiForgeryToken()
 
-                        <!-- Şifre -->
-                        <div class="mb-3">
-                            <label asp-for="Password" class="form-label fw-semibold">Şifre</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark text-light border-secondary">
-                                    <i class="bi bi-lock-fill"></i>
-                                </span>
-                                <input asp-for="Password" type="password" class="form-control bg-dark text-light border-secondary" placeholder="••••••••" />
-                            </div>
-                            <span asp-validation-for="Password" class="text-danger small"></span>
-                        </div>
+                <div asp-validation-summary="All" class="text-danger small mb-3"></div>
 
-                        <!-- Giriş Butonu -->
-                        <div class="d-grid">
-                            <button type="submit" class="btn fw-semibold"
-                                    style="background-color: #cc6a00; border-color: #cc6a00; color: #fff;"
-                                    onmouseover="this.style.backgroundColor='#e6801a'"
-                                    onmouseout="this.style.backgroundColor='#cc6a00'">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Giriş Yap
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- Alt Linkler -->
-                    <div class="mt-4 text-center small">
-                        <a asp-action="Register" class="text-decoration-none me-3 text-warning">
-                            <i class="bi bi-person-plus"></i> Kayıt Ol
-                        </a>
-                        <a asp-action="ForgotPassword" class="text-decoration-none text-warning">
-                            <i class="bi bi-lock"></i> Şifremi Unuttum
-                        </a>
+                <!-- Kullanıcı Adı / E-posta -->
+                <div class="mb-3">
+                    <label asp-for="UserNameOrEmail" class="form-label fw-semibold">Kullanıcı Adı veya E-posta</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope-at"></i></span>
+                        <input asp-for="UserNameOrEmail" class="form-control ring" autocomplete="username" placeholder="kullanici@eposta.com" />
                     </div>
+                    <span asp-validation-for="UserNameOrEmail" class="text-danger small"></span>
                 </div>
+
+                <!-- Şifre -->
+                <div class="mb-4">
+                    <label asp-for="Password" class="form-label fw-semibold">Şifre</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                        <input asp-for="Password" type="password" class="form-control ring" autocomplete="current-password" placeholder="••••••••" />
+                        <button class="btn btn-outline-secondary toggle-pass" type="button" aria-label="Göster/Gizle"><i class="bi bi-eye"></i></button>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                <!-- Giriş Butonu -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-accent fw-semibold" id="loginBtn">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Giriş Yap
+                    </button>
+                </div>
+            </form>
+
+            <!-- Alt Linkler -->
+            <div class="mt-4 text-center small">
+                <a asp-action="Register" class="text-decoration-none me-3">
+                    <i class="bi bi-person-plus"></i> Kayıt Ol
+                </a>
+                <a asp-action="ForgotPassword" class="text-decoration-none">
+                    <i class="bi bi-lock"></i> Şifremi Unuttum
+                </a>
             </div>
         </div>
     </div>
@@ -68,4 +69,40 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Şifre göster/gizle
+        document.querySelectorAll('.toggle-pass').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const input = btn.previousElementSibling; // password input
+            if (!input) return;
+            input.type = input.type === 'password' ? 'text' : 'password';
+            const icon = btn.querySelector('i');
+            icon?.classList.toggle('bi-eye');
+            icon?.classList.toggle('bi-eye-slash');
+          });
+        });
+
+        // Basit UX: form geçersizse butonu pasifleştir, gönderimde spinner
+        (function () {
+          const form = document.getElementById('loginForm');
+          const user = document.getElementById('UserNameOrEmail') || document.querySelector('[name="UserNameOrEmail"]');
+          const pass = document.getElementById('Password') || document.querySelector('[name="Password"]');
+          const btn = document.getElementById('loginBtn');
+
+          function toggle() {
+            if (!btn) return;
+            const ok = (user?.value?.trim().length > 0) && (pass?.value?.length > 0);
+            btn.disabled = !ok;
+          }
+          user?.addEventListener('input', toggle);
+          pass?.addEventListener('input', toggle);
+          toggle();
+
+          form?.addEventListener('submit', function () {
+            if (!btn) return;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Giriş yapılıyor...';
+          });
+        })();
+    </script>
 }

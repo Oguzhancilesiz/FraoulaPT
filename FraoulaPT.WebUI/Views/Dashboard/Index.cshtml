@@ -1,0 +1,230 @@
+﻿@using FraoulaPT.DTOs.StudentDashboardDTOs
+@model StudentDashboardDTO
+@{
+    ViewData["Title"] = "Panelim";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var hasPkg = !string.IsNullOrWhiteSpace(Model?.Package?.Name);
+    var qTotal = Model?.Package?.TotalQuestions ?? 0;
+    var qUsed = Model?.Package?.UsedQuestions ?? 0;
+    var qPct = qTotal == 0 ? 0 : Math.Min(100, (int)Math.Round(100.0 * qUsed / qTotal));
+
+    var mTotal = Model?.Package?.TotalMessages ?? 0;
+    var mUsed = Model?.Package?.UsedMessages ?? 0;
+    var mPct = mTotal == 0 ? 0 : Math.Min(100, (int)Math.Round(100.0 * mUsed / mTotal));
+
+    var lowDays = (Model?.Package?.RemainingDays ?? 999) <= 3 && hasPkg;
+}
+
+<style>
+    .chart-wrap {
+        position: relative;
+        height: 300px;
+        width: 100%
+    }
+
+    .card-body {
+        overflow: hidden
+    }
+
+    .avatar {
+        width: 64px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: 999px;
+        border: 2px solid var(--accent)
+    }
+
+    .kpi {
+        display: flex;
+        align-items: center;
+        gap: .5rem
+    }
+
+        .kpi .num {
+            font-weight: 700;
+            font-size: 1.375rem
+        }
+
+        .kpi .lbl {
+            color: var(--muted);
+            font-size: .8rem;
+            margin-top: -2px
+        }
+</style>
+
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4 gap-3">
+        <img src="@Model.ProfilePhotoUrl" alt="avatar" class="avatar shadow" />
+        <div class="me-auto">
+            <h3 class="mb-0">@Model.FullName</h3>
+            <div class="text-muted small">@Model.Email</div>
+        </div>
+        <div class="d-none d-md-flex gap-2">
+            <a class="btn btn-outline-secondary" asp-controller="Auth" asp-action="ChangeEmail" title="E-posta değiştir"><i class="bi bi-envelope"></i></a>
+            <a class="btn btn-outline-secondary" asp-controller="Auth" asp-action="ChangePassword" title="Şifre değiştir"><i class="bi bi-key"></i></a>
+            <a class="btn btn-accent" asp-controller="Profile" asp-action="Edit"><i class="bi bi-pencil me-1"></i> Profili Düzenle</a>
+        </div>
+    </div>
+
+    <!-- CTA'lar -->
+    @if (Model.ShowProfileReminder)
+    {
+        <div class="alert alert-warning">Profilinizi tamamlayın: <a asp-controller="Profile" asp-action="CompleteProfile" class="fw-bold">Profilimi Tamamla</a></div>
+    }
+    @if (Model.ShowBuyPackageCta)
+    {
+        <div class="alert alert-info">Aktif paketiniz yok. <a asp-controller="Package" asp-action="Index" class="fw-bold">Paketlere göz atın</a>.</div>
+    }
+    @if (lowDays)
+    {
+        <div class="alert alert-warning d-flex justify-content-between align-items-center">
+            <span>📅 Paketinizin bitmesine <b>@Model.Package.RemainingDays</b> gün kaldı.</span>
+            <a asp-controller="Package" asp-action="Index" class="btn btn-sm btn-outline-warning">Paket Yenile</a>
+        </div>
+    }
+
+    <div class="row g-3 mb-4">
+        <!-- Paket -->
+        <div class="col-xl-4 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">Aktif Paket</div>
+                    <div class="fw-bold">@Model.Package.Name</div>
+                    <div class="small text-muted">@Model.Package.Start?.ToString("dd.MM.yyyy") – @Model.Package.End?.ToString("dd.MM.yyyy")</div>
+                    <div class="small mt-1">Kalan gün: <b>@(Model.Package.RemainingDays?.ToString() ?? "-")</b></div>
+                    <hr />
+                    <div class="mb-1">🟠 Soru: @qUsed / @qTotal <span class="text-muted">(Kalan: @Model.Package.AvailableQuestions)</span></div>
+                    <div class="progress" style="height:8px"><div class="progress-bar" style="width:@qPct%"></div></div>
+
+                    <div class="mt-3 mb-1">💬 Mesaj: @mUsed / @mTotal <span class="text-muted">(Kalan: @Model.Package.AvailableMessages)</span></div>
+                    <div class="progress" style="height:8px"><div class="progress-bar" style="width:@mPct%"></div></div>
+
+                    @if (Model.ShowBuyExtraCta)
+                    {
+                        <div class="mt-3 d-flex justify-content-between align-items-center">
+                            <small class="text-muted">Aktif Ek Hak: Soru +@Model.Package.ActiveExtraQuestionRights, Mesaj +@Model.Package.ActiveExtraMessageRights</small>
+                            <a asp-controller="ExtraPackage" asp-action="Index" class="btn btn-sm btn-outline-warning">Ek Paket Al</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Son Ölçüm -->
+        <div class="col-xl-4 col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">Son Ölçüm</div>
+                    <div class="fw-bold">@Model.WeeklyForm.LastFormDate?.ToString("dd.MM.yyyy")</div>
+                    <div class="mt-2">
+                        Kilo: <b>@(Model.WeeklyForm.Weight?.ToString("0.0") ?? "-")</b>
+                        @if (Model.WeeklyForm.DeltaWeight != null)
+                        {
+                            <small class="text-muted">(@(Model.WeeklyForm.DeltaWeight > 0 ? "+" : "")@Model.WeeklyForm.DeltaWeight kg)</small>
+                        }
+                    </div>
+                    <div>Bel: <b>@(Model.WeeklyForm.Waist?.ToString("0.0") ?? "-")</b></div>
+                    <div>Kalça: <b>@(Model.WeeklyForm.Hip?.ToString("0.0") ?? "-")</b></div>
+
+                    @if (Model.WeeklyForm.ProgressPhotoUrls?.Any() == true)
+                    {
+                        <div class="mt-3 d-flex flex-wrap gap-2">
+                            @foreach (var url in Model.WeeklyForm.ProgressPhotoUrls.Take(3))
+                            {
+                                <img src="@url" height="64" class="rounded shadow-sm" />
+                            }
+                        </div>
+                    }
+
+                    <div class="mt-3 d-flex gap-2">
+                        <a asp-controller="UserWeeklyForm" asp-action="Create" class="btn btn-sm btn-outline-secondary">Yeni Haftalık Form</a>
+                        <a asp-controller="UserWeeklyForm" asp-action="Index" class="btn btn-sm btn-outline-secondary">Tüm Ölçümler</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- İletişim -->
+        <div class="col-xl-4 col-md-12">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="text-muted">İletişim Özeti (30g)</div>
+                    <div class="d-flex align-items-center gap-4 mt-2">
+                        <div class="kpi"><div class="num">@Model.Comms.Last30dMessageCount</div><div class="lbl">Mesaj</div></div>
+                        <div class="kpi"><div class="num">@Model.Comms.Last30dQuestionCount</div><div class="lbl">Soru</div></div>
+                        <div>
+                            <div class="small text-muted">Son mesaj:</div>
+                            <div>@Model.Comms.LastMessageAt?.ToString("dd.MM.yyyy HH:mm")</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        <a asp-controller="Chat" asp-action="Index" class="btn btn-sm btn-accent"><i class="bi bi-chat-dots me-1"></i> Sohbete Git</a>
+                        <a asp-controller="Question" asp-action="Index" class="btn btn-sm btn-outline-secondary"><i class="bi bi-question-circle me-1"></i> Soru-Cevap</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafikler -->
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted mb-2">Kilo Değişimi</div>
+                    <div class="chart-wrap"><canvas id="wChart" aria-label="Kilo grafiği" role="img"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted mb-2">Bel / Kalça</div>
+                    <div class="chart-wrap"><canvas id="wkChart" aria-label="Bel ve Kalça grafiği" role="img"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Veriler
+        const wLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WeightSeries?.Select(x => x.Date.ToString("dd.MM")) ?? Array.Empty<string>()));
+        const wData   = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WeightSeries?.Select(x => x.Value) ?? Array.Empty<double?>()));
+        const waistL  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WaistSeries?.Select(x => x.Date.ToString("dd.MM")) ?? Array.Empty<string>()));
+        const waistD  = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.WaistSeries?.Select(x => x.Value) ?? Array.Empty<double?>()));
+        const hipD    = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.HipSeries?.Select(x => x.Value) ?? Array.Empty<double?>()));
+
+        // NaN'ları temizle
+        function clean(arr){ return (arr||[]).map(v => (v==null||isNaN(v)) ? null : Number(v)); }
+
+        const wEl = document.getElementById('wChart');
+        const wkEl = document.getElementById('wkChart');
+
+        if (wEl && (wLabels?.length||0) && (wData?.length||0)) {
+          new Chart(wEl, {
+            type: 'line',
+            data: { labels: wLabels, datasets: [{ label: 'Kilo', data: clean(wData), tension: .3, spanGaps: true }] },
+            options: { responsive: true, maintainAspectRatio: false }
+          });
+        }
+
+        if (wkEl && (waistL?.length||0) && ((waistD?.length||0) || (hipD?.length||0))) {
+          new Chart(wkEl, {
+            type: 'line',
+            data: {
+              labels: waistL,
+              datasets: [
+                { label: 'Bel',   data: clean(waistD), tension: .3, spanGaps: true },
+                { label: 'Kalça', data: clean(hipD),   tension: .3, spanGaps: true }
+              ]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+          });
+        }
+    </script>
+}

@@ -1,72 +1,141 @@
 ﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels
 @model PackageIndexVM
-
 @{
     ViewData["Title"] = "Paketler";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var types = (Model?.Packages ?? Enumerable.Empty<dynamic>())
+        .Select(p => p.PackageType?.ToString())
+        .Where(s => !string.IsNullOrWhiteSpace(s))
+        .Distinct().OrderBy(s => s).ToList();
+
+    var periods = (Model?.Packages ?? Enumerable.Empty<dynamic>())
+        .Select(p => p.SubscriptionPeriod?.ToString())
+        .Where(s => !string.IsNullOrWhiteSpace(s))
+        .Distinct().OrderBy(s => s).ToList();
 }
 
 <section class="container py-5">
-    <h2 class="text-center mb-4 text-warning fw-bold">📦 Paketler</h2>
+    <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="rounded-3 d-grid place-items-center" style="width:56px;height:56px;background:var(--brand-grad);color:#fff">
+            <i class="bi bi-box2-heart fs-4"></i>
+        </div>
+        <div>
+            <h2 class="mb-0">Paketler</h2>
+            <div class="text-muted">Hedefine uygun paketi seç.</div>
+        </div>
+        <div class="ms-auto d-none d-md-flex gap-2">
+            <input id="pkgSearch" type="text" placeholder="Ara: paket adı..." class="form-control form-control-sm" style="max-width:220px">
+            <select id="pkgType" class="form-select form-select-sm" style="max-width:160px">
+                <option value="">Tür (Hepsi)</option>
+                @foreach (var t in types)
+                {
+                    <option value="@t">@t</option>
+                }
+            </select>
+            <select id="pkgPeriod" class="form-select form-select-sm" style="max-width:160px">
+                <option value="">Süre (Hepsi)</option>
+                @foreach (var p in periods)
+                {
+                    <option value="@p">@p</option>
+                }
+            </select>
+            <select id="pkgSort" class="form-select form-select-sm" style="max-width:160px">
+                <option value="">Sırala</option>
+                <option value="price.asc">Fiyat (Artan)</option>
+                <option value="price.desc">Fiyat (Azalan)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Mobil filtreler -->
+    <div class="d-flex d-md-none gap-2 mb-3">
+        <input id="pkgSearchSm" type="text" class="form-control form-control-sm" placeholder="Ara...">
+        <select id="pkgTypeSm" class="form-select form-select-sm">
+            <option value="">Tür</option>
+            @foreach (var t in types)
+            {
+                <option value="@t">@t</option>
+            }
+        </select>
+        <select id="pkgPeriodSm" class="form-select form-select-sm">
+            <option value="">Süre</option>
+            @foreach (var p in periods)
+            {
+                <option value="@p">@p</option>
+            }
+        </select>
+    </div>
 
     @if (Model == null || !Model.Packages.Any())
     {
-        <div class="alert alert-warning text-center shadow-sm">
-            Şu anda aktif bir paket bulunmamaktadır.
+        <div class="card border-0 shadow-sm" style="background:var(--surface);color:var(--text);border:1px solid var(--border)">
+            <div class="card-body text-center py-5">
+                <div class="mb-2"><i class="bi bi-inbox fs-2"></i></div>
+                <div class="fw-semibold mb-1">Şu anda sunulan bir paket bulunmuyor.</div>
+                <div class="text-muted">Lütfen daha sonra tekrar kontrol edin.</div>
+            </div>
         </div>
     }
     else
     {
-        <div class="row row-cols-1 row-cols-md-3 g-4">
+        @* Aktif paketi olan kullanıcı uyarısı *@
+        @if (Model.HasActivePackage)
+        {
+            <div class="alert alert-warning d-flex justify-content-between align-items-center mb-3" style="border:1px solid var(--border)">
+                <span>🎟️ Aktif bir paketiniz bulunuyor. Yeni paket almak yerine ek hak ekleyebilirsiniz.</span>
+                <a href="/ExtraPackage" class="btn btn-sm btn-outline-warning">Ek Paket Al</a>
+            </div>
+        }
+
+        <div id="pkgGrid" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
             @foreach (var package in Model.Packages)
             {
-                <div class="col">
-                    <div class="card h-100 shadow-sm border-0"
-                         style="background-color: rgba(20,20,20,0.95); color: #f1f1f1; border-radius: 12px; overflow: hidden;">
-
+                var t = package.PackageType.ToString() ?? "-";
+                var sp = package.SubscriptionPeriod.ToString() ?? "-";
+                <div class="col pkg-card" data-name="@package.Name?.ToLower()" data-type="@t" data-period="@sp" data-price="@package.Price">
+                    <div class="card h-100 shadow-sm border-0" style="background:var(--surface);color:var(--text);border:1px solid var(--border);overflow:hidden;">
                         @if (!string.IsNullOrWhiteSpace(package.ImageUrl))
                         {
-                            <img src="@package.ImageUrl" class="card-img-top"
-                                 alt="@package.Name"
-                                 style="height: 180px; object-fit: cover;">
+                            <img src="@package.ImageUrl" class="card-img-top" alt="@package.Name" style="height:180px;object-fit:cover;">
                         }
+                        <div class="card-body d-flex flex-column p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="fw-bold mb-0">@package.Name</h5>
+                                <span class="badge text-bg-dark" style="border:1px solid var(--border)">@t</span>
+                            </div>
+                            <div class="small text-muted mb-1">Süre</div>
+                            <div class="fw-semibold mb-2">@sp</div>
 
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title text-warning fw-semibold">@package.Name</h5>
-                            <h6 class="text-secondary small">
-                                @package.PackageType.ToString() | @package.SubscriptionPeriod.ToString()
-                            </h6>
-                            <p class="card-text small opacity-85 mb-3">@package.Description</p>
+                            @if (!string.IsNullOrWhiteSpace(package.Description))
+                            {
+                                <p class="text-muted small mb-3">@package.Description</p>
+                            }
 
-                            <ul class="list-group list-group-flush small mb-3" style="border-radius: 8px; overflow: hidden;">
-                                <li class="list-group-item bg-transparent text-light border-secondary">
-                                    <strong>@package.MaxQuestionsPerPeriod</strong> soru hakkı
-                                </li>
-                                <li class="list-group-item bg-transparent text-light border-secondary">
-                                    <strong>@package.MaxMessagesPerPeriod</strong> mesaj hakkı
-                                </li>
+                            <ul class="list-unstyled small mb-3">
+                                <li class="mb-1">🟠 <b>@package.MaxQuestionsPerPeriod</b> soru hakkı</li>
+                                <li class="mb-1">💬 <b>@package.MaxMessagesPerPeriod</b> mesaj hakkı</li>
                             </ul>
 
                             <div class="mt-auto">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">
-                                        @($"{package.Price:C2}")
-                                    </span>
+                                    <span class="badge text-bg-dark" style="border:1px solid var(--border)">Fiyat</span>
+                                    <span class="fw-bold fs-5">@($"{package.Price:C2}")</span>
                                 </div>
 
                                 @if (Model.HasActivePackage)
                                 {
-                                    <div class="alert alert-warning small text-dark mb-0">
-                                        Aktif bir paketiniz bulunmaktadır.
-                                        <a href="/ExtraPackage" class="fw-bold">Ek paket satın alabilirsiniz.</a>
+                                    <div class="alert alert-secondary small mb-0" style="background:rgba(255,255,255,.03);border:1px solid var(--border);">
+                                        Satın alma kapalı. <a href="/ExtraPackage" class="fw-semibold">Ek paket ekle</a>.
                                     </div>
                                 }
                                 else
                                 {
-                                    <form method="post" asp-action="Purchase" asp-controller="Package" class="d-grid">
+                                    <form method="post" asp-action="Purchase" asp-controller="Package" class="d-grid" data-buy>
+                                        @Html.AntiForgeryToken()
                                         <input type="hidden" name="packageId" value="@package.Id" />
-                                        <button type="submit" class="btn btn-warning fw-semibold shadow-sm">
-                                            <i class="bi bi-cart-plus"></i> Satın Al
+                                        <button type="submit" class="btn btn-accent fw-semibold">
+                                            <i class="bi bi-cart-plus me-1"></i> Satın Al
                                         </button>
                                     </form>
                                 }
@@ -78,3 +147,76 @@
         </div>
     }
 </section>
+
+@section Scripts {
+    <script>
+        // Arama/filtre/sıralama
+        (function(){
+          const grid = document.getElementById('pkgGrid');
+          const s1 = document.getElementById('pkgSearch');
+          const s2 = document.getElementById('pkgSearchSm');
+          const t1 = document.getElementById('pkgType');
+          const t2 = document.getElementById('pkgTypeSm');
+          const p1 = document.getElementById('pkgPeriod');
+          const p2 = document.getElementById('pkgPeriodSm');
+          const sortSel = document.getElementById('pkgSort');
+
+          function sync(src, dst){ if (dst && dst.value !== src.value) dst.value = src.value; }
+          function val(el){ return (el?.value || '').toLowerCase(); }
+
+          function apply(){
+            if(!grid) return;
+            const q = (s1?.value || s2?.value || '').toLowerCase();
+            const type = (t1?.value || t2?.value || '').toLowerCase();
+            const period = (p1?.value || p2?.value || '').toLowerCase();
+
+            grid.querySelectorAll('.pkg-card').forEach(card=>{
+              const name = (card.getAttribute('data-name')||'');
+              const t = (card.getAttribute('data-type')||'').toLowerCase();
+              const sp = (card.getAttribute('data-period')||'').toLowerCase();
+              const passName = !q || name.includes(q);
+              const passType = !type || t === type;
+              const passPer  = !period || sp === period;
+              card.classList.toggle('d-none', !(passName && passType && passPer));
+            });
+          }
+
+          // Sıralama yalnızca görünür kartlarda çalışır
+          function sortCards(){
+            if(!grid) return;
+            const mode = sortSel?.value || '';
+            const cards = Array.from(grid.children);
+            if(!mode){ return; }
+            cards.sort((a,b)=>{
+              const pa = parseFloat(a.querySelector('.pkg-card')?.getAttribute('data-price') || a.getAttribute('data-price') || a.dataset.price || a.getAttribute('data-price') || a.querySelector('[data-price]')?.dataset.price || a.dataset?.price || '0');
+              const pb = parseFloat(b.querySelector('.pkg-card')?.getAttribute('data-price') || b.getAttribute('data-price') || b.dataset.price || b.getAttribute('data-price') || b.querySelector('[data-price]')?.dataset.price || b.dataset?.price || '0');
+              return mode==='price.asc' ? pa - pb : pb - pa;
+            });
+            cards.forEach(c=>grid.appendChild(c));
+          }
+
+          [s1,s2,t1,t2,p1,p2].forEach(el=>el?.addEventListener('input', e=>{
+            if(e.target===s1) sync(s1,s2); else if(e.target===s2) sync(s2,s1);
+            if(e.target===t1) sync(t1,t2); else if(e.target===t2) sync(t2,t1);
+            if(e.target===p1) sync(p1,p2); else if(e.target===p2) sync(p2,p1);
+            apply();
+          }));
+
+          sortSel?.addEventListener('change', sortCards);
+
+          apply();
+        })();
+
+        // Satın alırken spinner + disable
+        (function(){
+          document.querySelectorAll('form[data-buy]').forEach(f=>{
+            f.addEventListener('submit', function(){
+              const btn = f.querySelector('button[type="submit"]');
+              if(!btn) return;
+              btn.disabled = true;
+              btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> İşleniyor...';
+            });
+          });
+        })();
+    </script>
+}
