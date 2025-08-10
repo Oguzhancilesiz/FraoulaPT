@@ -86,6 +86,7 @@ namespace FraoulaPT.WebUI
             builder.Services.AddScoped<IMailService, MailService>();
             builder.Services.AddScoped<IExtraPackageOptionService, ExtraPackageOptionService>();
             builder.Services.AddScoped<IExtraRightService, ExtraRightService>();
+            builder.Services.AddScoped<IStudentReportService, StudentReportService>();
 
             var app = builder.Build();
 

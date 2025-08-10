@@ -1,5 +1,6 @@
 ﻿using FraoulaPT.DTOs.DashboardDTOs;
 using FraoulaPT.DTOs.UserPackageDTOs;
+using FraoulaPT.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,10 @@ namespace FraoulaPT.Services.Abstracts
 
     public interface IUserPackageService
     {
+        Task<bool> HasActivePackageAsync(Guid userId, DateTime? now = null);
+        Task<UserPackage?> GetCurrentActiveAsync(Guid userId, DateTime? now = null);
+        Task<int> DeactivateExpiredAsync(DateTime? now = null); // opsiyonel bakım
+
         Task<bool> CreateAsync(UserPackageCreateDTO dto);
         Task<bool> HasActivePackageAsync(Guid userId);
         Task <List<UserPackageDetailDTO>> GetPackagesByUserAsync(Guid userId);
