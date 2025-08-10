@@ -10,7 +10,7 @@ using Microsoft.Build.Evaluation;
 namespace FraoulaPT.WebUI.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin,Coach")]
+    [Authorize(Roles = "Koc,Admin")]
     public class ExerciseController : BaseController
     {
         private readonly IExerciseService _exerciseService;

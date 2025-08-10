@@ -5,6 +5,7 @@ using FraoulaPT.DAL;
 using FraoulaPT.Entity;
 using FraoulaPT.Services.Abstracts;
 using FraoulaPT.Services.Concrete;
+using FraoulaPT.WebUI.Data;
 using FraoulaPT.WebUI.Hubs;
 using FraoulaPT.WebUI.Infrastructure.Auth;
 using Mapster;
@@ -88,6 +89,20 @@ namespace FraoulaPT.WebUI
 
             var app = builder.Build();
 
+            // **Seed iþlemini burada çaðýrýyoruz**
+            //using (var scope = app.Services.CreateScope())
+            //{
+            //    var services = scope.ServiceProvider;
+
+            //    try
+            //    {
+            //        SeedData.InitializeAsync(services);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine($"Seed data error: {ex.Message}");
+            //    }
+            //}
             // SignalR Hub route
             app.MapHub<ChatHub>("/chathub");
 

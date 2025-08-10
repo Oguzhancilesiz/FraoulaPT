@@ -35,7 +35,17 @@ namespace FraoulaPT.WebUI.Controllers
         [HttpGet]
         public async Task<IActionResult> MyQuestions()
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                // Eğer giriş yapılmamışsa boş partial döndür veya hata mesajı ver
+                return PartialView("_QuestionHistoryPartial", new List<UserQuestionDTO>());
+                // veya: return Unauthorized();
+            }
             var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return PartialView("_QuestionHistoryPartial", new List<UserQuestionDTO>());
+            }
             var questions = await _userQuestionService.GetQuestionsByUserAsync(user.Id);
             return PartialView("_QuestionHistoryPartial", questions); // Partial olarak render et
         }

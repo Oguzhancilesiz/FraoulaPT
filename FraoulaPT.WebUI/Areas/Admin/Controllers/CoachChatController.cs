@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace FraoulaPT.WebUI.Areas.Admin.Controllers
 {
-    [Authorize(Roles = "Koc")]
+    [Authorize(Roles = "Koc,Admin")]
     [Area("Admin")]
     public class CoachChatController : Controller
     {
