@@ -1,147 +1,188 @@
-﻿@model List<ExtraPackageOptionListDTO>
+﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
 @using FraoulaPT.Core.Enums
 @using FraoulaPT.DTOs.ExtraPackageOptionDTOs
+@using System.Globalization
+@model List<ExtraPackageOptionListDTO>
+
 @{
     ViewData["Title"] = "Ek Paket Seçenekleri";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM
+            {
+                Title = "Ek Paket Seçenekleri",
+                Subtitle = "Satın alınabilir ek kullanım haklarını yönetin",
+                Breadcrumbs = new(){
+            new(){ Text = "Dashboard", Url = Url.Action("Index","Dashboard", new{ area="Admin" }) },
+            new(){ Text = "Ek Paketler" }
+        },
+                Buttons = new(){
+            new(){ Text="Yeni Ekle", Url=Url.Action("Create","ExtraPackageOption", new{ area="Admin"}), Icon="bi-plus-circle", ColorClass="btn-brand" }
+        }
+            };
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
-        <h2 class="mb-2">🧩 Ek Paket Seçenekleri</h2>
-        <a asp-action="Create" class="btn btn-success">
-            <i class="bi bi-plus-circle me-1"></i> Yeni Ekle
-        </a>
-    </div>
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
 
-    @if (!Model.Any())
-    {
-        <div class="alert alert-info">Henüz ek paket seçeneği eklenmemiş.</div>
-    }
-    else
-    {
-        <div class="table-responsive">
-            <table class="table table-hover align-middle text-center">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Ad</th>
-                        <th>Tür</th>
-                        <th>Adet</th>
-                        <th>Fiyat</th>
-                        @* <th>Açıklama</th> *@
-                        <th>Durum</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (int i = 0; i < Model.Count; i++)
-                    {
-                        var item = Model[i];
-                        <tr>
-                            <td>@(i + 1)</td>
-                            <td>@item.Name</td>
-                            <td>@item.Type</td>
-                            <td>@item.Amount</td>
-                            <td>@($"{item.Price:C2}")</td>
-                            <td>
-                                @if (item.IsActive)
-                                {
-                                    <span class="badge bg-success">Aktif</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">Pasif</span>
-                                }
-                            </td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <button class="btn btn-sm @(item.IsActive ? "btn-danger" : "btn-success") toggle-status-btn"
-                                            data-id="@item.Id"
-                                            title="Durumu Değiştir">
-                                        <i class="bi @(item.IsActive ? "bi-eye-slash" : "bi-eye")"></i>
-                                    </button>
+<div class="container-fluid">
+    <div class="card ring shadow-soft">
+        <div class="card-body p-3 p-md-4">
 
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="Düzenle">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+            @if (Model == null || !Model.Any())
+            {
+                <div class="alert alert-info mb-0">Henüz ek paket seçeneği eklenmemiş.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr class="small text-muted">
+                                <th class="text-nowrap">#</th>
+                                <th>Ad</th>
+                                <th class="d-none d-sm-table-cell">Tür</th>
+                                <th class="d-none d-md-table-cell">Adet</th>
+                                <th>Fiyat</th>
+                                <th>Durum</th>
+                                <th style="width:160px;" class="text-nowrap">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Count; i++)
+                            {
+                                var item = Model[i];
+                                <tr data-id="@item.Id">
+                                    <td class="text-muted">@(@i + 1)</td>
+                                    <td class="fw-semibold">@item.Name</td>
+                                    <td class="d-none d-sm-table-cell">
+                                        <span class="badge text-bg-secondary">@item.Type</span>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        <span class="badge text-bg-info">@item.Amount</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold">@($"{item.Price:N2} ₺")</span>
+                                    </td>
+                                    <td>
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge text-bg-success">Aktif</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge text-bg-secondary">Pasif</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <button type="button"
+                                                    class="btn btn-sm @(item.IsActive ? "btn-outline-danger" : "btn-outline-success") toggle-status-btn"
+                                                    title="Durumu Değiştir">
+                                                <i class="bi @(item.IsActive ? "bi-eye-slash" : "bi-eye")"></i>
+                                                <span class="d-none d-xl-inline ms-1">@(item.IsActive ? "Pasifleştir" : "Aktifleştir")</span>
+                                            </button>
 
-                                    <button class="btn btn-sm btn-outline-danger delete-btn"
-                                            data-id="@item.Id"
-                                            title="Sil">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                                            <a asp-area="Admin" asp-controller="ExtraPackageOption" asp-action="Edit" asp-route-id="@item.Id"
+                                               class="btn btn-sm btn-warning" title="Düzenle">
+                                                <i class="bi bi-pencil"></i><span class="d-none d-xl-inline ms-1">Düzenle</span>
+                                            </a>
+
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-btn" title="Sil">
+                                                <i class="bi bi-trash"></i><span class="d-none d-xl-inline ms-1">Sil</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
-    }
+    </div>
 </div>
+
+@* Anti-forgery token’ı JS’in okuyabilmesi için küçük, görünmez bir form *@
+<form id="__af" asp-antiforgery="true" class="d-none"></form>
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script>
-        // ✅ Durum Değiştir (IsActive true/false)
-        document.querySelectorAll('.toggle-status-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.getAttribute('data-id');
+        (function(){
+          const token = document.querySelector('#__af input[name="__RequestVerificationToken"]')?.value;
 
-                const result = await Swal.fire({
-                    title: 'Durumu değiştirmek istediğinize emin misiniz?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Evet',
-                    cancelButtonText: 'İptal'
-                });
+          // Durum değiştir
+          document.querySelectorAll('.toggle-status-btn').forEach(btn=>{
+            btn.addEventListener('click', async (e)=>{
+              const tr = e.currentTarget.closest('tr');
+              const id = tr?.getAttribute('data-id');
+              if(!id) return;
 
-                if (!result.isConfirmed) return;
+              const ask = await Swal.fire({
+                title: 'Durumu değiştirmek istiyor musunuz?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Evet',
+                cancelButtonText: 'İptal'
+              });
+              if(!ask.isConfirmed) return;
 
+              try{
                 const res = await fetch('/Admin/ExtraPackageOption/ToggleActive', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ Id: id })
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token ?? ''
+                  },
+                  body: JSON.stringify({ Id: id })
                 });
-
                 const data = await res.json();
-                if (data.success) {
-                    Swal.fire('Başarılı', 'Durum güncellendi.', 'success')
-                        .then(() => location.reload());
-                } else {
-                    Swal.fire('Hata', data.message || 'Durum güncellenemedi.', 'error');
+                if(data?.success){
+                  await Swal.fire('Başarılı','Durum güncellendi.','success');
+                  location.reload();
+                }else{
+                  throw new Error(data?.message || 'Durum güncellenemedi.');
                 }
+              }catch(err){
+                Swal.fire('Hata', err.message || 'İşlem başarısız.', 'error');
+              }
             });
-        });
+          });
 
-        // ❌ Silme (Soft Delete → Status = Deleted)
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.getAttribute('data-id');
-                const result = await Swal.fire({
-                    title: 'Silmek istediğinize emin misiniz?',
-                    text: 'Bu işlem geri alınamaz.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Evet, sil!',
-                    cancelButtonText: 'İptal'
-                });
+          // Sil
+          document.querySelectorAll('.delete-btn').forEach(btn=>{
+            btn.addEventListener('click', async (e)=>{
+              const tr = e.currentTarget.closest('tr');
+              const id = tr?.getAttribute('data-id');
+              if(!id) return;
 
-                if (!result.isConfirmed) return;
+              const ask = await Swal.fire({
+                title: 'Silmek istediğinize emin misiniz?',
+                text: 'Bu işlem geri alınamaz.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Evet, sil',
+                cancelButtonText: 'İptal'
+              });
+              if(!ask.isConfirmed) return;
 
+              try{
                 const res = await fetch(`/Admin/ExtraPackageOption/Delete/${id}`, {
-                    method: 'POST'
+                  method: 'POST',
+                  headers: { 'RequestVerificationToken': token ?? '' }
                 });
-
                 const data = await res.json();
-                if (data.success) {
-                    Swal.fire('Silindi', data.message || 'Kayıt başarıyla silindi.', 'success')
-                        .then(() => location.reload());
-                } else {
-                    Swal.fire('Hata', data.message || 'Silme işlemi başarısız.', 'error');
+                if(data?.success){
+                  await Swal.fire('Silindi', data?.message || 'Kayıt başarıyla silindi.', 'success');
+                  location.reload();
+                }else{
+                  throw new Error(data?.message || 'Silme işlemi başarısız.');
                 }
+              }catch(err){
+                Swal.fire('Hata', err.message || 'İşlem başarısız.', 'error');
+              }
             });
-        });
+          });
+        })();
     </script>
 }

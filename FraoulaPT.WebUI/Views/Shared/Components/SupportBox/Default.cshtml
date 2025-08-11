@@ -1,57 +1,30 @@
 ﻿@using FraoulaPT.WebUI.Models.ViewModels.QuestionAnsverViewModel
 @model SupportBoxViewModel
 
-<form id="questionForm" class="p-3 rounded shadow-sm"
-      style="background:var(--surface);color:var(--text);border:1px solid var(--border);">
+<form id="questionForm" class="bg-dark text-light p-3 rounded shadow-sm">
     @Html.AntiForgeryToken()
-
     <input type="hidden" name="UserPackageId" value="@Model.UserPackageId" />
     <input type="hidden" name="AskedByUserId" value="@Model.CurrentUserId" />
 
-    <!-- Koç Seçimi -->
+    <!-- Koç seç -->
     <div class="mb-3">
-        <label for="coach-select" class="form-label fw-semibold text-warning mb-1">
-            🎯 Koç Seç
-        </label>
-
-        @if (Model?.Coaches != null && Model.Coaches.Any())
-        {
-            <select class="form-select ring bg-dark text-light border-secondary"
-                    id="coach-select" name="AnsweredByCoachId" required>
-                @foreach (var coach in Model.Coaches)
-                {
-                    <option value="@coach.Id" data-image="@coach.ProfilePhotoUrl">@coach.FullName</option>
-                }
-            </select>
-
-            <!-- Seçili koç önizleme -->
-            <div id="coachPreview" class="d-flex align-items-center gap-2 mt-2 small"
-                 style="opacity:.9">
-                <img src="@Model.Coaches.First().ProfilePhotoUrl"
-                     alt="Koç" class="rounded-circle" width="28" height="28"
-                     style="object-fit:cover;border:1px solid var(--border)">
-                <span>@Model.Coaches.First().FullName</span>
-            </div>
-        }
-        else
-        {
-            <select class="form-select bg-dark text-light border-secondary" disabled>
-                <option>Koç bulunamadı</option>
-            </select>
-        }
+        <label class="form-label fw-semibold text-warning">🎯 Koç Seç</label>
+        <select id="coach-select" name="AnsweredByCoachId" class="form-select bg-dark text-light border-secondary" required>
+            @foreach (var coach in Model.Coaches ?? Enumerable.Empty<dynamic>())
+            {
+                <option value="@coach.Id" data-image="@coach.ProfilePhotoUrl">@coach.FullName</option>
+            }
+        </select>
+        <div id="coachPreview" class="d-flex align-items-center gap-2 mt-2 small text-muted"></div>
     </div>
 
-    <!-- Soru Metni -->
+    <!-- Soru -->
     <div class="mb-3">
-        <label for="questionText" class="form-label fw-semibold text-warning mb-1">
-            ✏️ Sorunuz
-        </label>
-
+        <label for="questionText" class="form-label fw-semibold text-warning mb-1">✏️ Sorunuz</label>
         <textarea class="form-control ring bg-dark text-light border-secondary"
                   id="questionText" name="QuestionText" rows="3"
                   placeholder="Sorunuzu buraya yazın..."
                   maxlength="500" required></textarea>
-
         <div class="d-flex justify-content-between mt-1 small">
             <span class="text-muted">En fazla 500 karakter</span>
             <span id="qCounter" class="text-muted">0/500</span>
@@ -80,42 +53,34 @@
 
 @section Scripts {
     <script>
-        // Koç önizleme güncelle
-        document.getElementById('coach-select')?.addEventListener('change', function () {
-            const opt = this.selectedOptions?.[0];
-            if (!opt) return;
-            const img = opt.getAttribute('data-image') || '';
-            const name = opt.textContent || '';
-            const preview = document.getElementById('coachPreview');
-            if (!preview) return;
-            preview.innerHTML = `
-              <img src="${img}" alt="Koç" class="rounded-circle" width="28" height="28"
-                   style="object-fit:cover;border:1px solid var(--border)">
-              <span>${name}</span>`;
-        });
-
         // Karakter sayacı
         const qArea = document.getElementById('questionText');
         const qCounter = document.getElementById('qCounter');
-        qArea?.addEventListener('input', () => {
-            const len = qArea.value.length;
-            if (qCounter) qCounter.textContent = `${len}/500`;
+        qArea?.addEventListener('input', () => { if (qCounter) qCounter.textContent = `${qArea.value.length}/500`; });
+
+        // Koç önizleme
+        document.getElementById('coach-select')?.addEventListener('change', function () {
+          const opt = this.selectedOptions?.[0];
+          const preview = document.getElementById('coachPreview');
+          if (!opt || !preview) return;
+          preview.innerHTML = `
+            <img src="${opt.getAttribute('data-image') || ''}" alt="Koç" class="rounded-circle" width="24" height="24"
+                 style="object-fit:cover;border:1px solid var(--border)">
+            <span>${opt.textContent || ''}</span>`;
         });
 
-        // Gönder butonu loading durumu (layout'taki AJAX akışına uyumlu)
+        // Buton spinner (merkezi AJAX handler yoksa basit fallback)
         const askBtn = document.getElementById('askBtn');
         document.getElementById('questionForm')?.addEventListener('submit', () => {
-            if (!askBtn) return;
-            askBtn.disabled = true;
-            askBtn.querySelector('.btn-label')?.classList.add('d-none');
-            askBtn.querySelector('.btn-spinner')?.classList.remove('d-none');
-
-            // Layout'taki AJAX success/fail sonrası geri almak için:
-            setTimeout(() => {
-              askBtn.disabled = false;
-              askBtn.querySelector('.btn-label')?.classList.remove('d-none');
-              askBtn.querySelector('.btn-spinner')?.classList.add('d-none');
-            }, 3000); // sunucu yanıtı gelmeden de güvenlik ağı
+          if (!askBtn) return;
+          askBtn.disabled = true;
+          askBtn.querySelector('.btn-label')?.classList.add('d-none');
+          askBtn.querySelector('.btn-spinner')?.classList.remove('d-none');
+          setTimeout(() => {
+            askBtn.disabled = false;
+            askBtn.querySelector('.btn-label')?.classList.remove('d-none');
+            askBtn.querySelector('.btn-spinner')?.classList.add('d-none');
+          }, 3000);
         });
     </script>
 }

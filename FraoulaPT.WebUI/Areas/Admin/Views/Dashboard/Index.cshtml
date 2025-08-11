@@ -1,299 +1,438 @@
-﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.DashboardViewModels
+﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
+@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.DashboardViewModels
 @model DashboardViewModel
 
 @{
     ViewData["Title"] = "Admin Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM
+            {
+                Title = "Dashboard",
+                Subtitle = "Özet metrikler, gelir ve aktivite",
+                Breadcrumbs = new(){
+            new(){ Text="Dashboard" }
+        }
+            };
 }
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
 
-<div class="container-fluid py-4">
+<div class="container-fluid pb-4">
 
-    <!-- Üst 4 İstatistik Kartı -->
+    <!-- KPI Cards -->
     <div class="row g-3">
-        <div class="col-md-3 col-6">
-            <div class="card shadow-sm border-primary">
-                <div class="card-body text-center">
-                    <h6 class="text-muted">📦 Aktif Paket</h6>
-                    <h3 class="fw-bold text-primary">@Model.ActivePackageCount</h3>
+        <div class="col-6 col-md-3">
+            <div class="card kpi h-100 ring">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="kpi-icon bg-primary-subtle"><i class="bi bi-box-seam"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="kpi-label">Aktif Paket</div>
+                        <div class="kpi-value">@Model.ActivePackageCount</div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-6">
-            <div class="card shadow-sm border-success">
-                <div class="card-body text-center">
-                    <h6 class="text-muted">🧑‍🎓 Öğrenci Sayısı</h6>
-                    <h3 class="fw-bold text-success">@Model.ActiveStudentCount</h3>
+        <div class="col-6 col-md-3">
+            <div class="card kpi h-100 ring">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="kpi-icon bg-success-subtle"><i class="bi bi-people"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="kpi-label">Öğrenci Sayısı</div>
+                        <div class="kpi-value">@Model.ActiveStudentCount</div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-6">
-            <div class="card shadow-sm border-warning">
-                <div class="card-body text-center">
-                    <h6 class="text-muted">❓ Bekleyen Soru</h6>
-                    <h3 class="fw-bold text-warning">@Model.PendingQuestionCount</h3>
+        <div class="col-6 col-md-3">
+            <div class="card kpi h-100 ring">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="kpi-icon bg-warning-subtle"><i class="bi bi-question-circle"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="kpi-label">Bekleyen Soru</div>
+                        <div class="kpi-value">@Model.PendingQuestionCount</div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 col-6">
-            <div class="card shadow-sm border-danger">
-                <div class="card-body text-center">
-                    <h6 class="text-muted">💬 Yeni Mesaj</h6>
-                    <h3 class="fw-bold text-danger">@Model.ActiveChatsCount</h3>
+        <div class="col-6 col-md-3">
+            <div class="card kpi h-100 ring">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="kpi-icon bg-danger-subtle"><i class="bi bi-chat-dots"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="kpi-label">Yeni Mesaj</div>
+                        <div class="kpi-value">@Model.ActiveChatsCount</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Gelir & Paket İstatistikleri -->
-    <div class="row g-3 mb-4 mt-2">
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-primary text-white h-100">
+    <!-- Özet Paneller -->
+    <div class="row g-3 mt-2">
+        <div class="col-12 col-md-3">
+            <div class="card panel-grad h-100 ring">
                 <div class="card-body">
-                    <h6>📦 Aktif Paket Sayısı</h6>
-                    <h3>@Model.ActivePackageCount</h3>
-                    <small>Toplam aktif paketler</small>
+                    <div class="panel-title">📦 Aktif Paket Sayısı</div>
+                    <div class="panel-value">@Model.ActivePackageCount</div>
+                    <div class="panel-sub">Toplam aktif paketler</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-success text-white h-100">
+        <div class="col-12 col-md-3">
+            <div class="card panel-grad h-100 ring">
                 <div class="card-body">
-                    <h6>👥 Aktif Öğrenci</h6>
-                    <h3>@Model.ActiveStudentCount</h3>
-                    <small>Paketi devam eden</small>
+                    <div class="panel-title">👥 Aktif Öğrenci</div>
+                    <div class="panel-value">@Model.ActiveStudentCount</div>
+                    <div class="panel-sub">Paketi devam eden</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-warning text-dark h-100">
+        <div class="col-12 col-md-3">
+            <div class="card panel-grad h-100 ring">
                 <div class="card-body">
-                    <h6>❓ Cevap Bekleyen Sorular</h6>
-                    <h3>@Model.PendingQuestionCount</h3>
-                    <small>Koç yanıtı bekliyor</small>
+                    <div class="panel-title">❓ Cevap Bekleyen</div>
+                    <div class="panel-value">@Model.PendingQuestionCount</div>
+                    <div class="panel-sub">Koç yanıtı bekliyor</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-info text-white h-100">
+        <div class="col-12 col-md-3">
+            <div class="card panel-grad h-100 ring">
                 <div class="card-body">
-                    <h6>💰 Bu Ayın Geliri</h6>
-                    <h3>@Model.MonthlyRevenue ₺</h3>
-                    <small>Ödemelerden</small>
+                    <div class="panel-title">💰 Bu Ayın Geliri</div>
+                    <div class="panel-value">@Model.MonthlyRevenue ₺</div>
+                    <div class="panel-sub">Ödemelerden</div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Grafikler -->
-    <div class="row mt-4">
+    <div class="row g-3 mt-3">
         <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light fw-bold">📈 Paket Satış Grafiği (Son 6 Ay)</div>
-                <div class="card-body">
-                    <canvas id="salesChart" height="120"></canvas>
-                </div>
+            <div class="card ring h-100">
+                <div class="card-header fw-semibold">📈 Paket Satış (Son 6 Ay)</div>
+                <div class="card-body"><canvas id="salesChart" height="120"></canvas></div>
             </div>
         </div>
-        <div class="col-lg-4 mt-3 mt-lg-0">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light fw-bold">💰 Gelir Dağılımı</div>
-                <div class="card-body">
-                    <canvas id="incomeChart" height="250"></canvas>
-                </div>
+        <div class="col-lg-4">
+            <div class="card ring h-100">
+                <div class="card-header fw-semibold">💰 Gelir Dağılımı</div>
+                <div class="card-body"><canvas id="incomeChart" height="250"></canvas></div>
             </div>
         </div>
     </div>
 
-    <!-- Paket & Gelir Grafikleri -->
-    <div class="row g-3 mb-4 mt-2">
+    <div class="row g-3 mt-1">
         <div class="col-lg-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header fw-bold">📊 Paket Dağılımı</div>
-                <div class="card-body">
-                    <canvas id="packageChart" height="150"></canvas>
-                </div>
+            <div class="card ring h-100">
+                <div class="card-header fw-semibold">📊 Paket Dağılımı</div>
+                <div class="card-body"><canvas id="packageChart" height="150"></canvas></div>
             </div>
         </div>
         <div class="col-lg-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header fw-bold">📈 Aylık Gelir Grafiği</div>
-                <div class="card-body">
-                    <canvas id="revenueChart" height="150"></canvas>
-                </div>
+            <div class="card ring h-100">
+                <div class="card-header fw-semibold">📈 Aylık Gelir</div>
+                <div class="card-body"><canvas id="revenueChart" height="150"></canvas></div>
             </div>
         </div>
     </div>
 
-    <!-- Koç & Öğrenci Performansı -->
-    <div class="row mt-4">
+    <!-- Performans Listeleri -->
+    <div class="row g-3 mt-3">
         <div class="col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light fw-bold">🏆 En Aktif Koçlar</div>
+            <div class="card ring h-100">
+                <div class="card-header fw-semibold">🏆 En Aktif Koçlar</div>
                 <ul class="list-group list-group-flush">
                     @foreach (var coach in Model.TopCoaches)
                     {
-                        <li class="list-group-item">@coach.Name - @coach.Count cevap</li>
+                        <li class="list-group-item bg-transparent text-light">@coach.Name <span class="text-muted">- @coach.Count cevap</span></li>
                     }
                 </ul>
             </div>
         </div>
-        <div class="col-lg-6 mt-3 mt-lg-0">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light fw-bold">👨‍🎓 En Aktif Öğrenciler</div>
+        <div class="col-lg-6">
+            <div class="card ring h-100">
+                <div class="card-header fw-semibold">👨‍🎓 En Aktif Öğrenciler</div>
                 <ul class="list-group list-group-flush">
                     @foreach (var student in Model.TopStudents)
                     {
-                        <li class="list-group-item">@student.Name - @student.Count soru</li>
+                        <li class="list-group-item bg-transparent text-light">@student.Name <span class="text-muted">- @student.Count soru</span></li>
                     }
                 </ul>
             </div>
         </div>
     </div>
 
-    <!-- Akıllı Uyarılar -->
-    <div class="row mt-4">
+    <!-- Uyarılar -->
+    <div class="row g-3 mt-3">
         <div class="col-lg-6">
-            <div class="card shadow-sm border-warning">
-                <div class="card-header bg-light fw-bold">⚠️ Paket Süresi Dolmak Üzere</div>
+            <div class="card ring h-100">
+                <div class="card-header fw-semibold">⚠️ Paket Süresi Dolmak Üzere</div>
                 <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        @foreach (var pkg in Model.ExpiringPackages)
-                        {
-                            <li>@pkg.UserName - @pkg.DaysLeft gün kaldı</li>
-                        }
-                    </ul>
+                    @if (Model.ExpiringPackages?.Any() == true)
+                    {
+                        <ul class="list-unstyled mb-0 small">
+                            @foreach (var pkg in Model.ExpiringPackages)
+                            {
+                                <li>• @pkg.UserName <span class="text-muted">— @pkg.DaysLeft gün kaldı</span></li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="text-muted small">Güncel risk yok.</div>
+                    }
                 </div>
             </div>
         </div>
-        <div class="col-lg-6 mt-3 mt-lg-0">
-            <div class="card shadow-sm border-danger">
-                <div class="card-header bg-light fw-bold">🛑 Mesaj Hakkı Bitmek Üzere</div>
+        <div class="col-lg-6">
+            <div class="card ring h-100">
+                <div class="card-header fw-semibold">🛑 Mesaj Hakkı Bitmek Üzere</div>
                 <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        @foreach (var user in Model.LowMessageQuotaUsers)
-                        {
-                            <li>@user.UserName - @user.RemainingMessages hakkı kaldı</li>
-                        }
-                    </ul>
+                    @if (Model.LowMessageQuotaUsers?.Any() == true)
+                    {
+                        <ul class="list-unstyled mb-0 small">
+                            @foreach (var u in Model.LowMessageQuotaUsers)
+                            {
+                                <li>• @u.UserName <span class="text-muted">— @u.RemainingMessages hakkı kaldı</span></li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="text-muted small">Şu an kritik kullanıcı yok.</div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Canlı Aktivite -->
-    <div class="card shadow-sm mb-4 mt-4">
-        <div class="card-header fw-bold">⚡ Canlı Aktivite</div>
+    <div class="card ring mt-3">
+        <div class="card-header fw-semibold">⚡ Canlı Aktivite</div>
         <div class="card-body">
-            <ul class="list-group list-group-flush small">
-                @foreach (var act in Model.RecentActivities)
-                {
-                    <li class="list-group-item">
-                        <strong>@act.UserName</strong> - @act.ActionDescription
-                        <span class="text-muted">(@act.TimeAgo)</span>
-                    </li>
-                }
-            </ul>
+            @if (Model.RecentActivities?.Any() == true)
+            {
+                <ul class="list-group list-group-flush small">
+                    @foreach (var act in Model.RecentActivities)
+                    {
+                        <li class="list-group-item bg-transparent text-light">
+                            <strong>@act.UserName</strong> — @act.ActionDescription
+                            <span class="text-muted">(@act.TimeAgo)</span>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="text-muted small">Son aktivite bulunmuyor.</div>
+            }
         </div>
     </div>
 
     <!-- Bekleyen İşler & Destek -->
-    <div class="row g-3">
+    <div class="row g-3 mt-3">
         <div class="col-lg-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header fw-bold">📝 Bekleyen İşler</div>
+            <div class="card ring h-100">
+                <div class="card-header fw-semibold">📝 Bekleyen İşler</div>
                 <div class="card-body">
                     <ul class="list-group list-group-flush small">
-                        <li class="list-group-item">❓ @Model.PendingQuestionCount cevap bekleyen soru</li>
-                        <li class="list-group-item">📦 @Model.ExpiringPackagesCount yakında süresi dolacak paket</li>
-                        <li class="list-group-item">📋 @Model.UnapprovedPaymentsCount onay bekleyen ödeme</li>
+                        <li class="list-group-item bg-transparent text-light">❓ @Model.PendingQuestionCount cevap bekleyen soru</li>
+                        <li class="list-group-item bg-transparent text-light">📦 @Model.ExpiringPackagesCount yakında süresi dolacak paket</li>
+                        <li class="list-group-item bg-transparent text-light">📋 @Model.UnapprovedPaymentsCount onay bekleyen ödeme</li>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="col-lg-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-header fw-bold">💬 Destek Durumu</div>
+            <div class="card ring h-100">
+                <div class="card-header fw-semibold">💬 Destek Durumu</div>
                 <div class="card-body">
-                    <p>Canlı Chat Aktif: <strong>@Model.ActiveChatsCount</strong></p>
-                    <p>Ortalama Yanıt Süresi: <strong>@Model.AvgResponseTime</strong></p>
+                    <p class="mb-1">Canlı Chat Aktif: <strong>@Model.ActiveChatsCount</strong></p>
+                    <p class="mb-0">Ortalama Yanıt Süresi: <strong>@Model.AvgResponseTime</strong></p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Hızlı Erişim -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light fw-bold">🚀 Hızlı Erişim</div>
-                <div class="card-body">
-                    <a href="/Admin/Package/Create" class="btn btn-outline-primary btn-sm me-2">➕ Yeni Paket</a>
-                    <a href="/Admin/CoachQuestion/Index" class="btn btn-outline-warning btn-sm me-2">❓ Soruları Cevapla</a>
-                    <a href="/Admin/Workout/Assign" class="btn btn-outline-success btn-sm me-2">🏋️‍♂️ Program Ata</a>
-                    <a href="/Admin/UserWeeklyForm/Index" class="btn btn-outline-info btn-sm">📏 Ölçüm Formları</a>
-                </div>
-            </div>
+    <div class="card ring mt-3">
+        <div class="card-header fw-semibold">🚀 Hızlı Erişim</div>
+        <div class="card-body d-flex flex-wrap gap-2">
+            <a href="@Url.Action("Create","Package", new{ area="Admin"})" class="btn btn-outline-primary btn-sm">➕ Yeni Paket</a>
+            <a href="@Url.Action("Index","CoachQuestion", new{ area="Admin"})" class="btn btn-outline-warning btn-sm">❓ Soruları Cevapla</a>
+            <a href="@Url.Action("Assign","Workout", new{ area="Admin"})" class="btn btn-outline-success btn-sm">🏋️‍♂️ Program Ata</a>
+            <a href="@Url.Action("Index","UserWeeklyForm", new{ area="Admin"})" class="btn btn-outline-info btn-sm">📏 Ölçüm Formları</a>
         </div>
     </div>
 
 </div>
 
+<style>
+    .kpi {
+        background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    }
+
+    .kpi-icon {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        font-size: 1.1rem;
+    }
+
+    .kpi-label {
+        font-size: .78rem;
+        color: var(--muted);
+    }
+
+    .kpi-value {
+        font-weight: 800;
+        font-size: 1.6rem;
+        letter-spacing: .3px;
+    }
+
+    .panel-grad {
+        background: linear-gradient(180deg, rgba(255,136,0,.08), rgba(255,136,0,.02));
+        border: 1px solid var(--border);
+    }
+
+    .panel-title {
+        font-size: .9rem;
+        color: #f2f5fb;
+    }
+
+    .panel-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+    }
+
+    .panel-sub {
+        color: var(--muted);
+        font-size: .8rem;
+    }
+
+    .list-group-item {
+        border-color: var(--border);
+    }
+</style>
+
 @section Scripts {
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-              // Paket Satış Grafiği
-        new Chart(document.getElementById('salesChart'), {
-            type: 'line',
-            data: {
+        (function(){
+          // renkler (koyu temaya uygun)
+          const gridColor = 'rgba(148,163,184,.25)';
+          const tickColor = '#cbd5e1';
+          const legendColor = '#e7edf5';
+
+          function baseOpts(){
+            return {
+              responsive:true,
+              maintainAspectRatio:false,
+              plugins:{
+                legend:{ labels:{ color: legendColor } },
+                tooltip:{ intersect:false, mode:'index' }
+              },
+              scales:{
+                x:{ grid:{ color:gridColor }, ticks:{ color:tickColor } },
+                y:{ grid:{ color:gridColor }, ticks:{ color:tickColor } }
+              }
+            };
+          }
+
+          // LINE: Satış (gradient dolgu)
+          (function(){
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            const grad = ctx.createLinearGradient(0,0,0,180);
+            grad.addColorStop(0,'rgba(13,110,253,.35)');
+            grad.addColorStop(1,'rgba(13,110,253,.05)');
+
+            new Chart(ctx, {
+              type: 'line',
+              data: {
                 labels: @Html.Raw(Json.Serialize(Model.SalesChartLabels)),
                 datasets: [{
-                    label: 'Satış',
-                    data: @Html.Raw(Json.Serialize(Model.SalesChartData)),
-                    fill: true,
-                    borderColor: '#0d6efd',
-                    backgroundColor: 'rgba(13, 110, 253, 0.2)',
-                    tension: 0.3
+                  label: 'Satış',
+                  data: @Html.Raw(Json.Serialize(Model.SalesChartData)),
+                  borderWidth: 2,
+                  borderColor: '#0d6efd',
+                  backgroundColor: grad,
+                  fill: true,
+                  pointRadius: 3,
+                  pointHoverRadius: 5,
+                  tension: 0.35
                 }]
-            }
-        });
+              },
+              options: baseOpts()
+            });
+          })();
 
-        // Gelir Dağılımı
-        new Chart(document.getElementById('incomeChart'), {
-            type: 'pie',
-            data: {
-                labels:  @Html.Raw(Json.Serialize(Model.IncomeChartLabels)),
+          // PIE: Gelir Dağılımı
+          (function(){
+            const ctx = document.getElementById('incomeChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'pie',
+              data: {
+                labels: @Html.Raw(Json.Serialize(Model.IncomeChartLabels)),
                 datasets: [{
-                    data: @Html.Raw(Json.Serialize(Model.IncomeChartData)),
-                    backgroundColor: ['#198754', '#ffc107', '#dc3545']
+                  data: @Html.Raw(Json.Serialize(Model.IncomeChartData)),
+                  backgroundColor: ['#198754', '#ffc107', '#dc3545', '#0dcaf0', '#6f42c1']
                 }]
-            }
-        });
+              },
+              options: {
+                responsive:true,
+                plugins:{ legend:{ position:'bottom', labels:{ color:legendColor } } }
+              }
+            });
+          })();
 
-        // Paket Dağılımı
-        new Chart(document.getElementById('packageChart'), {
-            type: 'doughnut',
-            data: {
+          // DOUGHNUT: Paket Dağılımı
+          (function(){
+            const ctx = document.getElementById('packageChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'doughnut',
+              data: {
                 labels: @Html.Raw(Json.Serialize(Model.PackageChartLabels)),
                 datasets: [{
-                    data: @Html.Raw(Json.Serialize(Model.PackageChartData)),
-                    backgroundColor: ['#0d6efd', '#6610f2', '#198754', '#ffc107']
+                  data: @Html.Raw(Json.Serialize(Model.PackageChartData)),
+                  backgroundColor: ['#0d6efd', '#6610f2', '#198754', '#ffc107', '#dc3545', '#20c997']
                 }]
-            }
-        });
+              },
+              options: {
+                responsive:true,
+                cutout:'58%',
+                plugins:{ legend:{ position:'bottom', labels:{ color:legendColor } } }
+              }
+            });
+          })();
 
-        // Aylık Gelir Grafiği
-        new Chart(document.getElementById('revenueChart'), {
-            type: 'line',
-            data: {
+          // LINE: Aylık Gelir
+          (function(){
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'line',
+              data: {
                 labels: @Html.Raw(Json.Serialize(Model.RevenueChartLabels)),
                 datasets: [{
-                    label: 'Gelir (₺)',
-                    data: @Html.Raw(Json.Serialize(Model.RevenueChartData)),
-                    borderColor: '#28a745',
-                    fill: false
+                  label: 'Gelir (₺)',
+                  data: @Html.Raw(Json.Serialize(Model.RevenueChartData)),
+                  borderWidth: 2,
+                  borderColor: '#22c55e',
+                  backgroundColor: 'rgba(34,197,94,.12)',
+                  fill: true,
+                  pointRadius: 2,
+                  pointHoverRadius: 4,
+                  tension: 0.35
                 }]
-            }
-        });
+              },
+              options: baseOpts()
+            });
+          })();
+
+        })();
     </script>
 }

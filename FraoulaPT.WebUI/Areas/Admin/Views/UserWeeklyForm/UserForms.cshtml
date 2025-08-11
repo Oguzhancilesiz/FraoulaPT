@@ -1,121 +1,179 @@
-﻿@model List<FraoulaPT.DTOs.UserWeeklyFormDTOs.UserWeeklyFormListDTO>
-@using System.Globalization
+﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
+@using FraoulaPT.Core.Enums
+@model List<FraoulaPT.DTOs.UserWeeklyFormDTOs.UserWeeklyFormListDTO>
+
 @{
     ViewData["Title"] = "Kullanıcı Formları";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
     var userName = ViewBag.UserName as string ?? "Kullanıcı";
+
+    var header = new PageHeaderVM
+            {
+                Title = $"{userName} – Tüm Formlar",
+                Subtitle = "Öğrencinin gönderdiği haftalık formlar",
+                Breadcrumbs = new(){
+            new(){ Text="Dashboard", Url=Url.Action("Index","Dashboard", new{ area="Admin" }) },
+            new(){ Text="Haftalık Formlar", Url=Url.Action("Index","UserWeeklyForm", new{ area="Admin" }) },
+            new(){ Text=userName }
+        }
+            };
+
+    string Ago(DateTime d)
+    {
+        var k = (DateTime.Today - d.Date).Days;
+        if (k <= 0) return "bugün";
+        if (k == 1) return "1 gün önce";
+        return $"{k} gün önce";
+    }
+    string Fmt(double? v, string unit) => v.HasValue ? $"{v:0.0} {unit}" : "—";
+    (string cls, string text) Badge(Status s) => s switch
+    {
+        Status.Pending => ("warning text-dark", "Cevap Bekleniyor"),
+        Status.Active => ("success", "Aktif"),
+        Status.Commit => ("success", "Not Eklendi, program Eklenecek"),
+        Status.DeActive => ("secondary", "Pasif"),
+        Status.Deleted => ("danger", "Silindi"),
+        _ => ("secondary", s.ToString())
+    };
 }
 
-<h2 class="mb-4">@userName - Tüm Formları</h2>
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
 
-<table class="table table-bordered table-hover align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>Tarih</th>
-            <th>Kilo</th>
-            <th>Yağ Oranı</th>
-            <th>Kas Kütlesi</th>
-            <th>Koç Yorumu</th>
-            <th>Durum</th>
-            <th>Detay</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var form in Model)
-        {
-            var dayDiff = (DateTime.Today - form.FormDate.Date).Days;
-            <tr>
-                <td>
-                    @form.FormDate.ToString("dd.MM.yyyy")
-                    <br />
-                    <small class="text-muted">(@dayDiff gün önce)</small>
-                </td>
-                <td>@form.Weight kg</td>
-                <td>@form.FatPercent %</td>
-                <td>@form.MuscleMass kg</td>
-                <td>@form.CoachFeedback</td>
-                <td>
-                    @if (form.Status == FraoulaPT.Core.Enums.Status.Pending)
-                    {
-                        <span class="badge bg-warning text-dark">Cevap Bekleniyor</span>
-                    }
-                    else if (form.Status == FraoulaPT.Core.Enums.Status.Active)
-                    {
-                        <span class="badge bg-success">Aktif</span>
-                    }
-                    else if (form.Status == FraoulaPT.Core.Enums.Status.Commit)
-                    {
-                        <span class="badge bg-success">Not Eklendi, program Eklenecek</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Pasif</span>
-                    }
-                </td>
-                <td>
-                    <a asp-area="Admin"
-                       asp-controller="UserWeeklyForm"
-                       asp-action="Detail"
-                       asp-route-id="@form.Id"
-                       class="btn btn-sm btn-outline-info">
-                        Detay
-                    </a>
-                    @if (form.HasWorkoutProgram)
-                    {
-                        <a asp-area="Admin"
-                           asp-controller="WorkoutProgram"
-                           asp-action="Detail"
-                           asp-route-id="@form.WorkoutProgramId"
-                           class="btn btn-primary mb-3">
-                            📄 Programı Görüntüle
-                        </a>
-                    }
-                    else
-                    {
-                        <button class="btn btn-success mb-3 start-program-btn"
-                                data-form-id="@form.Id"
-                                data-user-id="@form.UserId"
-                                data-bs-toggle="modal"
-                                data-bs-target="#startProgramModal">
-                            🏋️‍♂️ Program Oluştur
-                        </button>
-                    }
+<style>
+    .card-soft {
+        background: var(--panel);
+        border: 1px solid var(--border);
+    }
 
-                </td>
-            </tr>
+        .card-soft .card-header {
+            border-bottom: 1px solid var(--border);
         }
-    </tbody>
-</table>
 
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
 
+<div class="container-fluid">
+    <div class="card card-soft">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr class="small text-muted">
+                        <th class="text-nowrap">Tarih</th>
+                        <th>Kilo</th>
+                        <th>Yağ Oranı</th>
+                        <th class="d-none d-md-table-cell">Kas Kütlesi</th>
+                        <th style="min-width:220px;">Koç Yorumu</th>
+                        <th>Durum</th>
+                        <th class="text-end" style="width:260px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var form in Model)
+                        {
+                            var b = Badge(form.Status);
+                            <tr>
+                                <td>
+                                    <div>@($"{form.FormDate:dd.MM.yyyy}")</div>
+                                    <div class="text-muted small">(@Ago(form.FormDate))</div>
+                                </td>
+                                <td>@Fmt(form.Weight, "kg")</td>
+                                <td>@Fmt(form.FatPercent, "%")</td>
+                                <td class="d-none d-md-table-cell">@Fmt(form.MuscleMass, "kg")</td>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(form.CoachFeedback))
+                                    {
+                                        <div class="line-clamp-2">@form.CoachFeedback</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td><span class="badge bg-@b.cls">@b.text</span></td>
+                                <td class="text-end">
+                                    <div class="btn-group">
+                                        <a asp-area="Admin"
+                                           asp-controller="UserWeeklyForm"
+                                           asp-action="Detail"
+                                           asp-route-id="@form.Id"
+                                           class="btn btn-sm btn-outline-info">
+                                            Detay
+                                        </a>
+
+                                        @if (form.HasWorkoutProgram && form.WorkoutProgramId != null)
+                                        {
+                                            <a asp-area="Admin"
+                                               asp-controller="WorkoutProgram"
+                                               asp-action="Detail"
+                                               asp-route-id="@form.WorkoutProgramId"
+                                               class="btn btn-sm btn-primary">
+                                                📄 Programı Gör
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-success start-program-btn"
+                                                    data-form-id="@form.Id"
+                                                    data-user-id="@form.UserId"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#startProgramModal">
+                                                🏋️‍♂️ Program Oluştur
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="7" class="text-center text-muted py-5">Kayıt bulunamadı.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Program Başlat Modal -->
 <div class="modal fade" id="startProgramModal" tabindex="-1" aria-labelledby="startProgramModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="createProgramForm">
+            <form id="createProgramForm" autocomplete="off">
+                @Html.AntiForgeryToken()
                 <div class="modal-header">
-                    <h5 class="modal-title">Program Başlat</h5>
+                    <h5 class="modal-title" id="startProgramModalLabel">Program Başlat</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="userWeeklyFormId" />
                     <input type="hidden" id="userId" />
+
                     <div class="mb-3">
-                        <label>Program Başlığı</label>
+                        <label class="form-label">Program Başlığı</label>
                         <input type="text" class="form-control" id="programTitle" required />
                     </div>
 
                     <div class="mb-3">
-                        <label>Koç Notu</label>
-                        <textarea class="form-control" id="coachNote"></textarea>
+                        <label class="form-label">Koç Notu</label>
+                        <textarea class="form-control" id="coachNote" rows="3"></textarea>
                     </div>
 
-                    <div class="mb-3">
-                        <label>Hangi günler olacak?</label><br />
+                    <div class="mb-2">
+                        <label class="form-label d-block">Hangi günler?</label>
                         @for (int i = 1; i <= 7; i++)
                         {
                             var dayName = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetDayName((DayOfWeek)(i % 7));
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input day-checkbox" type="checkbox" value="@i" id="day_@i">
+                                <input class="form-check-input day-checkbox" type="checkbox" value="@i" id="day_@i" />
                                 <label class="form-check-label" for="day_@i">@dayName</label>
                             </div>
                         }
@@ -129,46 +187,52 @@
     </div>
 </div>
 
-
-
-
-
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Modal açıldığında formId set et
-        $('#startProgramModal').on('show.bs.modal', function (event) {
-            const button = $(event.relatedTarget);
-            const formId = button.data('form-id');
-            const userId = button.data('user-id');
-            $('#userWeeklyFormId').val(formId);
-            $('#userId').val(userId);
+        // Modal açıldığında form & user id doldur
+        const startModal = document.getElementById('startProgramModal');
+        startModal.addEventListener('show.bs.modal', (e)=>{
+          const btn = e.relatedTarget;
+          document.getElementById('userWeeklyFormId').value = btn?.getAttribute('data-form-id') || '';
+          document.getElementById('userId').value = btn?.getAttribute('data-user-id') || '';
         });
 
-        // Program Kaydet
-        $('#createProgramForm').on('submit', function (e) {
-            e.preventDefault();
+        // Program oluştur
+        document.getElementById('createProgramForm').addEventListener('submit', async (e)=>{
+          e.preventDefault();
 
-            const data = {
-                UserWeeklyFormId: $('#userWeeklyFormId').val(),
-                AppUserId: $('#userId').val(),
-                ProgramTitle: $('#programTitle').val(),
-                CoachNote: $('#coachNote').val(),
-                Days: $('.day-checkbox:checked').map(function () { return parseInt($(this).val()); }).get()
-            };
+          const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+          const days = Array.from(document.querySelectorAll('.day-checkbox:checked')).map(x => parseInt(x.value));
 
-            $.ajax({
-                url: '/Admin/WorkoutProgram/CreateWithDays',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                success: function (res) {
-                    window.location.href = '/Admin/WorkoutProgram/Detail/' + res.programId;
-                },
-                error: function () {
-                    Swal.fire("Hata", "Program oluşturulamadı", "error");
-                }
+          const payload = {
+            UserWeeklyFormId: document.getElementById('userWeeklyFormId').value,
+            AppUserId: document.getElementById('userId').value,
+            ProgramTitle: document.getElementById('programTitle').value,
+            CoachNote: document.getElementById('coachNote').value,
+            Days: days
+          };
+
+          try{
+            const resp = await fetch('/Admin/WorkoutProgram/CreateWithDays', {
+              method:'POST',
+              headers:{
+                'Content-Type':'application/json',
+                'RequestVerificationToken': token
+              },
+              body: JSON.stringify(payload)
             });
+
+            if(!resp.ok) throw new Error('HTTP ' + resp.status);
+            const data = await resp.json();
+            if(data?.programId){
+              window.location.href = '/Admin/WorkoutProgram/Detail/' + data.programId;
+            }else{
+              Swal.fire('Uyarı', 'Program oluşturuldu ama yanıt beklenen formatta değil.', 'info');
+            }
+          }catch(err){
+            Swal.fire('Hata', 'Program oluşturulamadı. ' + (err?.message||''), 'error');
+          }
         });
     </script>
-
 }

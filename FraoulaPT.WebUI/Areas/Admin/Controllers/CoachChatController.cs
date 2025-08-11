@@ -46,7 +46,6 @@ namespace FraoulaPT.WebUI.Areas.Admin.Controllers
 
             return Json(result);
         }
-
     }
 
 }

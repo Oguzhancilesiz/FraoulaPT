@@ -1,0 +1,46 @@
+﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
+@model PaginationVM
+
+@if (Model.TotalPages > 1)
+{
+    var rv = Model.RouteData ?? new Dictionary<string, string?>();
+    if (!rv.ContainsKey("pageSize")) rv["pageSize"] = Model.PageSize.ToString();
+
+    <nav class="mt-3">
+        <ul class="pagination pagination-sm">
+            @{
+                int start = Math.Max(1, Model.Page - 2);
+                int end = Math.Min(Model.TotalPages, Model.Page + 2);
+            }
+            <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
+                <a class="page-link"
+                   asp-area="Admin"
+                   asp-controller="@Model.Controller"
+                   asp-action="@Model.Action"
+                   asp-all-route-data="rv"
+                   asp-route-page="@(Model.Page - 1)">Önceki</a>
+            </li>
+
+            @for (int i = start; i <= end; i++)
+            {
+                <li class="page-item @(i == Model.Page ? "active" : "")">
+                    <a class="page-link"
+                       asp-area="Admin"
+                       asp-controller="@Model.Controller"
+                       asp-action="@Model.Action"
+                       asp-all-route-data="rv"
+                       asp-route-page="@i">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(Model.Page == Model.TotalPages ? "disabled" : "")">
+                <a class="page-link"
+                   asp-area="Admin"
+                   asp-controller="@Model.Controller"
+                   asp-action="@Model.Action"
+                   asp-all-route-data="rv"
+                   asp-route-page="@(Model.Page + 1)">Sonraki</a>
+            </li>
+        </ul>
+    </nav>
+}

@@ -1,146 +1,284 @@
-﻿@model FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.ExerciseViewModels.ExerciseListVM
+﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
 @using FraoulaPT.Core.Enums
+@model FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.ExerciseViewModels.ExerciseListVM
 
 @{
     ViewData["Title"] = "Egzersizler";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM
+            {
+                Title = "Egzersizler",
+                Subtitle = "Egzersizleri listele, filtrele ve yönet",
+                Breadcrumbs = new(){
+            new(){ Text="Dashboard", Url=Url.Action("Index","Dashboard", new{ area="Admin" }) },
+            new(){ Text="Egzersizler" }
+        },
+                Buttons = new(){
+            new(){ Text="Yeni Egzersiz", Url=Url.Action("Create","Exercise", new{ area="Admin"}), Icon="bi-plus-circle", ColorClass="btn-brand" }
+        }
+            };
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold mb-0"><i class="bi bi-bicycle"></i> Egzersizler</h3>
-    <a asp-action="Create" class="btn btn-success">
-        <i class="bi bi-plus-circle"></i> Yeni Egzersiz Ekle
-    </a>
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
+
+<div class="container-fluid">
+
+    <!-- Filtreler -->
+    <div class="card ring mb-3">
+        <div class="card-body">
+            <form id="filterForm" class="row g-2 align-items-end">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small text-muted">Ara</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-transparent border-secondary"><i class="bi bi-search"></i></span>
+                        <input id="searchInput" class="form-control bg-transparent border-secondary text-light" placeholder="Egzersiz adına göre ara…" />
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <label class="form-label small text-muted">Kategori</label>
+                    <select id="categoryFilter" class="form-select form-select-sm bg-transparent border-secondary text-light">
+                        <option value="">Tüm Kategoriler</option>
+                        @foreach (var cat in Model.Categories)
+                        {
+                            <option value="@cat.Id">@cat.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <label class="form-label small text-muted">Durum</label>
+                    <select id="statusFilter" class="form-select form-select-sm bg-transparent border-secondary text-light">
+                        <option value="">Tüm Durumlar</option>
+                        @foreach (var st in Enum.GetValues(typeof(Status)).Cast<Status>())
+                        {
+                            <option value="@((int)st)">@st</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- (opsiyonel) sayfa/sayfaBoyutu backend destekliyorsa kullanılır -->
+                <input type="hidden" id="page" value="1" />
+                <input type="hidden" id="pageSize" value="12" />
+
+                <div class="col-12 col-md-2 d-flex gap-2 mt-1">
+                    <button class="btn btn-sm btn-brand flex-grow-1" type="submit">
+                        <i class="bi bi-funnel me-1"></i> Uygula
+                    </button>
+                    <a class="btn btn-sm btn-outline-secondary flex-grow-1" href="@Url.Action("Index","Exercise", new{ area="Admin"})">Temizle</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste -->
+    <div class="card ring">
+        <div class="table-responsive">
+            <table class="table align-middle table-hover mb-0">
+                <thead>
+                    <tr class="small text-muted">
+                        <th class="text-nowrap">#</th>
+                        <th>Görsel</th>
+                        <th>Adı</th>
+                        <th class="d-none d-md-table-cell">Kategori</th>
+                        <th class="d-none d-lg-table-cell" style="width:30%">Açıklama</th>
+                        <th class="d-none d-md-table-cell">Video</th>
+                        <th>Durum</th>
+                        <th style="width:160px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="exerciseTableBody">
+                    @await Html.PartialAsync("_ExerciseTableBody", Model.Exercises)
+                </tbody>
+            </table>
+        </div>
+
+        <!-- (opsiyonel) basit pager: backend page/pageSize'i destekliyorsa anlamlı -->
+        <div class="card-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="small text-muted">
+                <span id="pagerInfo"></span>
+            </div>
+            <div class="btn-group btn-group-sm">
+                <button id="btnPrev" class="btn btn-outline-secondary" type="button">«</button>
+                <button id="btnNext" class="btn btn-outline-secondary" type="button">»</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="row mb-3 g-2 align-items-end">
-    <div class="col-md-4">
-        <input id="searchInput" class="form-control" placeholder="Egzersiz adına göre ara..." />
-    </div>
-    <div class="col-md-3">
-        <select id="categoryFilter" class="form-select">
-            <option value="">Tüm Kategoriler</option>
-            @foreach (var cat in Model.Categories)
-            {
-                <option value="@cat.Id">@cat.Name</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-3">
-        <select id="statusFilter" class="form-select">
-            <option value="">Tüm Durumlar</option>
-            @foreach (var status in Enum.GetValues(typeof(Status)).Cast<Status>())
-            {
-                <option value="@((int)status)">@status.ToString()</option>
-            }
-        </select>
-    </div>
-</div>
+<style>
+    .thumb {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        box-shadow: 0 4px 14px rgba(0,0,0,.18);
+    }
 
-<div class="table-responsive">
-    <table class="table table-hover shadow-sm bg-white rounded align-middle">
-        <thead class="table-light">
-            <tr>
-                <th>#</th>
-                <th>Görsel</th>
-                <th>Adı</th>
-                <th>Kategori</th>
-                <th>Açıklama</th>
-                <th>Video</th>
-                <th>Durum</th>
-                <th style="width:140px;">İşlemler</th>
-            </tr>
-        </thead>
-        <tbody id="exerciseTableBody">
-            @foreach (var egzersiz in Model.Exercises)
-            {
-                <tr>
-                    <td>@(Model.Exercises.IndexOf(egzersiz) + 1)</td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(egzersiz.ImageUrl))
-                        {
-                            <img src="@egzersiz.ImageUrl" alt="görsel" style="width:48px;height:48px;object-fit:cover;border-radius:7px;box-shadow:0 2px 10px #292e4922;">
-                        }
-                        else
-                        {
-                            <span class="text-muted">-</span>
-                        }
-                    </td>
-                    <td class="fw-bold">@egzersiz.Name</td>
-                    <td>@egzersiz.CategoryName</td>
-                    <td>@egzersiz.Description</td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(egzersiz.VideoUrl))
-                        {
-                            <a href="@egzersiz.VideoUrl" class="btn btn-outline-primary btn-sm" target="_blank">
-                                <i class="bi bi-play-btn"></i> İzle
-                            </a>
-                        }
-                        else
-                        {
-                            <span class="text-muted">Yok</span>
-                        }
-                    </td>
-                    <td>
-                        @if (egzersiz.Status == Status.Active)
-                        {
-                            <span class="badge bg-success">Aktif</span>
-                        }
-                        else if (egzersiz.Status == Status.DeActive)
-                        {
-                            <span class="badge bg-secondary">Pasif</span>
-                        }
-                        else if (egzersiz.Status == Status.Deleted)
-                        {
-                            <span class="badge bg-danger">Silindi</span>
-                        }
-                        else if (egzersiz.Status == Status.Updated)
-                        {
-                            <span class="badge bg-warning text-dark">Güncellendi</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-warning text-dark">Bilinmiyor</span>
-                        }
-                    </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@egzersiz.Id" class="btn btn-warning btn-sm me-1">
-                            <i class="bi bi-pencil"></i> Düzenle
-                        </a>
-                        <form asp-action="Delete" asp-route-id="@egzersiz.Id" method="post" class="d-inline" onsubmit="return confirm('Silmek istediğine emin misin?');">
-                            <button type="submit" class="btn btn-danger btn-sm">
-                                <i class="bi bi-trash"></i> Sil
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
+    .thumb-empty {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 10px;
+        border: 1px dashed var(--border);
+        color: var(--muted);
+    }
+
+    .line-clamp-1, .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .line-clamp-1 {
+        -webkit-line-clamp: 1;
+    }
+
+    .line-clamp-2 {
+        -webkit-line-clamp: 2;
+    }
+
+    /* Skeleton */
+    .sk-row td {
+        padding: .9rem .75rem;
+    }
+
+    .sk-box {
+        height: 14px;
+        width: 100%;
+        background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.14), rgba(255,255,255,.06));
+        animation: shimmer 1.2s infinite linear;
+        border-radius: 8px;
+    }
+    @@keyframes shimmer {
+        0%
+
+    {
+        background-position: -200px 0
+    }
+
+    100% {
+        background-position: 200px 0
+    }
+
+    }
+</style>
 
 @section Scripts {
     <script>
-        function loadExercises() {
-            var search = $("#searchInput").val();
-            var categoryId = $("#categoryFilter").val();
-            var status = $("#statusFilter").val();
+        (function(){
+            const $ = s => document.querySelector(s);
+            const $$= s => Array.from(document.querySelectorAll(s));
 
-            $.ajax({
-                url: '@Url.Action("AjaxFilter")',
-                data: { search: search, categoryId: categoryId, status: status },
-                type: "GET",
-                success: function (data) {
-                    $("#exerciseTableBody").html(data);
+            const bodyEl = $("#exerciseTableBody");
+            const searchEl = $("#searchInput");
+            const catEl = $("#categoryFilter");
+            const stEl = $("#statusFilter");
+            const form = $("#filterForm");
+
+            const pageEl = $("#page");
+            const pageSizeEl = $("#pageSize");
+            const btnPrev = $("#btnPrev");
+            const btnNext = $("#btnNext");
+            const pagerInfo = $("#pagerInfo");
+
+            let loading = false;
+            let debounceTimer = null;
+
+            function skeletonRows(n=6){
+                const cols = 8;
+                let html = "";
+                for(let i=0;i<n;i++){
+                    html += "<tr class='sk-row'>";
+                    for(let c=0;c<cols;c++){
+                        html += "<td><div class='sk-box'></div></td>";
+                    }
+                    html += "</tr>";
                 }
+                return html;
+            }
+
+            function loadExercises(){
+                if(loading) return;
+                loading = true;
+                bodyEl.innerHTML = skeletonRows();
+
+                const q = searchEl.value || "";
+                const categoryId = catEl.value || "";
+                const status = stEl.value || "";
+                const page = parseInt(pageEl.value||"1",10);
+                const pageSize = parseInt(pageSizeEl.value||"12",10);
+
+                fetch("@Url.Action("AjaxFilter", "Exercise", new { area = "Admin" })"
+                      + `?search=${encodeURIComponent(q)}&categoryId=${encodeURIComponent(categoryId)}&status=${encodeURIComponent(status)}&page=${page}&pageSize=${pageSize}`,
+                      { headers: { "X-Requested-With": "XMLHttpRequest" } })
+                .then(r=>{
+                    if(!r.ok) throw new Error("HTTP "+r.status);
+                    // AjaxFilter sadece tbody içeriği döndürüyor:
+                    return r.text();
+                })
+                .then(html=>{
+                    bodyEl.innerHTML = html;
+
+                    // Eğer backend toplam/sayfa bilgisini HTTP başlığında döndürmek isterse:
+                    const tp = parseInt(r?.headers?.get?.("X-Total-Pages")||"0");
+                    const t  = parseInt(r?.headers?.get?.("X-Total-Items")||"0");
+                    if(tp && t){
+                        pagerInfo.textContent = `Toplam ${t} kayıt • Sayfa ${page}/${tp}`;
+                        btnPrev.disabled = page<=1;
+                        btnNext.disabled = page>=tp;
+                    }else{
+                        // destek yoksa gizle
+                        pagerInfo.textContent = "";
+                        btnPrev.disabled = true;
+                        btnNext.disabled = true;
+                    }
+                })
+                .catch(err=>{
+                    console.warn(err);
+                    bodyEl.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Liste yüklenemedi.</td></tr>`;
+                })
+                .finally(()=> loading=false);
+            }
+
+            function debouncedLoad(){
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(loadExercises, 350);
+            }
+
+            // Filtre olayları
+            searchEl.addEventListener("input", ()=>{
+                pageEl.value = 1;
+                debouncedLoad();
             });
-        }
+            [catEl, stEl].forEach(el=>{
+                el.addEventListener("change", ()=>{
+                    pageEl.value = 1;
+                    loadExercises();
+                });
+            });
 
-        $("#searchInput, #categoryFilter, #statusFilter").on("input change", function () {
+            form.addEventListener("submit", function(e){
+                e.preventDefault();
+                pageEl.value = 1;
+                loadExercises();
+            });
+
+            // Basit pager (backend destekliyorsa)
+            btnPrev.addEventListener("click", ()=>{
+                const p = Math.max(1, parseInt(pageEl.value||"1",10)-1);
+                pageEl.value = p; loadExercises();
+            });
+            btnNext.addEventListener("click", ()=>{
+                const p = parseInt(pageEl.value||"1",10)+1;
+                pageEl.value = p; loadExercises();
+            });
+
+            // İlk yükleme
             loadExercises();
-        });
-
-        // Sayfa açıldığında da bir kere yükle
-        $(function () { loadExercises(); });
+        })();
     </script>
 }

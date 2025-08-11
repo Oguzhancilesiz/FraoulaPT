@@ -1,117 +1,285 @@
-﻿
+﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
 @model FraoulaPT.DTOs.UserWeeklyFormDTOs.UserWeeklyFormDetailDTO
+
 @{
     ViewData["Title"] = "Form Detayı";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    // Controller’dan opsiyonel olarak gelebilir:
+    // ViewBag.UserFullName (string), ViewBag.UserEmail (string),
+    // ViewBag.UserPhotoUrl (string), ViewBag.UserRegisteredAt (DateTime?),
+    // ViewBag.UserId (string/Guid)
+    string userFullName = ViewBag.UserFullName as string;
+    string userEmail = ViewBag.UserEmail as string;
+    string userPhoto = (ViewBag.UserPhotoUrl as string) ?? "/uploads/user-default.jpg";
+    DateTime? userRegisteredAt = ViewBag.UserRegisteredAt as DateTime?;
+    var userId = ViewBag.UserId; // linkte sadece route değer olarak kullanacağız
+
+    var header = new PageHeaderVM
+            {
+                Title = "Form Detayı",
+                Subtitle = $"{Model.FormDate:dd.MM.yyyy} – Öğrencinin haftalık formu",
+                Breadcrumbs = new(){
+            new(){ Text="Dashboard", Url=Url.Action("Index","Dashboard", new{ area="Admin" }) },
+            new(){ Text="Aylık Vücut Formları", Url=Url.Action("Index","UserWeeklyForm", new{ area="Admin" }) },
+            new(){ Text="Detay" }
+        }
+            };
+
+    // küçük bir format helper
+    string FmtN(double? v, string unit = null) => v.HasValue ? (unit is null ? $"{v:0.0}" : $"{v:0.0} {unit}") : "-";
 }
 
-<h2>Form Detayı - @Model.FormDate.ToString("dd.MM.yyyy")</h2>
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
 
-<div class="row mb-4">
-    <div class="col-md-6">
-        <ul class="list-group">
-            <li class="list-group-item"><strong>Kilo:</strong> @Model.Weight kg</li>
-            <li class="list-group-item"><strong>Yağ Oranı:</strong> @Model.FatPercent %</li>
-            <li class="list-group-item"><strong>Kas Kütlesi:</strong> @Model.MuscleMass kg</li>
-            <li class="list-group-item"><strong>Bel:</strong> @Model.Waist cm</li>
-            <li class="list-group-item"><strong>Kalça:</strong> @Model.Hip cm</li>
-            <li class="list-group-item"><strong>Göğüs:</strong> @Model.Chest cm</li>
-            <li class="list-group-item"><strong>Kol:</strong> @Model.Arm cm</li>
-            <li class="list-group-item"><strong>Bacak:</strong> @Model.Leg cm</li>
-            <li class="list-group-item"><strong>Dinlenme Nabzı:</strong> @Model.RestingPulse bpm</li>
-            <li class="list-group-item"><strong>Tansiyon:</strong> @Model.BloodPressure</li>
-            <li class="list-group-item"><strong>Vo2 Max:</strong> @Model.Vo2Max</li>
-        </ul>
-    </div>
+<style>
+    .ring {
+        border: 1px solid var(--border)
+    }
 
-    <div class="col-md-6">
-        <div class="card mb-3">
-            <div class="card-header">Esneklik Notları</div>
-            <div class="card-body">
-                <p>@Model.FlexibilityNotes</p>
-            </div>
-        </div>
-        <div class="card mb-3">
-            <div class="card-header">Kullanıcı Notu</div>
-            <div class="card-body">
-                <p>@Model.UserNote</p>
-            </div>
-        </div>
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-chat-left-dots-fill me-2"></i>Koç Geri Bildirimi</h5>
-            </div>
-            <div class="card-body">
-                @Html.AntiForgeryToken()
-                <input type="hidden" id="formId" value="@Model.Id" />
+    .bg-panel {
+        background: var(--panel)
+    }
 
-                <div class="mb-3">
-                    <label for="coachFeedbackInput" class="form-label">Yorumunuzu buraya yazın:</label>
-                    <textarea class="form-control" id="coachFeedbackInput" rows="5" placeholder="Koç geri bildiriminizi girin...">@Model.CoachFeedback</textarea>
+    .bg-panel-2 {
+        background: var(--panel-2)
+    }
+
+    .muted {
+        color: var(--muted)
+    }
+
+    .metric {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: .8rem .9rem;
+        height: 100%
+    }
+
+        .metric .label {
+            font-size: .8rem;
+            color: var(--muted)
+        }
+
+        .metric .value {
+            font-weight: 700;
+            font-size: 1.05rem
+        }
+
+    .chip {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: .2rem .6rem;
+        font-size: .8rem
+    }
+
+    .thumb {
+        width: 100%;
+        max-height: 210px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        box-shadow: 0 6px 18px rgba(0,0,0,.18);
+        cursor: pointer
+    }
+
+    .card-soft {
+        background: var(--panel);
+        border: 1px solid var(--border)
+    }
+
+        .card-soft .card-header {
+            border-bottom: 1px solid var(--border)
+        }
+
+    .form-ctr {
+        background: var(--panel-2);
+        color: var(--text);
+        border: 1px solid var(--border)
+    }
+</style>
+
+<div class="container-fluid py-2">
+    <!-- Üst bilgi (opsiyonel, ViewBag varsa göster) -->
+    @if (!string.IsNullOrWhiteSpace(userFullName) || !string.IsNullOrWhiteSpace(userEmail) || userRegisteredAt.HasValue)
+    {
+        <div class="card card-soft mb-3">
+            <div class="card-body d-flex align-items-center gap-3">
+                <img src="@userPhoto" class="rounded-circle ring" width="56" height="56" style="object-fit:cover" alt="avatar" />
+                <div class="flex-grow-1">
+                    @if (!string.IsNullOrWhiteSpace(userFullName))
+                    {
+                        <div class="fw-semibold">@userFullName</div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(userEmail))
+                    {
+                        <div class="small muted">@userEmail</div>
+                    }
+                    @if (userRegisteredAt.HasValue)
+                    {
+                        <div class="small muted">Kayıt: @($"{userRegisteredAt:dd.MM.yyyy HH:mm}")</div>
+                    }
                 </div>
-
-                <div class="d-flex justify-content-end">
-                    <button id="updateFeedbackBtn" class="btn btn-success px-4">
-                        <i class="bi bi-send-check-fill me-1"></i> Güncelle
+                <div class="d-flex flex-wrap gap-2 ms-auto">
+                    @if (userId != null)
+                    {
+                        <a class="btn btn-sm btn-outline-secondary"
+                           asp-area="Admin" asp-controller="Students" asp-action="Report" asp-route-userId="@userId">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Yenile
+                        </a>
+                    }
+                    <button class="btn btn-sm btn-outline-secondary" disabled>
+                        <i class="bi bi-filetype-pdf me-1"></i> PDF (yakında)
                     </button>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    }
 
-@if (Model.ProgressPhotoUrls != null && Model.ProgressPhotoUrls.Any())
-{
-    <h4>İlerleme Fotoğrafları</h4>
-    <div class="row">
-        @foreach (var url in Model.ProgressPhotoUrls)
-        {
-            <div class="col-md-3 mb-3">
-                <img src="@url" class="img-thumbnail" />
+    <div class="row g-3">
+        <!-- Sol: Ölçümler -->
+        <div class="col-xl-6">
+            <div class="card card-soft h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div class="fw-semibold"><i class="bi bi-clipboard2-pulse me-2"></i>Vücut Ölçüleri</div>
+                    <span class="chip">Tarih: @($"{Model.FormDate:dd.MM.yyyy}")</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6 col-md-4"><div class="metric"><div class="label">Kilo</div><div class="value">@FmtN(Model.Weight, "kg")</div></div></div>
+                        <div class="col-6 col-md-4"><div class="metric"><div class="label">Yağ Oranı</div><div class="value">@FmtN(Model.FatPercent, "%")</div></div></div>
+                        <div class="col-6 col-md-4"><div class="metric"><div class="label">Kas Kütlesi</div><div class="value">@FmtN(Model.MuscleMass, "kg")</div></div></div>
+
+                        <div class="col-6 col-md-4"><div class="metric"><div class="label">Bel</div><div class="value">@FmtN(Model.Waist, "cm")</div></div></div>
+                        <div class="col-6 col-md-4"><div class="metric"><div class="label">Kalça</div><div class="value">@FmtN(Model.Hip, "cm")</div></div></div>
+                        <div class="col-6 col-md-4"><div class="metric"><div class="label">Göğüs</div><div class="value">@FmtN(Model.Chest, "cm")</div></div></div>
+
+                        <div class="col-6 col-md-4"><div class="metric"><div class="label">Kol</div><div class="value">@FmtN(Model.Arm, "cm")</div></div></div>
+                        <div class="col-6 col-md-4"><div class="metric"><div class="label">Bacak</div><div class="value">@FmtN(Model.Leg, "cm")</div></div></div>
+                        <div class="col-6 col-md-4"><div class="metric"><div class="label">Dinlenme Nabzı</div><div class="value">@((Model.RestingPulse.HasValue) ? $"{Model.RestingPulse} bpm" : "-")</div></div></div>
+
+                        <div class="col-6 col-md-4"><div class="metric"><div class="label">Tansiyon</div><div class="value">@(!string.IsNullOrWhiteSpace(Model.BloodPressure.ToString()) ? Model.BloodPressure : "-")</div></div></div>
+                        <div class="col-6 col-md-4"><div class="metric"><div class="label">VO₂ Max</div><div class="value">@((Model.Vo2Max.HasValue) ? $"{Model.Vo2Max}" : "-")</div></div></div>
+                    </div>
+                </div>
             </div>
-        }
+        </div>
+
+        <!-- Sağ: Notlar & Koç geri bildirimi -->
+        <div class="col-xl-6">
+            <div class="card card-soft mb-3">
+                <div class="card-header fw-semibold"><i class="bi bi-body-text me-2"></i>Esneklik Notları</div>
+                <div class="card-body">
+                    <div class="bg-panel-2 ring rounded p-3">@(!string.IsNullOrWhiteSpace(Model.FlexibilityNotes) ? Model.FlexibilityNotes : "—")</div>
+                </div>
+            </div>
+
+            <div class="card card-soft mb-3">
+                <div class="card-header fw-semibold"><i class="bi bi-journal-text me-2"></i>Kullanıcı Notu</div>
+                <div class="card-body">
+                    <div class="bg-panel-2 ring rounded p-3">@(!string.IsNullOrWhiteSpace(Model.UserNote) ? Model.UserNote : "—")</div>
+                </div>
+            </div>
+
+            <div class="card card-soft">
+                <div class="card-header fw-semibold d-flex align-items-center justify-content-between">
+                    <div><i class="bi bi-chat-left-dots me-2"></i>Koç Geri Bildirimi</div>
+                    <span class="muted small">Kaydettiğiniz not öğrenciye gösterilir.</span>
+                </div>
+                <div class="card-body">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="formId" value="@Model.Id" />
+                    <label for="coachFeedbackInput" class="form-label muted small">Yorum</label>
+                    <textarea id="coachFeedbackInput" class="form-control form-ctr" rows="5" placeholder="Koç geri bildiriminizi girin...">@Model.CoachFeedback</textarea>
+                    <div class="text-end mt-3">
+                        <button id="updateFeedbackBtn" class="btn btn-success">
+                            <i class="bi bi-send-check me-1"></i> Güncelle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-}
+
+    @if (Model.ProgressPhotoUrls != null && Model.ProgressPhotoUrls.Any())
+    {
+        <div class="card card-soft mt-3">
+            <div class="card-header fw-semibold"><i class="bi bi-images me-2"></i>İlerleme Fotoğrafları</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    @foreach (var url in Model.ProgressPhotoUrls)
+                    {
+                        <div class="col-6 col-md-3">
+                            <img src="@url" class="thumb" alt="progress" data-bs-toggle="modal" data-bs-target="#imgModal" data-src="@url" />
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="imgModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content bg-panel">
+                    <div class="modal-body p-0">
+                        <img id="imgModalPic" src="" alt="preview" style="width:100%; height:auto; display:block; border-radius:8px;" />
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Kapat</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        document.getElementById("updateFeedbackBtn").addEventListener("click", function () {
-            const formId = document.getElementById("formId").value;
-            const feedback = document.getElementById("coachFeedbackInput").value;
+        // Modal önizleme
+        (function(){
+          const modalPic = document.getElementById('imgModalPic');
+          document.querySelectorAll('.thumb').forEach(el=>{
+            el.addEventListener('click', ()=>{ modalPic.src = el.dataset.src || el.src; });
+          });
+        })();
+
+        // Koç feedback güncelle
+        (function(){
+          const btn   = document.getElementById("updateFeedbackBtn");
+          const idEl  = document.getElementById("formId");
+          const textEl= document.getElementById("coachFeedbackInput");
+
+          btn?.addEventListener("click", function () {
+            const formId = idEl.value;
+            const feedback = textEl.value ?? "";
 
             Swal.fire({
-                title: "Emin misiniz?",
-                text: "Koç notu güncellenecek. Devam etmek istiyor musunuz?",
-                icon: "question",
-                showCancelButton: true,
-                confirmButtonText: "Evet, güncelle!",
-                cancelButtonText: "İptal"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch("/Admin/UserWeeklyForm/UpdateCoachFeedback", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
-                        },
-                        body: JSON.stringify({
-                            id: formId,
-                            feedback: feedback
-                        })
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error("Sunucu hatası");
-                        return response.json(); // boşsa JSON dönmeyecekse .text() kullan
-                    })
-                    .then(() => {
-                        Swal.fire("Başarılı!", "Koç notu güncellendi.", "success");
-                    })
-                    .catch(error => {
-                        Swal.fire("Hata!", "Bir hata oluştu: " + error.message, "error");
-                    });
-                }
-            });
-        });
+              title: "Emin misiniz?",
+              text: "Koç notu güncellenecek.",
+              icon: "question",
+              showCancelButton: true,
+              confirmButtonText: "Evet, güncelle",
+              cancelButtonText: "İptal"
+            }).then(async (res)=>{
+              if(!res.isConfirmed) return;
+              try{
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
+                const resp = await fetch("/Admin/UserWeeklyForm/UpdateCoachFeedback", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", "RequestVerificationToken": token },
+                  body: JSON.stringify({ id: formId, feedback })
+                });
+                if(!resp.ok) throw new Error("HTTP " + resp.status);
+                try{ await resp.json(); }catch{}
+                Swal.fire("Başarılı!", "Koç notu güncellendi.", "success");
+              }catch(e){
+                Swal.fire("Hata", "Bir hata oluştu: " + (e?.message||"bilinmiyor"), "error");
+              }
+            }); 
+          });
+        })();
     </script>
 }

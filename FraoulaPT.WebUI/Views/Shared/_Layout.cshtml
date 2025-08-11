@@ -468,6 +468,50 @@
             }
         })();
     </script>
+    <script>
+        function loadQuestionHistory() {
+          $('#questionHistory').html('<div class="text-center text-muted">Sorular yükleniyor...</div>');
+          $.get('/Support/MyQuestions', function (html) {
+            $('#questionHistory').html(html);
+          });
+        }
+
+        // İlk yüklemede getir
+        $(document).ready(loadQuestionHistory);
+
+        // "Soru Sor" sekmesi açıldığında yinele (sekme ID'lerin aynı olduğundan emin ol)
+        document.getElementById('question-tab')?.addEventListener('shown.bs.tab', loadQuestionHistory);
+
+        // Delegation: form gönderimi
+        $(document).on('submit', '#questionForm', function (e) {
+          e.preventDefault();
+
+          const $form = $(this);
+          const btn   = $form.find('button[type="submit"]');
+          const data  = $form.serialize();
+          const token = $form.find('input[name="__RequestVerificationToken"]').val();
+
+          btn.prop('disabled', true).text('Gönderiliyor...');
+
+          $.ajax({
+            url: '/Support/AskQuestion',
+            method: 'POST',
+            data: data,
+            headers: { 'RequestVerificationToken': token }, // fazladan güvenlik; serialize ile de gider
+            success: function () {
+              Swal.fire({ icon: 'success', title: 'Sorunuz gönderildi!', timer: 1500, showConfirmButton: false });
+              $form[0].reset();
+              loadQuestionHistory();
+            },
+            error: function (xhr) {
+              Swal.fire({ icon: 'error', title: 'Hata', text: xhr.responseText || 'Sorunuz gönderilemedi.' });
+            },
+            complete: function () {
+              btn.prop('disabled', false).text('📤 Soruyu Gönder');
+            }
+          });
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 

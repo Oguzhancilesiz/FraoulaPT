@@ -1,167 +1,231 @@
 ﻿@using FraoulaPT.Core.Enums
 @using FraoulaPT.DTOs.PackageDTOs
+@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
+@model List<PackageListDTO>
 
 @{
     ViewData["Title"] = "Paketler";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM
+            {
+                Title = "Paketler",
+                Subtitle = "Paketleri görüntüle, filtrele ve yönet",
+                Breadcrumbs = new(){
+            new(){ Text="Dashboard", Url=Url.Action("Index","Dashboard", new{ area="Admin" }) },
+            new(){ Text="Paketler" }
+        },
+                Buttons = new(){
+            new(){ Text="Yeni Paket Ekle", Url=Url.Action("Create","Package", new{ area="Admin"}), Icon="bi-plus-circle", ColorClass="btn-brand" }
+        }
+            };
 }
 
-@model List<PackageListDTO>
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
 
-<div class="container mt-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-        <h2 class="mb-0">📦 Paketler</h2>
-        <a asp-action="Create" class="btn btn-success">
-            <i class="bi bi-plus-circle me-1"></i> Yeni Paket Ekle
-        </a>
+<div class="container-fluid">
+
+    <!-- Filtre / Arama -->
+    <div class="card ring mb-3">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-6">
+                    <label class="form-label small text-muted">Ara</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-transparent border-secondary"><i class="bi bi-search"></i></span>
+                        <input id="searchInput" class="form-control bg-transparent border-secondary text-light" placeholder="Paket adına göre ara…">
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small text-muted">Durum</label>
+                    <select id="statusFilter" class="form-select form-select-sm bg-transparent border-secondary text-light">
+                        <option value="">Hepsi</option>
+                        <option value="Aktif">Aktif</option>
+                        <option value="Pasif">Pasif</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 d-flex gap-2">
+                    <button id="btnClearFilters" class="btn btn-sm btn-outline-secondary mt-4 mt-md-0"><i class="bi bi-x-circle"></i> Temizle</button>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- Liste -->
     @if (Model == null || !Model.Any())
     {
         <div class="alert alert-info">Henüz paket eklenmemiş.</div>
     }
     else
     {
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped align-middle text-nowrap">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Ad</th>
-                        <th>Tip</th>
-                        <th>Süre</th>
-                        <th>Fiyat</th>
-                        <th>Soru / Mesaj</th>
-                        <th>Durum</th>
-                        <th style="min-width: 180px;">İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (int i = 0; i < Model.Count; i++)
-                    {
-                        var item = Model[i];
-                        <tr>
-                            <td>@(i + 1)</td>
-                            <td>@item.Name</td>
-                            <td>@item.PackageType</td>
-                            <td>@item.SubscriptionPeriod</td>
-                            <td>@($"{item.Price:C0}")</td>
-                            <td>@item.MaxQuestionsPerPeriod / @item.MaxMessagesPerPeriod</td>
-                            <td>
-                                <span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">
-                                    @(item.IsActive ? "Aktif" : "Pasif")
-                                </span>
-                            </td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <button class="btn btn-sm @(item.IsActive ? "btn-danger" : "btn-success") toggle-status-btn"
-                                            data-id="@item.Id"
-                                            title="Durum Değiştir"
-                                            data-bs-toggle="tooltip">
-                                        <i class="bi @(item.IsActive ? "bi-eye-slash" : "bi-eye")"></i>
-                                    </button>
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary" title="Düzenle" data-bs-toggle="tooltip">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a href="javascript:void(0);"
-                                       class="btn btn-sm btn-outline-danger delete-btn"
-                                       data-id="@item.Id"
-                                       title="Sil"
-                                       data-bs-toggle="tooltip">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-
-                                </div>
-                            </td>
+        <div class="card ring">
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0" id="pkgTable">
+                    <thead>
+                        <tr class="small text-muted">
+                            <th class="text-nowrap">#</th>
+                            <th>Ad</th>
+                            <th class="d-none d-md-table-cell">Tip</th>
+                            <th class="d-none d-md-table-cell">Süre</th>
+                            <th>Fiyat</th>
+                            <th class="d-none d-lg-table-cell">Soru / Mesaj</th>
+                            <th>Durum</th>
+                            <th style="min-width:170px;">İşlemler</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                            var item = Model[i];
+                            var rowNo = i + 1;
+                            <tr data-name="@item.Name" data-status="@(item.IsActive ? "Aktif" : "Pasif")">
+                                <td class="text-muted">@rowNo</td>
+                                <td class="fw-semibold">@item.Name</td>
+                                <td class="d-none d-md-table-cell">
+                                    <span class="badge text-bg-secondary">@item.PackageType</span>
+                                </td>
+                                <td class="d-none d-md-table-cell">@item.SubscriptionPeriod</td>
+                                <td>@($"{item.Price:N2} ₺")</td>
+                                <td class="d-none d-lg-table-cell">@item.MaxQuestionsPerPeriod / @item.MaxMessagesPerPeriod</td>
+                                <td>
+                                    <span class="badge @(item.IsActive ? "text-bg-success" : "text-bg-secondary") status-badge">
+                                        @(item.IsActive ? "Aktif" : "Pasif")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <button class="btn btn-sm @(item.IsActive ? "btn-danger" : "btn-success") toggle-status-btn"
+                                                data-id="@item.Id" title="Durum Değiştir" data-bs-toggle="tooltip">
+                                            <i class="bi @(item.IsActive ? "bi-eye-slash" : "bi-eye")"></i>
+                                        </button>
+
+                                        <a asp-area="Admin" asp-controller="Package" asp-action="Edit" asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-warning" title="Düzenle" data-bs-toggle="tooltip">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        <button class="btn btn-sm btn-outline-danger delete-btn"
+                                                data-id="@item.Id" title="Sil" data-bs-toggle="tooltip">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
 </div>
 
 @section Scripts {
     <script>
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.getAttribute('data-id');
+        (function(){
+          const $  = (s,r=document)=>r.querySelector(s);
+          const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
 
-                const confirmed = await Swal.fire({
-                    title: 'Emin misiniz?',
-                    text: "Bu paketi silmek üzeresiniz. Devam etmek istiyor musunuz?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Evet, sil',
-                    cancelButtonText: 'İptal'
-                });
+          const table = $("#pkgTable");
+          const search = $("#searchInput");
+          const statusSel = $("#statusFilter");
+          const clearBtn = $("#btnClearFilters");
 
-                if (confirmed.isConfirmed) {
-                    // Yönlendirme (Redirect) ile silme isteği
-                    window.location.href = `/Admin/Package/Delete/${id}`;
-                }
+          // Basit istemci tarafı filtre
+          function applyFilter(){
+            const q = (search?.value || "").toLowerCase();
+            const st= statusSel?.value || "";
+            $$("#pkgTable tbody tr").forEach(tr=>{
+              const name = (tr.dataset.name||"").toLowerCase();
+              const status = tr.dataset.status||"";
+              const okName = !q || name.includes(q);
+              const okSt   = !st || status === st;
+              tr.style.display = (okName && okSt) ? "" : "none";
             });
-        });
-    </script>
+          }
+          search?.addEventListener("input", applyFilter);
+          statusSel?.addEventListener("change", applyFilter);
+          clearBtn?.addEventListener("click", ()=>{
+            if(search) search.value="";
+            if(statusSel) statusSel.value="";
+            applyFilter();
+          });
 
-    <script>
-        document.querySelectorAll('.toggle-status-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.getAttribute('data-id');
+          // Durum değiştir
+          $$(".toggle-status-btn").forEach(btn=>{
+            btn.addEventListener("click", async ()=>{
+              const id = btn.getAttribute("data-id");
+              const tr = btn.closest("tr");
+              const badge = tr?.querySelector(".status-badge");
 
-                const confirmed = await Swal.fire({
-                    title: 'Emin misiniz?',
-                    text: "Durumu değiştirmek istiyor musunuz?",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Evet, değiştir',
-                    cancelButtonText: 'İptal',
-                    reverseButtons: true
-                });
+              const confirmed = await Swal.fire({
+                title: 'Emin misiniz?',
+                text: 'Durumu değiştirmek istiyor musunuz?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Evet, değiştir',
+                cancelButtonText: 'İptal',
+                reverseButtons: true
+              });
+              if(!confirmed.isConfirmed) return;
 
-                if (!confirmed.isConfirmed) return;
-
+              try{
                 const res = await fetch('/Admin/Package/ToggleStatus', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ Id: id })
+                  method:'POST',
+                  headers:{'Content-Type':'application/json'},
+                  body: JSON.stringify({ Id:id })
                 });
-
                 const data = await res.json();
-
-                if (data.success) {
-                    if (data.newStatus === "Aktif") {
-                        btn.classList.remove("btn-success");
-                        btn.classList.add("btn-danger");
-                        btn.innerHTML = `<i class="bi bi-eye-slash"></i>`;
-                    } else {
-                        btn.classList.remove("btn-danger");
-                        btn.classList.add("btn-success");
-                        btn.innerHTML = `<i class="bi bi-eye"></i>`;
-                    }
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Başarılı!',
-                        text: 'Durum başarıyla güncellendi.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Hata!',
-                        text: data.message || 'Bir hata oluştu. Lütfen tekrar deneyin.'
-                    });
+                if(data?.success){
+                  // UI güncelle
+                  const newSt = data.newStatus || (btn.classList.contains("btn-danger") ? "Pasif":"Aktif");
+                  tr.dataset.status = newSt;
+                  if(badge){
+                    badge.classList.toggle("text-bg-success", newSt==="Aktif");
+                    badge.classList.toggle("text-bg-secondary", newSt!=="Aktif");
+                    badge.textContent = newSt;
+                  }
+                  if(newSt==="Aktif"){
+                    btn.classList.remove("btn-success"); btn.classList.add("btn-danger");
+                    btn.innerHTML = '<i class="bi bi-eye-slash"></i>';
+                  }else{
+                    btn.classList.remove("btn-danger"); btn.classList.add("btn-success");
+                    btn.innerHTML = '<i class="bi bi-eye"></i>';
+                  }
+                  applyFilter();
+                  Swal.fire({ icon:'success', title:'Güncellendi', timer:1400, showConfirmButton:false });
+                }else{
+                  throw new Error(data?.message || 'Güncellenemedi');
                 }
+              }catch(err){
+                console.warn(err);
+                Swal.fire({ icon:'error', title:'Hata', text: err.message || 'İşlem başarısız' });
+              }
             });
-        });
+          });
 
+          // Sil
+          $$(".delete-btn").forEach(btn=>{
+            btn.addEventListener("click", async ()=>{
+              const id = btn.getAttribute("data-id");
+              const ok = await Swal.fire({
+                title:'Silinsin mi?',
+                text:'Bu işlem geri alınamaz.',
+                icon:'warning',
+                showCancelButton:true,
+                confirmButtonText:'Evet, sil',
+                cancelButtonText:'İptal'
+              });
+              if(!ok.isConfirmed) return;
 
-        // Bootstrap tooltip init
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+              // Yönlendirme tabanlı silme (controller'ın mevcut davranışına uygun)
+              window.location.href = `/Admin/Package/Delete/${id}`;
+            });
+          });
+
+          // Tooltip
+          const tips = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+          tips.forEach(el => new bootstrap.Tooltip(el));
+
+        })();
     </script>
 }

@@ -1,104 +1,391 @@
 ﻿@using FraoulaPT.DTOs.ChatMessageDTOs
-
-@{
-    ViewData["Title"] = "Index";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-}
-
+@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
 @model List<StudentChatListDTO>
 
-<div class="row">
-    <div class="col-md-4">
-        <h5>Öğrenciler</h5>
-        <ul class="list-group" id="studentList">
-            @foreach (var student in Model)
+@{
+    ViewData["Title"] = "Koç Sohbeti";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM
             {
-                <li class="list-group-item student-item" data-id="@student.Id">
-                    <img src="@student.ProfilePhotoUrl" class="rounded-circle me-2" width="30" height="30" />
-                    @student.FullName
-                </li>
+                Title = "Canlı Sohbet",
+                Subtitle = "Öğrencilerinizle gerçek zamanlı mesajlaşın",
+                Breadcrumbs = new() { new() { Text = "Dashboard", Url = Url.Action("Index", "Dashboard", new { area = "Admin" }) }, new() { Text = "Sohbet" } }
+            };
+}
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
+
+<div class="container-fluid">
+    <div class="card ring shadow-soft">
+        <style>
+            /* YÜKSEKLİK ve SCROLL */
+            .chat-wrap {
+                height: calc(100vh - 64px - 150px);
             }
-        </ul>
-    </div>
-    <div class="col-md-8">
-        <h5>Sohbet</h5>
-        <div class="border p-2 mb-2" id="chatMessages" style="height: 300px; overflow-y: auto;">
-            <div class="text-muted text-center">Öğrenci seçiniz</div>
-        </div>
-        <div class="input-group">
-            <input type="text" id="chatInput" class="form-control" placeholder="Mesaj yaz..." />
-            <button class="btn btn-success" id="sendMessageBtn">Gönder</button>
+
+            @@media (max-width: 991.98px) {
+                .chat-wrap {
+                    height: calc(100vh - 64px - 110px);
+                }
+            }
+
+            /* Sağ panel tam esnesin; chat-body her zaman scroll olsun */
+            section.col-lg-8.d-flex.flex-column {
+                min-height: 100%;
+            }
+
+            .chat-body {
+                flex: 1 1 auto;
+                overflow-y: auto;
+            }
+
+            /* Composer sabit kalsın, textarea kendi içinde scroll yapsın */
+            .composer .input {
+                border-radius: 999px;
+                background: var(--panel-2);
+                border: 1px solid var(--border);
+                color: var(--text);
+                max-height: 120px; /* ~4 satır */
+                overflow-y: auto;
+                resize: none; /* manuel büyütmeyi kapat */
+            }
+
+            /* Başlıkları ve breadcrumb'ı biraz parlatalım */
+            .page-breadcrumb {
+                color: #c9d3e3 !important;
+            }
+
+            .page-subtitle {
+                color: #b7c2d6 !important;
+            }
+
+            /* Öğrenci isimleri daha okunaklı */
+            .chat-sidebar .list-group-item .student-name {
+                color: #e8eef6;
+            }
+
+            .chat-sidebar .list-group-item.active .student-name {
+                color: #ffffff;
+            }
+
+            .chat-sidebar .list-group-item .student-sub {
+                color: #9fb1c9;
+            }
+
+            /* Baloncuklar */
+            .bubble {
+                max-width: 76%;
+                display: inline-block;
+                padding: .6rem .8rem;
+                border-radius: 1rem;
+                box-shadow: 0 8px 18px rgba(0,0,0,.12);
+                word-break: break-word
+            }
+
+                .bubble.me {
+                    background: #b7f5b1;
+                    color: #0f172a;
+                    border-bottom-right-radius: .4rem
+                }
+
+                .bubble.them {
+                    background: #fff;
+                    color: #0f172a;
+                    border-bottom-left-radius: .4rem
+                }
+
+
+            html[data-theme="light"] .bubble.me {
+                background: #dcfce7
+            }
+
+            html[data-theme="light"] .bubble.them {
+                background: #fff
+            }
+
+            .msg-time {
+                font-size: .72rem;
+                color: #6b7280;
+                margin-top: .25rem
+            }
+
+            .composer {
+                background: var(--panel);
+                border-top: 1px solid var(--border);
+            }
+
+                .composer .input {
+                    border-radius: 999px;
+                    background: var(--panel-2);
+                    border: 1px solid var(--border);
+                    color: var(--text)
+                }
+
+                .composer .btn-send {
+                    border-radius: 999px
+                }
+
+            .skeleton {
+                animation: shimmer 1.3s infinite linear;
+                background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.14), rgba(255,255,255,.06));
+                border-radius: 8px
+            }
+            @@keyframes shimmer {
+                0%
+
+            {
+                background-position: -200px 0
+            }
+
+            100% {
+                background-position: 200px 0
+            }
+
+            }
+        </style>
+
+        <div class="row g-0 chat-wrap">
+            <!-- SOL: Öğrenciler -->
+            <aside class="col-12 col-lg-4 chat-sidebar">
+                <div class="search">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-transparent border-secondary"><i class="bi bi-search"></i></span>
+                        <input id="studentSearch" class="form-control bg-transparent border-secondary text-light" placeholder="Öğrenci ara..." />
+                    </div>
+                </div>
+                <ul id="studentList" class="list-group list-group-flush" style="height: calc(100% - 58px); overflow:auto;">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var s in Model)
+                        {
+                            <li class="list-group-item d-flex align-items-center gap-2 student-item"
+                                data-id="@s.Id" data-name="@s.FullName" data-photo="@s.ProfilePhotoUrl">
+                                <img src="@s.ProfilePhotoUrl" class="rounded-circle ring" width="34" height="34" alt="pp" />
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <div class="student-name text-truncate">@s.FullName</div>
+                                    <div class="student-sub text-truncate">Sohbeti açmak için tıklayın</div>
+                                </div>
+                                <span class="badge rounded-pill bg-secondary d-none" data-role="unread">0</span>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li class="list-group-item">Kayıtlı öğrenci yok.</li>
+                    }
+                </ul>
+            </aside>
+
+            <!-- SAĞ: Sohbet -->
+            <section class="col-12 col-lg-8 d-flex flex-column">
+                <div class="chat-header px-3 py-2 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <img id="chatUserPhoto" src="/uploads/user-default.jpg" width="34" height="34" class="rounded-circle ring" alt="pp" />
+                        <div>
+                            <div id="chatUserName" class="fw-semibold">Öğrenci seçiniz</div>
+                            <div id="connState" class="text-muted conn-badge">Bağlantı: <span class="badge text-bg-secondary">bekliyor</span></div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-1">
+                        <button id="btnRefreshHistory" class="btn btn-sm btn-outline-secondary" title="Yenile"><i class="bi bi-arrow-clockwise"></i></button>
+                        <button id="btnClear" class="btn btn-sm btn-outline-secondary" title="Ekranı temizle"><i class="bi bi-eraser"></i></button>
+                    </div>
+                </div>
+
+                <div id="chatMessages" class="chat-body flex-grow-1 p-3">
+                    <div class="text-muted text-center mt-5">Soldan bir öğrenci seçiniz.</div>
+                </div>
+
+                <div class="composer px-2 py-2">
+                    <form id="chatForm" class="d-flex gap-2 align-items-end">
+                        <textarea id="chatInput" class="form-control input" placeholder="Mesaj yazın… (Enter: gönder, Shift+Enter: satır)" rows="1"></textarea>
+                        <button id="sendMessageBtn" class="btn btn-brand btn-send px-4" type="submit" disabled>
+                            <i class="bi bi-send-fill me-1"></i>Gönder
+                        </button>
+                    </form>
+                </div>
+            </section>
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let selectedStudentId = null;
+        (function(){
+          const $  = (s, r=document)=> r.querySelector(s);
+          const $$ = (s, r=document)=> Array.from(r.querySelectorAll(s));
 
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl("/chatHub")
-                .build();
+          const listEl     = $("#studentList");
+          const searchEl   = $("#studentSearch");
+          const chatBox    = $("#chatMessages");
+          const chatForm   = $("#chatForm");
+          const chatInput  = $("#chatInput");
+          const sendBtn    = $("#sendMessageBtn");
+          const btnRefresh = $("#btnRefreshHistory");
+          const btnClear   = $("#btnClear");
+          const userNameEl = $("#chatUserName");
+          const userPhotoEl= $("#chatUserPhoto");
+          const connState  = $("#connState");
 
-            connection.on("ReceiveMessage", function (fromUserId, messageObj, isMine) {
-                if (selectedStudentId !== fromUserId) return;
+          let selected = null; // { id, name, photo }
+          let connection = null;
 
-                const chatBox = document.getElementById("chatMessages");
+          // ===== UI helpers
+          const escapeHtml = s => (s ?? "").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+          const fmtTime = iso => { try{ return new Date(iso).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});}catch{return "";} };
+          const fmtDateChip = iso => { try{ return new Date(iso).toLocaleDateString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric"});}catch{return "";} };
+          const scrollBottom = ()=> chatBox.scrollTop = chatBox.scrollHeight;
+          const setHeader = u => {
+              if(!u){ userNameEl.textContent="Öğrenci seçiniz"; userPhotoEl.src="/uploads/user-default.jpg"; sendBtn.disabled = true; return; }
+              userNameEl.textContent = u.name || "—"; userPhotoEl.src = u.photo || "/uploads/user-default.jpg"; sendBtn.disabled = false;
+          };
+          const setConnBadge = st => {
+              const map = { connected:"success", connecting:"secondary", reconnecting:"warning", disconnected:"danger" };
+              connState.innerHTML = `Bağlantı: <span class="badge text-bg-${map[st]||"danger"}">${st}</span>`;
+          };
 
-                const msgDiv = document.createElement("div");
-                msgDiv.className = "mb-2 " + (isMine ? "text-end" : "text-start");
-                msgDiv.innerHTML = `
-                    <div class="d-inline-block p-2 rounded shadow-sm" style="max-width: 80%; background-color: ${isMine ? '#dcf8c6' : '#fff'};">
-                        <div class="fw-bold">${isMine ? 'Siz' : 'Öğrenci'}</div>
-                        <div>${messageObj.messageText}</div>
-                        <div class="text-muted small">${new Date(messageObj.sentAt).toLocaleTimeString('tr-TR')}</div>
-                    </div>
-                `;
-                chatBox.appendChild(msgDiv);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            });
+          function addDateChip(iso){
+            const chip = document.createElement("div");
+            chip.className = "text-center my-2";
+            chip.innerHTML = `<span class="date-chip">${fmtDateChip(iso)}</span>`;
+            chatBox.appendChild(chip);
+          }
+          function renderMessage(m){
+            const wrap = document.createElement("div");
+            wrap.className = "mb-2 " + (m.isMine ? "text-end" : "text-start");
+            wrap.innerHTML = `
+              <div class="bubble ${m.isMine ? "me":"them"}">
+                <div>${escapeHtml(m.messageText)}</div>
+                <div class="msg-time">${fmtTime(m.sentAt)}</div>
+              </div>`;
+            chatBox.appendChild(wrap);
+          }
 
-            connection.start().then(() => console.log("Koç SignalR bağlantısı kuruldu."));
+          function clearUnread(userId){
+            const li = listEl.querySelector(`.student-item[data-id="${userId}"]`);
+            const badge = li?.querySelector('[data-role="unread"]');
+            if(badge){ badge.textContent="0"; badge.classList.add("d-none"); }
+          }
 
-            // Öğrencilere tıklama
-            document.querySelectorAll(".student-item").forEach(item => {
-                item.addEventListener("click", function () {
-                    // Aktif class'ı güncelle
-                    document.querySelectorAll(".student-item").forEach(i => i.classList.remove("active"));
-                    this.classList.add("active");
+          // ===== SignalR
+          async function startHub(){
+            try{
+              setConnBadge("connecting");
+              connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").withAutomaticReconnect().build();
+              connection.onreconnecting(()=> setConnBadge("reconnecting"));
+              connection.onreconnected(()=> setConnBadge("connected"));
+              connection.onclose(()=> setConnBadge("disconnected"));
 
-                    selectedStudentId = this.dataset.id;
-                    fetch(`/Admin/CoachChat/GetHistory?studentId=${selectedStudentId}`)
-                        .then(res => res.json())
-                        .then(messages => {
-                            const box = document.getElementById("chatMessages");
-                            box.innerHTML = "";
-                            messages.forEach(m => {
-                                const msgDiv = document.createElement("div");
-                                msgDiv.className = "mb-2 " + (m.isMine ? "text-end" : "text-start");
-                                msgDiv.innerHTML = `
-                                    <div class="d-inline-block p-2 rounded shadow-sm" style="max-width: 80%; background-color: ${m.isMine ? '#dcf8c6' : '#fff'};">
-                                        <div class="fw-bold">${m.isMine ? 'Siz' : 'Öğrenci'}</div>
-                                        <div>${m.messageText}</div>
-                                        <div class="text-muted small">${new Date(m.sentAt).toLocaleTimeString('tr-TR')}</div>
-                                    </div>
-                                `;
-                                box.appendChild(msgDiv);
-                            });
-                            box.scrollTop = box.scrollHeight;
-                        });
+              connection.on("ReceiveMessage", (fromUserId, messageObj, isMine) => {
+                if (!selected){
+                  // seçili değilse unread artır
+                  const li = listEl.querySelector(`.student-item[data-id="${fromUserId}"]`);
+                  const b = li?.querySelector('[data-role="unread"]');
+                  if(b){ const n=(parseInt(b.textContent||"0",10)+1); b.textContent=n; b.classList.toggle("d-none", n<=0); }
+                  return;
+                }
+                // seçili pencereye geldiyse render
+                if (selected.id !== fromUserId && !isMine) {
+                  const li = listEl.querySelector(`.student-item[data-id="${fromUserId}"]`);
+                  const b = li?.querySelector('[data-role="unread"]');
+                  if(b){ const n=(parseInt(b.textContent||"0",10)+1); b.textContent=n; b.classList.toggle("d-none", n<=0); }
+                  return;
+                }
+                renderMessage({ messageText: messageObj.messageText, sentAt: messageObj.sentAt, isMine: !!isMine });
+                scrollBottom();
+              });
+
+              await connection.start();
+              setConnBadge("connected");
+            }catch(err){
+              console.warn(err);
+              setConnBadge("disconnected");
+            }
+          }
+          startHub();
+
+          // ===== Öğrenci seçimi
+          $$(".student-item", listEl).forEach(li=>{
+            li.addEventListener("click", async function(){
+              $$(".student-item", listEl).forEach(x=> x.classList.remove("active"));
+              this.classList.add("active");
+              selected = { id:this.dataset.id, name:this.dataset.name, photo:this.dataset.photo };
+              setHeader(selected); clearUnread(selected.id);
+
+              // skeleton
+              chatBox.innerHTML = `
+                <div class="d-flex gap-2 align-items-center mb-2"><div class="skeleton" style="width:26px;height:26px;border-radius:50%"></div><div class="skeleton" style="height:14px;width:72%"></div></div>
+                <div class="d-flex gap-2 align-items-center"><div class="skeleton" style="width:26px;height:26px;border-radius:50%"></div><div class="skeleton" style="height:14px;width:60%"></div></div>`;
+
+              try{
+                const res = await fetch(`/Admin/CoachChat/GetHistory?studentId=${encodeURIComponent(selected.id)}`, { cache:"no-store" });
+                if(!res.ok) throw new Error("HTTP "+res.status);
+                const messages = await res.json() || [];
+                chatBox.innerHTML = "";
+                // tarih chip'leri
+                let currentDay = "";
+                messages.forEach(m=>{
+                  const day = (new Date(m.sentAt)).toDateString();
+                  if(day !== currentDay){ currentDay = day; addDateChip(m.sentAt); }
+                  renderMessage(m);
                 });
+                if(!messages.length) chatBox.innerHTML = `<div class="text-muted text-center mt-5">Mesaj yok. İlk mesajı yazın.</div>`;
+                scrollBottom();
+              }catch(err){
+                console.warn(err);
+                chatBox.innerHTML = `<div class="text-danger text-center mt-5">Geçmiş yüklenemedi.</div>`;
+              }
             });
+          });
 
-            // Mesaj gönder
-            document.getElementById("sendMessageBtn").addEventListener("click", function () {
-                const input = document.getElementById("chatInput");
-                const message = input.value.trim();
-                if (!message || !selectedStudentId) return;
-
-                connection.invoke("SendMessage", selectedStudentId, message);
-                input.value = "";
+          // Liste arama
+          searchEl.addEventListener("input", function(){
+            const q = this.value.toLowerCase();
+            $$(".student-item", listEl).forEach(li=>{
+              const t = (li.dataset.name||"").toLowerCase();
+              li.style.display = t.includes(q) ? "" : "none";
             });
-        });
+          });
+
+          // Geçmiş yenile & temizle
+          btnRefresh.addEventListener("click", ()=> listEl.querySelector(".student-item.active")?.click());
+          btnClear.addEventListener("click", ()=> { chatBox.innerHTML=""; });
+
+          // Composer: auto-grow
+          chatInput.addEventListener("input", function(){
+            this.style.height = "auto";
+            this.style.height = Math.min(this.scrollHeight, 180) + "px";
+          });
+
+          // Gönder
+          chatForm.addEventListener("submit", async function(e){
+            e.preventDefault();
+            const msg = chatInput.value.trim();
+            if(!msg || !selected || !connection) return;
+            try{
+              sendBtn.disabled = true;
+              await connection.invoke("SendMessage", selected.id, msg);
+              chatInput.value = "";
+              chatInput.dispatchEvent(new Event("input"));
+            }catch(err){
+              console.warn(err);
+              const warn = document.createElement("div");
+              warn.className = "text-danger small text-center my-2";
+              warn.textContent = "Mesaj gönderilemedi.";
+              chatBox.appendChild(warn);
+            }finally{
+              sendBtn.disabled = false;
+            }
+          });
+
+          // Enter: gönder / Shift+Enter: satır
+          chatInput.addEventListener("keydown", function(e){
+            if(e.key === "Enter" && !e.shiftKey){
+              e.preventDefault();
+              chatForm.dispatchEvent(new Event("submit"));
+            }
+          });
+
+        })();
     </script>
 }

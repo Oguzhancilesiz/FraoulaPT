@@ -1,187 +1,259 @@
 ﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.AccountViewModels
-
-
-@{
-    ViewData["Title"] = "Detail";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-}
+@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
 @model UserFullDetailVM
 
-<div class="container my-5">
-    <div class="row">
-        <!-- Profil Fotoğrafı ve Temel Bilgiler -->
-        <div class="col-lg-4 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-body text-center">
-                    @if (!string.IsNullOrEmpty(Model.Profile?.ProfilePhotoUrl))
+@{
+    ViewData["Title"] = "Kullanıcı Detayı";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM{
+        Title = "Kullanıcı Detayı",
+        Subtitle = "Profil, sağlık ve iletişim bilgileri",
+        Breadcrumbs = new(){
+            new(){ Text="Dashboard",  Url = Url.Action("Index","Dashboard", new{ area="Admin" }) },
+            new(){ Text="Kullanıcılar", Url = Url.Action("Index","User", new{ area="Admin" }) },
+            new(){ Text="Detay" }
+        }
+    };
+}
+
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
+
+<style>
+  .bg-panel{ background: var(--panel); }
+  .ring{ border:1px solid var(--border); }
+  .shadow-soft{ box-shadow:0 10px 30px rgba(0,0,0,.25); }
+
+  .avatar-lg{ width:120px; height:120px; object-fit:cover; border-radius:1rem; }
+  .chip{ background: var(--panel-2); border:1px solid var(--border); border-radius:999px; padding:.25rem .6rem; font-size:.8rem; color:var(--text); }
+  .chip-muted{ color: var(--muted); }
+
+  .field{ display:flex; gap:1rem; padding:.6rem 0; border-bottom:1px dashed var(--border); }
+  .field:last-child{ border-bottom:0; }
+  .field .label{ width:180px; min-width:140px; color:var(--muted); font-size:.9rem; }
+  .field .value{ flex:1; }
+
+  @@media (max-width: 575.98px){
+    .field{ flex-direction:column; gap:.25rem; }
+    .field .label{ width:auto; }
+  }
+</style>
+
+<div class="container-fluid py-2">
+  <div class="row g-3">
+    <!-- Sol kolon: profil özeti -->
+    <div class="col-lg-4">
+      <div class="card bg-panel ring shadow-soft h-100">
+        <div class="card-body text-center">
+          @if (!string.IsNullOrWhiteSpace(Model.Profile?.ProfilePhotoUrl))
+          {
+              <img src="@Model.Profile.ProfilePhotoUrl" alt="Profil Fotoğrafı" class="avatar-lg ring mb-3" />
+          }
+          else
+          {
+              <div class="avatar-lg ring mb-3 d-inline-flex align-items-center justify-content-center" style="background:var(--panel-2)">
+                  <i class="bi bi-person fs-1" style="color:var(--muted)"></i>
+              </div>
+          }
+
+          <h4 class="mb-2">@Model.User?.FullName</h4>
+
+          <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+            @if(!string.IsNullOrWhiteSpace(Model.User?.UserName))
+            { <span class="chip">@Model.User.UserName</span> }
+            @if(!string.IsNullOrWhiteSpace(Model.User?.Email))
+            { <span class="chip">@Model.User.Email</span> }
+          </div>
+
+          <div class="mb-3">
+            @if (Model.Roles != null && Model.Roles.Any())
+            {
+              foreach (var role in Model.Roles)
+              { <span class="chip me-1">@role</span> }
+            }
+            else
+            {
+              <span class="chip chip-muted">Rol yok</span>
+            }
+          </div>
+
+          <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <span class="chip">
+              Durum:
+              @if (Model.User?.Status == FraoulaPT.Core.Enums.Status.Active)
+              { <span class="badge text-bg-success ms-1">Aktif</span> }
+              else
+              { <span class="badge text-bg-secondary ms-1">Pasif</span> }
+            </span>
+            <span class="chip">
+              Kayıt: @Model.User?.CreatedDate.ToString("dd.MM.yyyy HH:mm")
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sağ kolon: detay alanları -->
+    <div class="col-lg-8">
+      <div class="card bg-panel ring shadow-soft h-100">
+        <div class="card-body px-3 px-md-4">
+          <div class="row">
+            <div class="col-12">
+              <div class="field">
+                <div class="label">Instagram</div>
+                <div class="value">
+                  @{
+                    var ig = Model.Profile?.Instagram;
+                    if (!string.IsNullOrWhiteSpace(ig))
                     {
-                        <img src="@Model.Profile.ProfilePhotoUrl" alt="Profil Fotoğrafı" class="img-thumbnail mb-3" style="width:120px; height:120px; object-fit:cover; border-radius:1rem;">
+                        var handle = ig.StartsWith("@") ? ig.Substring(1) : ig;
+                        <a href="@($"https://instagram.com/{handle}")" target="_blank">@ig</a>
                     }
-                    <h4 class="card-title mb-2">@Model.User?.FullName</h4>
-                    <div class="mb-2">
-                        <span class="badge bg-primary">@Model.User?.UserName</span>
-                        <span class="badge bg-info">@Model.User?.Email</span>
-                    </div>
-                    <div class="mb-3">
-                        @foreach (var role in Model.Roles)
-                        {
-                            <span class="badge bg-success me-1">@role</span>
-                        }
-                    </div>
-                    <div class="mb-2">
-                        <span class="fw-bold">Durum:</span>
-                        @if (Model.User?.Status == FraoulaPT.Core.Enums.Status.Active)
-                        {
-                            <span class="badge bg-success">Aktif</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-danger">Pasif</span>
-                        }
-                    </div>
-                    <div class="mb-2">
-                        <span class="fw-bold">Kayıt Tarihi:</span> @Model.User?.CreatedDate.ToString("dd.MM.yyyy HH:mm")
-                    </div>
+                    else { 
+                        <span>-</span>
+                    
+                    }
+                  }
                 </div>
+              </div>
+
+              <div class="field">
+                <div class="label">Cinsiyet</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.Gender?.ToString()) ? Model.Profile.Gender : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Doğum Tarihi</div>
+                <div class="value">@((Model.Profile?.BirthDate)?.ToString("dd.MM.yyyy") ?? "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Boy (cm)</div>
+                <div class="value">@((Model.Profile?.HeightCm)?.ToString("0.0") ?? "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Kilo (kg)</div>
+                <div class="value">@((Model.Profile?.WeightKg)?.ToString("0.0") ?? "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Vücut Tipi</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.BodyType?.ToString()) ? Model.Profile.BodyType : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Kan Grubu</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.BloodType?.ToString()) ? Model.Profile.BloodType : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Telefon</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.PhoneNumber) ? Model.Profile.PhoneNumber : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Adres</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.Address) ? Model.Profile.Address : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Acil Kişi</div>
+                <div class="value">
+                  @((!string.IsNullOrWhiteSpace(Model.Profile?.EmergencyContactName) ? Model.Profile.EmergencyContactName : "—"))
+                  @if(!string.IsNullOrWhiteSpace(Model.Profile?.EmergencyContactPhone)){
+                    <span class="chip chip-muted ms-2">@Model.Profile.EmergencyContactPhone</span>
+                  }
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="label">Tıbbi Geçmiş</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.MedicalHistory) ? Model.Profile.MedicalHistory : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Kronik Hastalıklar</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.ChronicDiseases) ? Model.Profile.ChronicDiseases : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Kullandığı İlaçlar</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.CurrentMedications) ? Model.Profile.CurrentMedications : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Alerjiler</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.Allergies) ? Model.Profile.Allergies : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Geçmiş Yaralanmalar</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.PastInjuries) ? Model.Profile.PastInjuries : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Mevcut Ağrılar</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.CurrentPain) ? Model.Profile.CurrentPain : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Hamilelik Durumu</div>
+                <div class="value">
+                  @if (Model.Profile?.PregnancyStatus == true)
+                  { <span class="badge text-bg-warning text-dark">Evet</span> }
+                  else if (Model.Profile?.PregnancyStatus == false)
+                  { <span class="badge text-bg-secondary">Hayır</span> }
+                  else
+                  { <span class="badge text-bg-light text-dark">Belirtilmemiş</span> }
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="label">Son Tetkik</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.LastCheckResults) ? Model.Profile.LastCheckResults : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Sigara / Alkol</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.SmokingAlcohol) ? Model.Profile.SmokingAlcohol : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Meslek</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.Occupation) ? Model.Profile.Occupation : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Deneyim Seviyesi</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.ExperienceLevel?.ToString()) ? Model.Profile.ExperienceLevel : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Favori Sporlar</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.FavoriteSports) ? Model.Profile.FavoriteSports : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Beslenme Tipi</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.DietType?.ToString()) ? Model.Profile.DietType : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Notlar</div>
+                <div class="value">@(!string.IsNullOrWhiteSpace(Model.Profile?.Notes) ? Model.Profile.Notes : "—")</div>
+              </div>
+
+              <div class="field">
+                <div class="label">Profil Oluşturulma</div>
+                <div class="value">@((Model.Profile?.CreatedDate))</div>
+              </div>
+
             </div>
+          </div>
         </div>
-        <!-- Detaylı Bilgiler -->
-        <div class="col-lg-8">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-secondary bg-gradient text-white">
-                    <h5 class="mb-0">Profil ve Sağlık Bilgileri</h5>
-                </div>
-                <div class="card-body px-4">
-                    <div class="row g-3">
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Instagram:</label>
-                            <span>
-                                @if (!string.IsNullOrEmpty(Model.Profile?.Instagram))
-                                {
-                                    <a href="https://instagram.com/@Model.Profile.Instagram" target="_blank">@Model.Profile.Instagram</a>
-                                }
-                                else
-                                {
-                                    @("-")
-                                }
-                            </span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Cinsiyet:</label>
-                            <span>@(Model.Profile?.Gender != null ? Model.Profile.Gender : "-")</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Doğum Tarihi:</label>
-                            <span>@(Model.Profile?.BirthDate?.ToString("dd.MM.yyyy") ?? "-")</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Boy (cm):</label>
-                            <span>@(Model.Profile?.HeightCm?.ToString("0.0") ?? "-")</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Kilo (kg):</label>
-                            <span>@(Model.Profile?.WeightKg?.ToString("0.0") ?? "-")</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Vücut Tipi:</label>
-                            <span>@(Model.Profile?.BodyType != null ? Model.Profile.BodyType : "-")</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Kan Grubu:</label>
-                            <span>@(Model.Profile?.BloodType != null ? Model.Profile.BloodType : "-")</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Telefon:</label>
-                            <span>@Model.Profile?.PhoneNumber</span>
-                        </div>
-                        <div class="col-sm-12">
-                            <label class="fw-bold">Adres:</label>
-                            <span>@Model.Profile?.Address</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Acil Kişi Adı:</label>
-                            <span>@Model.Profile?.EmergencyContactName</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Acil Kişi Tel:</label>
-                            <span>@Model.Profile?.EmergencyContactPhone</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Tıbbi Geçmiş:</label>
-                            <span>@Model.Profile?.MedicalHistory</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Kronik Hastalıklar:</label>
-                            <span>@Model.Profile?.ChronicDiseases</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Kullandığı İlaçlar:</label>
-                            <span>@Model.Profile?.CurrentMedications</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Alerjiler:</label>
-                            <span>@Model.Profile?.Allergies</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Geçmiş Yaralanmalar:</label>
-                            <span>@Model.Profile?.PastInjuries</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Mevcut Ağrılar:</label>
-                            <span>@Model.Profile?.CurrentPain</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Hamilelik Durumu:</label>
-                            <span>
-                                @if (Model.Profile?.PregnancyStatus == true)
-                                {
-                                    <span class="badge bg-warning text-dark">Evet</span>
-                                }
-                                else if (Model.Profile?.PregnancyStatus == false)
-                                {
-                                    <span class="badge bg-secondary">Hayır</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-light text-dark">Belirtilmemiş</span>
-                                }
-                            </span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Son Tetkik Sonuçları:</label>
-                            <span>@Model.Profile?.LastCheckResults</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Sigara/Alkol:</label>
-                            <span>@Model.Profile?.SmokingAlcohol</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Meslek:</label>
-                            <span>@Model.Profile?.Occupation</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Deneyim Seviyesi:</label>
-                            <span>@(Model.Profile?.ExperienceLevel != null ? Model.Profile.ExperienceLevel : "-")</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Favori Sporlar:</label>
-                            <span>@Model.Profile?.FavoriteSports</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Notlar:</label>
-                            <span>@Model.Profile?.Notes</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Beslenme Tipi:</label>
-                            <span>@(Model.Profile?.DietType != null ? Model.Profile.DietType: "-")</span>
-                        </div>
-                        <div class="col-sm-6">
-                            <label class="fw-bold">Profil Oluşturulma:</label>
-                            <span>@(Model.Profile?.CreatedDate.ToString("dd.MM.yyyy HH:mm") ?? "-")</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> <!-- row -->
+      </div>
+    </div>
+
+  </div><!-- row -->
 </div>

@@ -15,7 +15,6 @@ namespace FraoulaPT.Services.Abstracts
         Task<List<ChatMessage>> GetChatHistoryAsync(Guid senderId, Guid receiverId);
         Task<List<StudentChatListDTO>> GetStudentsWhoMessagedCoachAsync(Guid coachId);
 
-
         //dashboard için
         Task<int> GetActiveChatsCountAsync();
         Task<string> GetAverageResponseTimeAsync();

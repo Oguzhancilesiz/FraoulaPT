@@ -1,0 +1,28 @@
+﻿<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light border border-secondary rounded-3">
+            <div class="modal-header border-0">
+                <h5 class="modal-title"><i class="bi bi-trash me-2 text-danger"></i>Silme Onayı</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Bu kaydı silmek istediğinize emin misiniz?
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                <a id="confirmDeleteBtn" class="btn btn-danger">Evet, Sil</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('click', function(e){
+      const a = e.target.closest('[data-delete-url]');
+      if(!a) return;
+      e.preventDefault();
+      const url = a.getAttribute('data-delete-url');
+      const btn = document.getElementById('confirmDeleteBtn');
+      btn.setAttribute('href', url);
+      const m = new bootstrap.Modal('#confirmDeleteModal'); m.show();
+    });
+</script>

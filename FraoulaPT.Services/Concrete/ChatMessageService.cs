@@ -144,6 +144,7 @@ namespace FraoulaPT.Services.Concrete
 
             return dateTime.ToLocalTime().ToString("dd.MM.yyyy HH:mm");
         }
+
     }
 
 }

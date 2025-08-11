@@ -1,18 +1,69 @@
-﻿
-@{
-    ViewData["Title"] = "Edit";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-}
+﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
 @model FraoulaPT.DTOs.AppRoleDTOs.AppRoleUpdateDTO
 
-<h2>Rol Düzenle</h2>
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="Id" />
-    <div asp-validation-summary="All" class="text-danger"></div>
-    <div class="mb-3">
-        <label class="form-label">Rol Adı</label>
-        <input asp-for="Name" class="form-control" maxlength="40" required />
+@{
+    ViewData["Title"] = "Rol Düzenle";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM
+            {
+                Title = "Rol Düzenle",
+                Subtitle = "Rol adını güncelleyebilirsiniz",
+                Breadcrumbs = new(){
+            new(){ Text="Dashboard", Url = Url.Action("Index","Dashboard", new{ area="Admin" }) },
+            new(){ Text="Roller",    Url = Url.Action("Index","AppRole",   new{ area="Admin" }) },
+            new(){ Text="Düzenle" }
+        }
+            };
+}
+
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
+
+<div class="container-fluid">
+    <div class="card ring shadow-soft">
+        <div class="card-body">
+            <form asp-area="Admin" asp-controller="AppRole" asp-action="Edit" method="post" id="roleEditForm" autocomplete="off">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label">Rol Adı</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-secondary"><i class="bi bi-shield-lock"></i></span>
+                        <input asp-for="Name" class="form-control bg-transparent border-secondary text-light" maxlength="40" required />
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                        <small class="text-muted"><span id="nameCount">0</span>/40</small>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <button type="submit" class="btn btn-brand px-4" id="btnSave">
+                        <i class="bi bi-check2-circle me-1"></i> Güncelle
+                    </button>
+                    <a asp-area="Admin" asp-controller="AppRole" asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> İptal
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-    <button type="submit" class="btn btn-primary">Güncelle</button>
-    <a asp-action="Index" class="btn btn-secondary">İptal</a>
-</form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function(){
+          const nameInput = document.getElementById("@Html.IdFor(m => m.Name)");
+          const countEl   = document.getElementById("nameCount");
+          const form      = document.getElementById("roleEditForm");
+          const btnSave   = document.getElementById("btnSave");
+          function upd(){ countEl.textContent = (nameInput.value||"").length; }
+          nameInput?.addEventListener("input", upd); upd();
+          form?.addEventListener("submit", function(){ btnSave?.setAttribute("disabled","disabled"); });
+        })();
+    </script>
+}

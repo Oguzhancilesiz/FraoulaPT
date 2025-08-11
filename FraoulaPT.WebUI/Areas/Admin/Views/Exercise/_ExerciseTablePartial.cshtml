@@ -1,87 +1,321 @@
-﻿@model List<FraoulaPT.DTOs.ExerciseDTOs.ExerciseListDTO>
-@using FraoulaPT.Core.Enums
+﻿@using FraoulaPT.Core.Enums
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
+@model List<FraoulaPT.DTOs.ExerciseDTOs.ExerciseListDTO>
 
-<table class="table table-hover shadow-sm bg-white rounded align-middle">
-    <thead class="table-light">
-        <tr>
-            <th>#</th>
-            <th>Görsel</th>
-            <th>Adı</th>
-            <th>Kategori</th>
-            <th>Açıklama</th>
-            <th>Video</th>
-            <th>Durum</th>
-            <th style="width:140px;">İşlemler</th>
-        </tr>
-    </thead>
-    <tbody id="exerciseTableBody">
-        @if (Model != null && Model.Any())
-        {
-            var row = 1;
-            foreach (var egzersiz in Model)
+@{
+    ViewData["Title"] = "Egzersizler";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM
             {
-                <tr>
-                    <td>@row</td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(egzersiz.ImageUrl))
-                        {
-                            <img src="@egzersiz.ImageUrl" alt="görsel" style="width:48px;height:48px;object-fit:cover;border-radius:7px;box-shadow:0 2px 10px #292e4922;">
-                        }
-                        else
-                        {
-                            <span class="text-muted">-</span>
-                        }
-                    </td>
-                    <td class="fw-bold">@egzersiz.Name</td>
-                    <td>@egzersiz.CategoryName</td>
-                    <td>@egzersiz.Description</td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(egzersiz.VideoUrl))
-                        {
-                            <a href="@egzersiz.VideoUrl" class="btn btn-outline-primary btn-sm" target="_blank">
-                                <i class="bi bi-play-btn"></i> İzle
-                            </a>
-                        }
-                        else
-                        {
-                            <span class="text-muted">Yok</span>
-                        }
-                    </td>
-                    <td>
-                        @if (egzersiz.Status == Status.Active)
-                        {
-                            <span class="badge bg-success">Aktif</span>
-                        }
-                        else if (egzersiz.Status == Status.DeActive)
-                        {
-                            <span class="badge bg-secondary">Pasif</span>
-                        }
-                        else if (egzersiz.Status == Status.Deleted)
-                        {
-                            <span class="badge bg-danger">Silindi</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-warning text-dark">Bilinmiyor</span>
-                        }
-                    </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@egzersiz.Id" class="btn btn-warning btn-sm me-1">
-                            <i class="bi bi-pencil"></i> Düzenle
-                        </a>
-                        <form asp-action="Delete" asp-route-id="@egzersiz.Id" method="post" class="d-inline" onsubmit="return confirm('Silmek istediğine emin misin?');">
-                            <button type="submit" class="btn btn-danger btn-sm">
-                                <i class="bi bi-trash"></i> Sil
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                row++;
-            }
+                Title = "Egzersizler",
+                Subtitle = "Egzersizleri listele, filtrele ve yönet",
+                Breadcrumbs = new(){
+            new(){ Text="Dashboard", Url=Url.Action("Index","Dashboard", new{ area="Admin" }) },
+            new(){ Text="Egzersizler" }
+        },
+                Buttons = new(){
+            new(){ Text="Egzersiz Ekle", Url=Url.Action("Create","Exercise", new{ area="Admin"}), Icon="bi-plus-circle", ColorClass="btn-brand" }
         }
-        else
-        {
-            <tr><td colspan="8" class="text-center text-muted">Sonuç bulunamadı.</td></tr>
-        }
-    </tbody>
-</table>
+            };
+}
+
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
+
+@{
+    // ViewBag'den sayfalama/filtre bilgilerini çek
+    int currentPage = ViewBag.Page is int v ? v : 1;
+    int currentPageSize = ViewBag.PageSize is int ps ? ps : 12;
+    int total = ViewBag.TotalItems is int t ? t : (Model?.Count ?? 0);
+    string q = ViewBag.Search as string ?? "";
+    object status = ViewBag.Status ?? null; // int ya da Status olabilir
+    Guid? categoryId = ViewBag.CategoryId is Guid g ? g : (Guid?)null;
+    var categories = ViewBag.Categories as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+
+    int totalPages = Math.Max(1, (int)Math.Ceiling((double)Math.Max(0, total) / Math.Max(1, currentPageSize)));
+
+    Func<Status, string> StatusBadge = s => s switch
+    {
+        Status.Active => "success",
+        Status.DeActive => "secondary",
+        Status.Deleted => "danger",
+        _ => "warning"
+    };
+}
+
+<div class="container-fluid">
+    <!-- Filtre / Arama çubuğu -->
+    <div class="card ring mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-2 align-items-end" id="filterForm">
+                <div class="col-12 col-md-4">
+                    <label class="form-label small text-muted">Ara</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-transparent border-secondary"><i class="bi bi-search"></i></span>
+                        <input name="q" value="@q" class="form-control bg-transparent border-secondary text-light" placeholder="Ad, açıklama, video...">
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <label class="form-label small text-muted">Kategori</label>
+                    <select name="categoryId" class="form-select form-select-sm bg-transparent border-secondary text-light">
+                        <option value="">Hepsi</option>
+                        @foreach (var c in categories)
+                        {
+                            var isSel = (categoryId?.ToString() ?? "") == (c.Value ?? "");
+                            if (isSel)
+                            {
+                                <option value="@c.Value" selected>@c.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@c.Value">@c.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-3">
+                    <label class="form-label small text-muted">Durum</label>
+                    <select name="status" class="form-select form-select-sm bg-transparent border-secondary text-light">
+                        <option value="">Hepsi</option>
+                        @{
+                            var st = status?.ToString() ?? "";
+                            var act = ((int)Status.Active).ToString();
+                            var dea = ((int)Status.DeActive).ToString();
+                            var del = ((int)Status.Deleted).ToString();
+                        }
+                        @if (st == act)
+                        {
+                            <option value="@act" selected>Aktif</option>
+                        }
+                        else
+                        {
+                            <option value="@act">Aktif</option>
+                        }
+                        @if (st == dea)
+                        {
+                            <option value="@dea" selected>Pasif</option>
+                        }
+                        else
+                        {
+                            <option value="@dea">Pasif</option>
+                        }
+                        @if (st == del)
+                        {
+                            <option value="@del" selected>Silindi</option>
+                        }
+                        else
+                        {
+                            <option value="@del">Silindi</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-1">
+                    <label class="form-label small text-muted">Sayfa</label>
+                    <input name="page" value="@(currentPage)" class="form-control form-control-sm bg-transparent border-secondary text-light text-center">
+                </div>
+
+                <div class="col-6 col-md-1">
+                    <label class="form-label small text-muted">/Sayfa</label>
+                    <select name="pageSize" class="form-select form-select-sm bg-transparent border-secondary text-light">
+                        @{
+                            var sizes = new[] { 6, 12, 24, 48 };
+                            foreach (var s in sizes)
+                            {
+                                if (s == currentPageSize)
+                                {
+                                    <option value="@s" selected>@s</option>
+                                }
+                                else
+                                {
+                                    <option value="@s">@s</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-12 d-flex gap-2 mt-1">
+                    <button class="btn btn-sm btn-brand" type="submit"><i class="bi bi-funnel me-1"></i> Uygula</button>
+                    <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("Index","Exercise", new{ area="Admin"})">Temizle</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste -->
+    <div class="card ring">
+        <div class="table-responsive">
+            <table class="table align-middle table-hover mb-0">
+                <thead>
+                    <tr class="small text-muted">
+                        <th class="text-nowrap">#</th>
+                        <th>Görsel</th>
+                        <th>Adı</th>
+                        <th class="d-none d-md-table-cell">Kategori</th>
+                        <th class="d-none d-lg-table-cell" style="width:30%">Açıklama</th>
+                        <th class="d-none d-md-table-cell">Video</th>
+                        <th>Durum</th>
+                        <th style="width:160px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="exerciseTableBody">
+                    @if (Model != null && Model.Any())
+                    {
+                        var indexStart = (currentPage - 1) * currentPageSize;
+                        var row = 0;
+                        foreach (var eg in Model)
+                        {
+                            <tr>
+                                <td class="text-muted">@(++row + indexStart)</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(eg.ImageUrl))
+                                    {
+                                        <img src="@eg.ImageUrl" alt="görsel" class="thumb" width="48" height="48">
+                                    }
+                                    else
+                                    {
+                                        <div class="thumb thumb-empty" title="Görsel yok"><i class="bi bi-image"></i></div>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">@eg.Name</div>
+                                    <div class="small text-muted d-md-none">@eg.CategoryName</div>
+                                    @if (!string.IsNullOrEmpty(eg.Description))
+                                    {
+                                        <div class="small text-muted d-lg-none line-clamp-1">@eg.Description</div>
+                                    }
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    <span class="badge text-bg-secondary">@eg.CategoryName</span>
+                                </td>
+                                <td class="d-none d-lg-table-cell">
+                                    <div class="line-clamp-2">@eg.Description</div>
+                                </td>
+                                <td class="d-none d-md-table-cell">
+                                    @if (!string.IsNullOrEmpty(eg.VideoUrl))
+                                    {
+                                        <a href="@eg.VideoUrl" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-play-btn"></i> İzle
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Yok</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        var badge = StatusBadge(eg.Status);
+                                        var text = eg.Status switch
+                                        {
+                                            Status.Active => "Aktif",
+                                            Status.DeActive => "Pasif",
+                                            Status.Deleted => "Silindi",
+                                            _ => "Bilinmiyor"
+                                        };
+                                    }
+                                    <span class="badge text-bg-@badge">@text</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <a asp-area="Admin" asp-controller="Exercise" asp-action="Edit" asp-route-id="@eg.Id" class="btn btn-warning btn-sm">
+                                            <i class="bi bi-pencil"></i> Düzenle
+                                        </a>
+                                        <form asp-area="Admin" asp-controller="Exercise" asp-action="Delete" asp-route-id="@eg.Id"
+                                              method="post" class="d-inline-block"
+                                              onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="bi bi-trash"></i> Sil
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="8" class="text-center text-muted py-5">Sonuç bulunamadı.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Sayfalama -->
+        <div class="card-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="small text-muted">
+                Toplam <strong>@total</strong> kayıt • Sayfa <strong>@(currentPage)</strong>/<strong>@totalPages</strong>
+            </div>
+            <nav aria-label="Sayfalama">
+                <ul class="pagination pagination-sm mb-0">
+                    @{
+                        string Link(int p) => Url.Action("Index", "Exercise", new
+                        {
+                            area = "Admin",
+                            q = q,
+                            categoryId = categoryId,
+                            status = status,
+                            page = p,
+                            pageSize = currentPageSize
+                        })!;
+                        var prevDisabled = currentPage <= 1 ? "disabled" : "";
+                        var nextDisabled = currentPage >= totalPages ? "disabled" : "";
+                    }
+                    <li class="page-item @prevDisabled">
+                        <a class="page-link" href="@(currentPage>1?Link(currentPage-1):"#")" tabindex="-1">«</a>
+                    </li>
+
+                    @{
+                        int start = Math.Max(1, currentPage - 2);
+                        int end = Math.Min(totalPages, currentPage + 2);
+                        if (start > 1)
+                        {
+                            <li class="page-item"><a class="page-link" href="@Link(1)">1</a></li>
+                            if (start > 2)
+                            {
+                                <li class="page-item disabled"><span class="page-link">…</span></li>
+                            }
+                        }
+                        for (int i = start; i <= end; i++)
+                        {
+                            var active = i == currentPage ? "active" : "";
+                            <li class="page-item @active"><a class="page-link" href="@Link(i)">@i</a></li>
+                        }
+                        if (end < totalPages)
+                        {
+                            if (end < totalPages - 1)
+                            {
+                                <li class="page-item disabled"><span class="page-link">…</span></li>
+                            }
+                            <li class="page-item"><a class="page-link" href="@Link(totalPages)">@totalPages</a></li>
+                        }
+                    }
+
+                    <li class="page-item @nextDisabled">
+                        <a class="page-link" href="@(currentPage<totalPages?Link(currentPage+1):"#")">»</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Filtrelerde değişiklikte sayfayı 1'e çekip otomatik uygula
+        (function(){
+          const form = document.getElementById('filterForm');
+          const onChangeSubmit = ()=>{
+            if(!form) return;
+            const pageInput = form.querySelector('input[name="page"]');
+            if(pageInput){ pageInput.value = 1; }
+            form.submit();
+          };
+          form?.querySelectorAll('select').forEach(s=> s.addEventListener('change', onChangeSubmit));
+        })();
+    </script>
+}

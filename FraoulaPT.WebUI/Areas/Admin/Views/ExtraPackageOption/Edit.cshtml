@@ -1,71 +1,149 @@
-﻿@using FraoulaPT.Core.Enums
+﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
+@using FraoulaPT.Core.Enums
 @using FraoulaPT.DTOs.ExtraPackageOptionDTOs
 @model ExtraPackageOptionUpdateDTO
+
 @{
     ViewData["Title"] = "Ek Paket Seçeneğini Düzenle";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM
+            {
+                Title = "Ek Paket Seçeneğini Düzenle",
+                Subtitle = "Mevcut ek kullanım hakkı tanımını güncelle",
+                Breadcrumbs = new(){
+            new(){ Text = "Dashboard", Url = Url.Action("Index","Dashboard", new{ area="Admin" }) },
+            new(){ Text = "Ek Paketler", Url = Url.Action("Index","ExtraPackageOption", new{ area="Admin" }) },
+            new(){ Text = "Düzenle" }
+        },
+                Buttons = new(){
+            new(){ Text="Tüm Ek Seçenekler", Url=Url.Action("Index","ExtraPackageOption", new{ area="Admin"}), Icon="bi-puzzle", ColorClass="btn-outline-light" }
+        }
+            };
 }
 
-<div class="container mt-4">
-    <h2 class="mb-4"><i class="bi bi-pencil-square me-1"></i> Ek Paket Seçeneğini Düzenle</h2>
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
 
-    <form asp-action="Edit" method="post" class="row g-3">
-        <input type="hidden" asp-for="Id" />
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-7 col-xl-6">
+            <div class="card ring shadow-soft">
+                <div class="card-body p-3 p-md-4">
 
-        <div class="col-md-6">
-            <label asp-for="Name" class="form-label">Ad</label>
-            <input asp-for="Name" class="form-control" />
-            <span asp-validation-for="Name" class="text-danger"></span>
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+                    <form asp-area="Admin" asp-controller="ExtraPackageOption" asp-action="Edit" method="post" autocomplete="off" id="epoEditForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Ad</label>
+                            <input asp-for="Name"
+                                   class="form-control bg-transparent border-secondary text-light"
+                                   maxlength="80" required />
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="text-muted">Müşteriye görünen kısa bir ad kullanın.</small>
+                                <small class="text-muted"><span id="nameCount">0</span>/80</small>
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Type" class="form-label">Tür</label>
+                                <select asp-for="Type"
+                                        asp-items="Html.GetEnumSelectList<ExtraUsageType>()"
+                                        class="form-select bg-transparent border-secondary text-light" required>
+                                    <option value="">Seçiniz</option>
+                                </select>
+                                <span asp-validation-for="Type" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Amount" class="form-label">Adet</label>
+                                <input asp-for="Amount" type="number" min="1" step="1"
+                                       class="form-control bg-transparent border-secondary text-light"
+                                       placeholder="Örn: 10" required />
+                                <span asp-validation-for="Amount" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Price" class="form-label">Fiyat (₺)</label>
+                                <input asp-for="Price" type="number" min="0" step="0.01"
+                                       class="form-control bg-transparent border-secondary text-light"
+                                       placeholder="Örn: 199.90" required />
+                                <span asp-validation-for="Price" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label d-block">Durum</label>
+                                <div class="form-check form-switch">
+                                    <input asp-for="IsActive" class="form-check-input" id="isActiveSwitch" />
+                                    <label class="form-check-label" for="isActiveSwitch">
+                                        @(@Model.IsActive ? "Aktif" : "Pasif")
+                                    </label>
+                                </div>
+                                <span asp-validation-for="IsActive" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Description" class="form-label">Açıklama</label>
+                                <textarea asp-for="Description" rows="3"
+                                          class="form-control bg-transparent border-secondary text-light"
+                                          placeholder="Opsiyonel açıklama… (ör. Geçerlilik koşulları)"></textarea>
+                                <div class="d-flex justify-content-end mt-1">
+                                    <small class="text-muted"><span id="descCount">0</span>/300</small>
+                                </div>
+                                <span asp-validation-for="Description" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap justify-content-end gap-2 mt-4">
+                            <a asp-area="Admin" asp-controller="ExtraPackageOption" asp-action="Index"
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i> Geri Dön
+                            </a>
+                            <button type="submit" class="btn btn-brand">
+                                <i class="bi bi-save2 me-1"></i> Güncelle
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
         </div>
-
-        <div class="col-md-6">
-            <label asp-for="Type" class="form-label">Tür</label>
-            <select asp-for="Type" asp-items="Html.GetEnumSelectList<ExtraUsageType>()" class="form-select">
-                <option value="">Seçiniz</option>
-            </select>
-            <span asp-validation-for="Type" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-6">
-            <label asp-for="Amount" class="form-label">Adet</label>
-            <input asp-for="Amount" class="form-control" />
-            <span asp-validation-for="Amount" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-6">
-            <label asp-for="Price" class="form-label">Fiyat (₺)</label>
-            <input asp-for="Price" class="form-control" />
-            <span asp-validation-for="Price" class="text-danger"></span>
-        </div>
-
-        <div class="col-12">
-            <label asp-for="Description" class="form-label">Açıklama</label>
-            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-            <span asp-validation-for="Description" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-6">
-            <label asp-for="IsActive" class="form-label">Aktif mi?</label>
-            <select asp-for="IsActive" class="form-select">
-                <option value="true">Evet</option>
-                <option value="false">Hayır</option>
-            </select>
-            <span asp-validation-for="IsActive" class="text-danger"></span>
-        </div>
-
-        <div class="col-12 d-flex justify-content-between mt-4">
-            <a asp-action="Index" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Geri Dön
-            </a>
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-save2"></i> Güncelle
-            </button>
-        </div>
-    </form>
+    </div>
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function(){
+          const nameEl = document.getElementById("Name");
+          const descEl = document.getElementById("Description");
+          const nameC  = document.getElementById("nameCount");
+          const descC  = document.getElementById("descCount");
+          const activeSwitch = document.getElementById("isActiveSwitch");
+          const activeLabel  = document.querySelector("label[for='isActiveSwitch']");
+
+          const upd = (el, lbl) => { if(el && lbl){ lbl.textContent = (el.value||"").length; } };
+          nameEl?.addEventListener("input", ()=>upd(nameEl, nameC)); upd(nameEl, nameC);
+          descEl?.addEventListener("input", ()=>upd(descEl, descC)); upd(descEl, descC);
+
+          // Amount/Price için negatif ve bilimsel format koruması
+          ["Amount","Price"].forEach(id=>{
+            const el = document.getElementById(id);
+            el?.addEventListener("input", ()=>{
+              if(!el.value) return;
+              el.value = el.value.replace(/[eE\+\-]/g,""); // e/E,+,- engelle
+              if(+el.value < 0) el.value = 0;
+            });
+          });
+
+          // switch label'ını canlı güncelle
+          activeSwitch?.addEventListener("change", ()=>{
+            if(activeLabel){ activeLabel.textContent = activeSwitch.checked ? "Aktif" : "Pasif"; }
+          });
+        })();
+    </script>
 }

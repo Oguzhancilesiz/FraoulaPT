@@ -1,0 +1,96 @@
+﻿@using FraoulaPT.Core.Enums
+@model List<FraoulaPT.DTOs.ExerciseDTOs.ExerciseListDTO>
+
+@functions {
+    string Badge(Status s) => s switch
+    {
+        Status.Active => "success",
+        Status.DeActive => "secondary",
+        Status.Deleted => "danger",
+        Status.Updated => "warning",
+        _ => "secondary"
+    };
+    string Text(Status s) => s switch
+    {
+        Status.Active => "Aktif",
+        Status.DeActive => "Pasif",
+        Status.Deleted => "Silindi",
+        Status.Updated => "Güncellendi",
+        _ => "Bilinmiyor"
+    };
+}
+
+@if (Model != null && Model.Any())
+{
+    var row = 0;
+    foreach (var eg in Model)
+    {
+        <tr>
+            <td class="text-muted">@(++row)</td>
+            <td>
+                @if (!string.IsNullOrEmpty(eg.ImageUrl))
+                {
+                    <img src="@eg.ImageUrl" alt="görsel" class="thumb" />
+                }
+                else
+                {
+                    <div class="thumb thumb-empty" title="Görsel yok"><i class="bi bi-image"></i></div>
+                }
+            </td>
+            <td>
+                <div class="fw-semibold">@eg.Name</div>
+                <div class="small text-muted d-md-none">@eg.CategoryName</div>
+                @if (!string.IsNullOrEmpty(eg.Description))
+                {
+                    <div class="small text-muted d-lg-none line-clamp-1">@eg.Description</div>
+                }
+            </td>
+            <td class="d-none d-md-table-cell">
+                <span class="badge text-bg-secondary">@eg.CategoryName</span>
+            </td>
+            <td class="d-none d-lg-table-cell">
+                <div class="line-clamp-2">@eg.Description</div>
+            </td>
+            <td class="d-none d-md-table-cell">
+                @if (!string.IsNullOrEmpty(eg.VideoUrl))
+                {
+                    <a href="@eg.VideoUrl" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-play-btn"></i> İzle
+                    </a>
+                }
+                else
+                {
+                    <span class="text-muted">Yok</span>
+                }
+            </td>
+            <td>
+                @{
+                    var b = Badge(eg.Status);
+                    var t = Text(eg.Status);
+                }
+                <span class="badge text-bg-@b">@t</span>
+            </td>
+            <td>
+                <div class="d-flex flex-wrap gap-1">
+                    <a asp-area="Admin" asp-controller="Exercise" asp-action="Edit" asp-route-id="@eg.Id"
+                       class="btn btn-warning btn-sm">
+                        <i class="bi bi-pencil"></i> Düzenle
+                    </a>
+                    <form asp-area="Admin" asp-controller="Exercise" asp-action="Delete" asp-route-id="@eg.Id"
+                          method="post" class="d-inline-block"
+                          onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="bi bi-trash"></i> Sil
+                        </button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+    }
+}
+else
+{
+    <tr>
+        <td colspan="8" class="text-center text-muted py-5">Sonuç bulunamadı.</td>
+    </tr>
+}

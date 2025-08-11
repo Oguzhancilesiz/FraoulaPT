@@ -1,117 +1,249 @@
-﻿@model FraoulaPT.DTOs.WorkoutProgramDTOs.WorkoutProgramCreateDTO
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@using System.Text.Json
+@model FraoulaPT.DTOs.WorkoutProgramDTOs.WorkoutProgramCreateDTO
+
 @{
     ViewData["Title"] = "Program Oluştur";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var exerciseItems = (IEnumerable<SelectListItem>)(ViewBag.Exercises ?? Enumerable.Empty<SelectListItem>());
+    var exercisesJson = JsonSerializer.Serialize(exerciseItems.Select(x => new { value = x.Value, text = x.Text }));
 }
 
-<h2>Program Oluştur</h2>
+<div class="container-fluid py-3">
+    <div class="card ring shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="bi bi-clipboard-plus me-2"></i>Program Oluştur</h4>
+            <small class="text-muted">Gün ve egzersizleri aşağıdan ekleyin</small>
+        </div>
 
-<form asp-action="Create" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="UserWeeklyFormId" />
+        <div class="card-body">
+            <form asp-action="Create" method="post" autocomplete="off" id="programForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="UserWeeklyFormId" />
 
-    <div class="mb-3">
-        <label asp-for="ProgramName" class="form-label">Program Başlığı</label>
-        <input asp-for="ProgramName" class="form-control" />
-        <span asp-validation-for="ProgramName" class="text-danger"></span>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="ProgramName" class="form-label">Program Başlığı</label>
+                        <input asp-for="ProgramName" class="form-control" />
+                        <span asp-validation-for="ProgramName" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Genel Not</label>
+                        <textarea asp-for="CoachNote" rows="1" class="form-control"></textarea>
+                        <span asp-validation-for="CoachNote" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">Günlük Egzersizler</h5>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnAddDay">
+                            <i class="bi bi-plus-circle me-1"></i>Gün Ekle
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="btnAddPreset">
+                            <i class="bi bi-magic me-1"></i>3 Gün (Pzt/Çar/Cuma)
+                        </button>
+                    </div>
+                </div>
+
+                <div id="daysContainer" class="d-flex flex-column gap-3"></div>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check2-circle me-1"></i>Programı Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label asp-for="CoachNote" class="form-label">Genel Not</label>
-        <textarea asp-for="CoachNote" class="form-control"></textarea>
-        <span asp-validation-for="CoachNote" class="text-danger"></span>
-    </div>
+<style>
+    .ring {
+        border: 1px solid var(--border);
+    }
 
-    <hr />
-    <h4>Günlük Egzersizler</h4>
-    <div id="daysContainer">
-        <!-- Günler buraya eklenecek -->
-    </div>
+    .day-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+    }
 
-    <button type="button" class="btn btn-outline-primary mb-3" onclick="addDay()">+ Gün Ekle</button>
+    .exercise-block {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+    }
 
-    <button type="submit" class="btn btn-success">Programı Kaydet</button>
-</form>
+    .handle {
+        cursor: grab;
+    }
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-
     <script>
-        let dayIndex = 0;
+        // Egzersiz listesi (server’dan güvenli JSON)
+        const EXERCISES = JSON.parse('@Html.Raw(exercisesJson)');
 
-        function addDay() {
-            const container = document.getElementById("daysContainer");
+        const daysContainer = document.getElementById('daysContainer');
+        const btnAddDay = document.getElementById('btnAddDay');
+        const btnAddPreset = document.getElementById('btnAddPreset');
 
-            const dayHtml = `
-                <div class="card mb-3 day-block">
-                    <div class="card-body">
-                        <h5>Gün</h5>
-                        <div class="mb-2">
-                            <label>Haftanın Günü</label>
-                            <select name="Days[${dayIndex}].DayOfWeek" class="form-select">
-                                <option value="1">Pazartesi</option>
-                                <option value="2">Salı</option>
-                                <option value="3">Çarşamba</option>
-                                <option value="4">Perşembe</option>
-                                <option value="5">Cuma</option>
-                                <option value="6">Cumartesi</option>
-                                <option value="0">Pazar</option>
-                            </select>
-                        </div>
+        // Gün şablonu
+        function createDayBlock() {
+          const wrap = document.createElement('div');
+          wrap.className = 'day-card p-3';
+          wrap.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-grip-vertical handle text-muted"></i>
+                <strong>Gün <span data-role="dayIndex">1</span></strong>
+              </div>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-action="add-ex">
+                  <i class="bi bi-plus-lg"></i> Egzersiz Ekle
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-action="remove-day">
+                  <i class="bi bi-x-lg"></i> Kaldır
+                </button>
+              </div>
+            </div>
 
-                        <div class="exercise-list" id="exerciseList-${dayIndex}"></div>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addExercise(${dayIndex})">+ Egzersiz Ekle</button>
-                    </div>
-                </div>
-            `;
+            <div class="row g-2 mb-2">
+              <div class="col-12 col-md-4">
+                <label class="form-label small text-muted">Haftanın Günü</label>
+                <select name="Days[0].DayOfWeek" class="form-select">
+                  <option value="1">Pazartesi</option>
+                  <option value="2">Salı</option>
+                  <option value="3">Çarşamba</option>
+                  <option value="4">Perşembe</option>
+                  <option value="5">Cuma</option>
+                  <option value="6">Cumartesi</option>
+                  <option value="0">Pazar</option>
+                </select>
+              </div>
+              <div class="col-12 col-md-8">
+                <label class="form-label small text-muted">Gün Notu (opsiyonel)</label>
+                <input name="Days[0].Note" class="form-control" />
+              </div>
+            </div>
 
-            container.insertAdjacentHTML("beforeend", dayHtml);
-            dayIndex++;
+            <div class="ex-list"></div>
+          `;
+          // eventler
+          wrap.querySelector('[data-action="add-ex"]').addEventListener('click', () => addExerciseBlock(wrap));
+          wrap.querySelector('[data-action="remove-day"]').addEventListener('click', () => { wrap.remove(); renumberAll(); });
+          return wrap;
         }
 
-        function addExercise(dayIdx) {
-            const container = document.getElementById(`exerciseList-${dayIdx}`);
-
-            const exIdx = container.querySelectorAll('.exercise-block').length;
-
-            const exHtml = `
-                <div class="exercise-block border p-3 mb-2 rounded bg-light">
-                    <div class="mb-2">
-                        <label>Egzersiz</label>
-                        <select name="Days[${dayIdx}].Exercises[${exIdx}].ExerciseId" class="form-select">
-        @* Bu kısım controllerdan ViewBag.Exercises ile dolu gelmeli *@
-        @foreach (var ex in ViewBag.Exercises as List<SelectListItem>)
-        {
-                                    <option value="@ex.Value">@ex.Text</option>
+        // Egzersiz select HTML’ini oluştur
+        function buildExerciseSelect(nameAttr) {
+          const opts = EXERCISES.map(e => `<option value="${e.value}">${e.text}</option>`).join('');
+          return `<select name="${nameAttr}" class="form-select">${opts}</select>`;
         }
-                        </select>
-                    </div>
-                    <div class="row g-2">
-                        <div class="col">
-                            <label>Set</label>
-                            <input name="Days[${dayIdx}].Exercises[${exIdx}].SetCount" type="number" class="form-control" />
-                        </div>
-                        <div class="col">
-                            <label>Tekrar</label>
-                            <input name="Days[${dayIdx}].Exercises[${exIdx}].Repetition" type="number" class="form-control" />
-                        </div>
-                        <div class="col">
-                            <label>Kilo (kg)</label>
-                            <input name="Days[${dayIdx}].Exercises[${exIdx}].Weight" type="number" class="form-control" />
-                        </div>
-                        <div class="col">
-                            <label>Dinlenme (sn)</label>
-                            <input name="Days[${dayIdx}].Exercises[${exIdx}].RestDurationInSeconds" type="number" class="form-control" />
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <label>Not</label>
-                        <textarea name="Days[${dayIdx}].Exercises[${exIdx}].Note" class="form-control"></textarea>
-                    </div>
-                </div>
-            `;
 
-            container.insertAdjacentHTML("beforeend", exHtml);
+        // Egzersiz şablonu
+        function addExerciseBlock(dayEl) {
+          const list = dayEl.querySelector('.ex-list');
+          const exWrap = document.createElement('div');
+          exWrap.className = 'exercise-block p-3 mb-2';
+          exWrap.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <strong>Egzersiz</strong>
+              <button type="button" class="btn btn-sm btn-outline-danger" data-action="remove-ex">
+                <i class="bi bi-trash"></i> Sil
+              </button>
+            </div>
+
+            <div class="row g-2">
+              <div class="col-12 col-md-6">
+                <label class="form-label small text-muted">Hareket</label>
+                ${buildExerciseSelect('Days[0].Exercises[0].ExerciseId')}
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label small text-muted">Set</label>
+                <input type="number" class="form-control" name="Days[0].Exercises[0].SetCount" min="1" value="3" />
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label small text-muted">Tekrar</label>
+                <input type="number" class="form-control" name="Days[0].Exercises[0].Repetition" min="1" value="10" />
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label small text-muted">Kilo (kg)</label>
+                <input type="number" class="form-control" name="Days[0].Exercises[0].Weight" step="0.5" />
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label small text-muted">Dinlenme (sn)</label>
+                <input type="number" class="form-control" name="Days[0].Exercises[0].RestDurationInSeconds" min="0" value="60" />
+              </div>
+              <div class="col-12">
+                <label class="form-label small text-muted">Not</label>
+                <textarea class="form-control" name="Days[0].Exercises[0].Note" rows="1"></textarea>
+              </div>
+            </div>
+          `;
+          exWrap.querySelector('[data-action="remove-ex"]').addEventListener('click', () => { exWrap.remove(); renumberAll(); });
+          list.appendChild(exWrap);
+          renumberAll();
         }
+
+        // Gün ekle
+        btnAddDay.addEventListener('click', () => {
+          const d = createDayBlock();
+          daysContainer.appendChild(d);
+          // varsayılan 1 egzersiz satırı
+          addExerciseBlock(d);
+          renumberAll();
+        });
+
+        // Hazır 3 gün ekle (Pzt, Çar, Cuma)
+        btnAddPreset.addEventListener('click', () => {
+          daysContainer.innerHTML = '';
+          [1,3,5].forEach(dow => {
+            const d = createDayBlock();
+            daysContainer.appendChild(d);
+            addExerciseBlock(d);
+            // haftanın günü set
+            d.querySelector('select[name^="Days["]').value = String(dow);
+          });
+          renumberAll();
+        });
+
+        // İsimleri tekrar numaralandır (Days[i], Exercises[j])
+        function renumberAll(){
+          const dayBlocks = Array.from(daysContainer.querySelectorAll('.day-card'));
+          dayBlocks.forEach((dayEl, di) => {
+            // başlık index
+            const idxEl = dayEl.querySelector('[data-role="dayIndex"]');
+            if (idxEl) idxEl.textContent = String(di + 1);
+
+            // gün alanları
+            dayEl.querySelectorAll('[name]').forEach(n => {
+              n.name = n.name.replace(/Days\[\d+\]/g, `Days[${di}]`);
+            });
+
+            // egzersizler
+            const exBlocks = Array.from(dayEl.querySelectorAll('.exercise-block'));
+            exBlocks.forEach((exEl, ei) => {
+              exEl.querySelectorAll('[name]').forEach(n => {
+                n.name = n.name
+                  .replace(/Days\[\d+\]/g, `Days[${di}]`)
+                  .replace(/Exercises\[\d+\]/g, `Exercises[${ei}]`);
+              });
+            });
+          });
+        }
+
+        // En az bir gün zorunlu olsun (submit’te kontrol)
+        document.getElementById('programForm').addEventListener('submit', (e)=>{
+          if (!daysContainer.querySelector('.day-card')) {
+            e.preventDefault();
+            alert('Lütfen en az bir gün ve egzersiz ekleyin.');
+          }
+        });
     </script>
 }

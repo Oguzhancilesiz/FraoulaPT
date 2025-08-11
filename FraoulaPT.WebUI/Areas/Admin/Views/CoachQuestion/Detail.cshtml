@@ -1,80 +1,150 @@
 ﻿@model FraoulaPT.DTOs.UserQuestionDTOs.UserQuestionAnswerDTO
+@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
 
 @{
     ViewData["Title"] = "Soru Detayı";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM
+            {
+                Title = "Soru Detayı",
+                Subtitle = "Öğrenci sorusuna yanıt verin",
+                Breadcrumbs = new() {
+            new(){ Text = "Dashboard", Url = Url.Action("Index","Dashboard", new{ area="Admin"}) },
+            new(){ Text = "Soru-Cevap", Url = Url.Action("Index","CoachQuestion", new{ area="Admin"}) },
+            new(){ Text = "Detay" }
+        }
+            };
 }
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
 
-<div class="container py-4">
-    <h3>📌 Soru Detayı</h3>
+<div class="container-fluid">
+    <div class="row g-3">
+        <div class="col-12 col-lg-7">
+            <div class="card ring">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="@Model.AskedByUserPhoto" class="rounded-circle ring me-2" width="52" height="52" alt="pp" />
+                        <div>
+                            <div class="fw-semibold">@Model.AskedByUserName</div>
+                            <div class="text-muted small">@Model.AskedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(Model.AnswerText))
+                        {
+                            <span class="ms-auto badge text-bg-success">Cevaplanmış</span>
+                        }
+                        else
+                        {
+                            <span class="ms-auto badge text-bg-warning text-dark">Henüz cevaplanmadı</span>
+                        }
+                    </div>
 
-    <div class="card shadow-sm border-primary mb-4">
-        <div class="card-body">
-            <div class="d-flex align-items-center mb-3">
-                <img src="@Model.AskedByUserPhoto" class="rounded-circle me-2" width="50" height="50" />
-                <div>
-                    <strong>@Model.AskedByUserName</strong>
-                    <div class="text-muted small">🗓 @Model.AskedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                    <div class="p-3 rounded" style="background:var(--panel-2); border:1px solid var(--border)">
+                        <div class="small text-muted mb-1">Soru</div>
+                        <div class="fs-6">@Model.QuestionText</div>
+                    </div>
                 </div>
             </div>
-            <p class="fw-bold">❓ @Model.QuestionText</p>
         </div>
-    </div>
 
-    <!-- Cevap Formu -->
-    <div class="card shadow-sm border-success">
-        <div class="card-header bg-success text-white">
-            ✏️ Cevap Ver
-        </div>
-        <div class="card-body">
-            <textarea id="AnswerText" class="form-control mb-3" rows="4" placeholder="Cevabınızı buraya yazın...">@Model.AnswerText</textarea>
-            <button id="btnAnswer" class="btn btn-success">
-                💬 Cevapla
-            </button>
+        <!-- Cevap Formu -->
+        <div class="col-12 col-lg-5">
+            <div class="card ring">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>✏️ Cevap Ver</strong>
+                    <span class="small text-muted"><span id="charCount">0</span>/2000</span>
+                </div>
+                <div class="card-body">
+                    <form id="answerForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="QuestionId" value="@Model.QuestionId" />
+                        <textarea id="AnswerText" name="AnswerText" class="form-control mb-2"
+                                  rows="5" maxlength="2000"
+                                  placeholder="Cevabınızı buraya yazın…">@Model.AnswerText</textarea>
+
+                        <div class="d-flex gap-2">
+                            <button id="btnAnswer" type="submit" class="btn btn-brand">
+                                <i class="bi bi-send-fill me-1"></i> Cevapla
+                            </button>
+                            <a class="btn btn-outline-secondary" asp-area="Admin" asp-controller="CoachQuestion" asp-action="Index">
+                                Geri Dön
+                            </a>
+                        </div>
+                        <div class="form-text mt-2">Kısayol: <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Enter</kbd> ile gönder</div>
+                    </form>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.AnswerText))
+            {
+                <div class="card ring mt-3">
+                    <div class="card-header"><strong>📨 Verilen Cevap</strong></div>
+                    <div class="card-body">
+                        <div class="text-muted small mb-2">Tarih: @Model.AskedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                        <div>@Model.AnswerText</div>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        $(document).ready(function () {
-            $("#btnAnswer").click(function () {
-                var answerText = $("#AnswerText").val().trim();
-                if (!answerText) {
-                    Swal.fire({
-                        icon: "warning",
-                        title: "Boş cevap gönderemezsiniz",
-                        confirmButtonText: "Tamam"
-                    });
-                    return;
-                }
+        (function(){
+          const txt = document.getElementById("AnswerText");
+          const cnt = document.getElementById("charCount");
+          const form= document.getElementById("answerForm");
 
-                $.ajax({
-                    url: '/Admin/CoachQuestion/Answer', // 📌 Yeni endpoint
-                    type: 'POST',
-                    data: {
-                        QuestionId: '@Model.QuestionId',
-                        AnswerText: answerText
-                    },
-                    success: function (res) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Cevap kaydedildi!",
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => {
-                            window.location.href = '/Admin/CoachQuestion/Index';
-                        });
-                    },
-                    error: function (xhr) {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Hata!",
-                            text: xhr.responseText || "Cevap kaydedilemedi."
-                        });
-                    }
-                });
-            });
-        });
+          // sayaç + auto-grow  (max 2000)
+          const updateCounter = ()=> { cnt.textContent = (txt.value||"").length; };
+          txt.addEventListener("input", ()=>{
+            updateCounter();
+            txt.style.height = "auto";
+            txt.style.height = Math.min(txt.scrollHeight, 260) + "px";
+          });
+          updateCounter();
+
+          // Ctrl/Cmd + Enter ile gönder
+          txt.addEventListener("keydown", function(e){
+            if((e.ctrlKey || e.metaKey) && e.key === "Enter"){
+              e.preventDefault(); form.requestSubmit();
+            }
+          });
+
+          // AJAX submit (antiforgery dahil)
+          form.addEventListener("submit", async function(e){
+            e.preventDefault();
+            const answer = txt.value.trim();
+            if(!answer){
+              Swal.fire({ icon:"warning", title:"Boş cevap gönderemezsiniz" });
+              return;
+            }
+
+            const fd = new FormData(form);
+            const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            const btn = document.getElementById("btnAnswer");
+            btn.disabled = true;
+
+            try{
+              const res = await fetch('@Url.Action("Answer", "CoachQuestion", new { area = "Admin" })', {
+                method: "POST",
+                headers: { "RequestVerificationToken": token },
+                body: fd
+              });
+              if(!res.ok){
+                const t = await res.text();
+                throw new Error(t || ("HTTP "+res.status));
+              }
+              Swal.fire({ icon:"success", title:"Cevap kaydedildi!", timer:1400, showConfirmButton:false })
+                .then(()=> window.location.href='@Url.Action("Index", "CoachQuestion", new { area = "Admin" })');
+            }catch(err){
+              Swal.fire({ icon:"error", title:"Hata!", text: err.message || "Cevap kaydedilemedi." });
+            }finally{
+              btn.disabled = false;
+            }
+          });
+        })();
     </script>
 }
