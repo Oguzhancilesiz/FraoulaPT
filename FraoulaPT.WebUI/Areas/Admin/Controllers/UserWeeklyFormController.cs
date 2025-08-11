@@ -3,6 +3,7 @@ using FraoulaPT.DTOs.UserWeeklyFormDTOs;
 using FraoulaPT.Entity;
 using FraoulaPT.Services.Abstracts;
 using FraoulaPT.Services.Concrete;
+using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -42,7 +43,12 @@ namespace FraoulaPT.WebUI.Areas.Admin.Controllers
             var form = await _formService.GetDetailWithPhotosByIdAsync(id);
             if (form == null)
                 return NotFound();
-
+            //var user = await _userManager.GetUserIdAsync(form.Id);
+            //ViewBag.UserFullName = user?.FullName;
+            //ViewBag.UserEmail = user?.Email;
+            //ViewBag.UserPhotoUrl = user?.ProfilePhotoUrl;
+            //ViewBag.UserRegisteredAt = user?.CreatedDate;
+            //ViewBag.UserId = user?.Id;
             return View(form); // Areas/Admin/Views/UserWeeklyForm/Detail.cshtml
         }
         public async Task<IActionResult> GetLastFormPartial(Guid id)

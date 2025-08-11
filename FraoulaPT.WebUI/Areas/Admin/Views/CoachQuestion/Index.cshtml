@@ -1,31 +1,61 @@
-﻿@model List<FraoulaPT.DTOs.UserQuestionDTOs.AllUserQuestionDTO>
+﻿@using System.Linq
+@model List<FraoulaPT.DTOs.UserQuestionDTOs.AllUserQuestionDTO>
+@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
 
 @{
     ViewData["Title"] = "Gelen Sorular";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 
-    var answered = Model.Where(q => !string.IsNullOrWhiteSpace(q.AnswerText)).OrderByDescending(q => q.AnsweredAt).ToList();
-    var unanswered = Model.Where(q => string.IsNullOrWhiteSpace(q.AnswerText)).OrderByDescending(q => q.AskedAt).ToList();
+    var header = new PageHeaderVM
+            {
+                Title = "Gelen Sorular",
+                Subtitle = "Öğrencilerinizden gelen soru kutusu",
+                Breadcrumbs = new(){
+            new(){ Text="Dashboard", Url=Url.Action("Index","Dashboard", new{ area="Admin"}) },
+            new(){ Text="Soru-Cevap" }
+        }
+            };
+
+    var list = Model ?? new List<FraoulaPT.DTOs.UserQuestionDTOs.AllUserQuestionDTO>();
+    var answered = list.Where(q => !string.IsNullOrWhiteSpace(q.AnswerText)).OrderByDescending(q => q.AnsweredAt).ToList();
+    var unanswered = list.Where(q => string.IsNullOrWhiteSpace(q.AnswerText)).OrderByDescending(q => q.AskedAt).ToList();
 }
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
 
-<div class="container py-4">
-    <h2 class="mb-4">📩 Gelen Sorular</h2>
+<div class="container-fluid">
 
+    <!-- Araç çubuğu -->
+    <div class="card ring mb-3">
+        <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+            <div class="input-group input-group-sm" style="max-width:420px;">
+                <span class="input-group-text bg-transparent border-secondary"><i class="bi bi-search"></i></span>
+                <input id="qSearch" class="form-control bg-transparent border-secondary text-light" placeholder="İsim veya soru içinde ara…">
+            </div>
+
+            <div class="form-check form-switch ms-auto">
+                <input class="form-check-input" type="checkbox" role="switch" id="onlyUnansweredSwitch">
+                <label class="form-check-label" for="onlyUnansweredSwitch">Sadece cevap bekleyenler</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sekmeler -->
     <ul class="nav nav-tabs mb-3" id="questionTabs" role="tablist">
         <li class="nav-item">
             <button class="nav-link active" id="unanswered-tab" data-bs-toggle="tab" data-bs-target="#unanswered" type="button" role="tab">
-                ⏳ Cevap Bekleyen (@unanswered.Count)
+                ⏳ Cevap Bekleyen <span class="badge rounded-pill text-bg-warning text-dark ms-1" id="countUnanswered">@unanswered.Count</span>
             </button>
         </li>
         <li class="nav-item">
             <button class="nav-link" id="answered-tab" data-bs-toggle="tab" data-bs-target="#answered" type="button" role="tab">
-                ✅ Cevaplanmış (@answered.Count)
+                ✅ Cevaplanmış <span class="badge rounded-pill text-bg-success ms-1" id="countAnswered">@answered.Count</span>
             </button>
         </li>
     </ul>
 
     <div class="tab-content">
-        <!-- ✅ Cevap Bekleyen -->
+
+        <!-- Cevap Bekleyen -->
         <div class="tab-pane fade show active" id="unanswered" role="tabpanel">
             @if (!unanswered.Any())
             {
@@ -33,28 +63,34 @@
             }
             else
             {
-                <div class="row">
+                <div class="row" id="gridUnanswered">
                     @foreach (var q in unanswered)
                     {
-                        <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card shadow-sm border-warning h-100">
+                        <div class="col-md-6 col-lg-4 mb-3 question-card"
+                             data-name="@q.AskedByUserName" .ToLower()
+                             data-text="@q.QuestionText" .ToLower()
+                             data-status="unanswered">
+                            <div class="card ring h-100 hover-lift">
                                 <div class="card-body d-flex flex-column">
                                     <div class="d-flex align-items-center mb-2">
-                                        <img src="@q.AskedByUserPhoto" class="rounded-circle me-2" width="40" height="40" />
-                                        <div>
-                                            <strong>@q.AskedByUserName</strong>
+                                        <img src="@q.AskedByUserPhoto" class="rounded-circle ring me-2" width="40" height="40" alt="pp" />
+                                        <div class="overflow-hidden">
+                                            <div class="fw-semibold text-truncate">@q.AskedByUserName</div>
                                             <div class="text-muted small">🗓 @q.AskedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
                                         </div>
+                                        <span class="ms-auto badge text-bg-warning text-dark">Cevap bekliyor</span>
                                     </div>
-                                    <p class="fw-bold text-dark flex-grow-1">📌 @q.QuestionText</p>
-                                    <span class="badge bg-warning text-dark mb-2">⏳ Henüz cevaplanmadı</span>
 
-                                    <div class="mt-auto">
-                                        <a href="/Admin/CoachQuestion/Detail/@q.QuestionId" class="btn btn-sm btn-success w-100 mb-1">
+                                    <div class="q-text line-clamp-3 flex-grow-1">📌 @q.QuestionText</div>
+
+                                    <div class="mt-3 d-grid gap-2">
+                                        <a class="btn btn-sm btn-brand"
+                                           href="@Url.Action("Detail","CoachQuestion", new{ area="Admin", id=q.QuestionId })">
                                             ✏️ Cevapla
                                         </a>
-                                        <a href="/Admin/User/Detail/@q.AskedByUserId" class="btn btn-sm btn-outline-primary w-100">
-                                            👤 Profil Detayını Gör
+                                        <a class="btn btn-sm btn-outline-secondary"
+                                           href="@Url.Action("Detail","User", new{ area="Admin", id=q.AskedByUserId })">
+                                            👤 Profil Detayı
                                         </a>
                                     </div>
                                 </div>
@@ -65,7 +101,7 @@
             }
         </div>
 
-        <!-- ✅ Cevaplanmış -->
+        <!-- Cevaplanmış -->
         <div class="tab-pane fade" id="answered" role="tabpanel">
             @if (!answered.Any())
             {
@@ -73,32 +109,39 @@
             }
             else
             {
-                <div class="row">
+                <div class="row" id="gridAnswered">
                     @foreach (var q in answered)
                     {
-                        <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card shadow-sm border-success h-100">
+                        <div class="col-md-6 col-lg-4 mb-3 question-card"
+                             data-name="@q.AskedByUserName" .ToLower()
+                             data-text="@q.QuestionText @q.AnswerText" .ToLower()
+                             data-status="answered">
+                            <div class="card ring h-100 hover-lift">
                                 <div class="card-body d-flex flex-column">
                                     <div class="d-flex align-items-center mb-2">
-                                        <img src="@q.AskedByUserPhoto" class="rounded-circle me-2" width="40" height="40" />
-                                        <div>
-                                            <strong>@q.AskedByUserName</strong>
+                                        <img src="@q.AskedByUserPhoto" class="rounded-circle ring me-2" width="40" height="40" alt="pp" />
+                                        <div class="overflow-hidden">
+                                            <div class="fw-semibold text-truncate">@q.AskedByUserName</div>
                                             <div class="text-muted small">🗓 @q.AskedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
                                         </div>
-                                    </div>
-                                    <p class="fw-bold text-dark">📌 @q.QuestionText</p>
-                                    <p class="text-success mb-1">✅ @q.AnswerText</p>
-                                    <div class="text-muted small mb-2">
-                                        👨‍🏫 @q.AnsweredByCoachName
-                                        🗓 @q.AnsweredAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                        <span class="ms-auto badge text-bg-success">Cevaplandı</span>
                                     </div>
 
-                                    <div class="mt-auto">
-                                        <a href="/Admin/CoachQuestion/Detail/@q.QuestionId" class="btn btn-sm btn-warning w-100 mb-1">
-                                            ✏️ Cevabı Değiştir
+                                    <div class="q-text line-clamp-3">📌 @q.QuestionText</div>
+                                    <div class="ans-text line-clamp-3 text-success mt-2">✅ @q.AnswerText</div>
+                                    <div class="text-muted small mt-2">
+                                        👨‍🏫 @q.AnsweredByCoachName
+                                        &nbsp;•&nbsp; 🗓 @q.AnsweredAt?.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                    </div>
+
+                                    <div class="mt-3 d-grid gap-2">
+                                        <a class="btn btn-sm btn-outline-warning"
+                                           href="@Url.Action("Detail","CoachQuestion", new{ area="Admin", id=q.QuestionId })">
+                                            ✏️ Cevabı Düzenle
                                         </a>
-                                        <a href="/Admin/User/Detail/@q.AskedByUserId" class="btn btn-sm btn-outline-primary w-100">
-                                            👤 Profil Detayını Gör
+                                        <a class="btn btn-sm btn-outline-secondary"
+                                           href="@Url.Action("Detail","User", new{ area="Admin", id=q.AskedByUserId })">
+                                            👤 Profil Detayı
                                         </a>
                                     </div>
                                 </div>
@@ -112,11 +155,73 @@
 </div>
 
 <style>
-    .card {
-        transition: transform 0.2s ease-in-out;
+    .hover-lift {
+        transition: transform .18s ease, box-shadow .18s ease;
     }
 
-        .card:hover {
+        .hover-lift:hover {
             transform: translateY(-3px);
         }
+
+    /* satır kırpma */
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
 </style>
+
+@section Scripts {
+    <script>
+        (function(){
+          const search = document.getElementById('qSearch');
+          const onlyUnanswered = document.getElementById('onlyUnansweredSwitch');
+          const cards = Array.from(document.querySelectorAll('.question-card'));
+          const badgeU = document.getElementById('countUnanswered');
+          const badgeA = document.getElementById('countAnswered');
+
+          function applyFilter(){
+            const q = (search.value || '').toLowerCase().trim();
+            const onlyU = !!onlyUnanswered.checked;
+
+            let showU = 0, showA = 0;
+
+            cards.forEach(c=>{
+              const name = c.getAttribute('data-name') || '';
+              const text = c.getAttribute('data-text') || '';
+              const status = c.getAttribute('data-status');
+              const matches = !q || name.includes(q) || text.includes(q);
+              const statusOk = !onlyU || status === 'unanswered';
+              const visible = matches && statusOk;
+
+              c.style.display = visible ? '' : 'none';
+
+              if(visible && status==='unanswered') showU++;
+              if(visible && status==='answered')   showA++;
+            });
+
+            // Rozetleri güncelle (filtre sonrası kaç tane görünüyor)
+            if(badgeU) badgeU.textContent = showU.toString();
+            if(badgeA) badgeA.textContent = showA.toString();
+          }
+
+          search?.addEventListener('input', applyFilter);
+          onlyUnanswered?.addEventListener('change', ()=>{
+            // Sadece cevap bekleyenleri işaretleyince otomatik ilgili sekmeye geç
+            if(onlyUnanswered.checked){
+              const btn = document.getElementById('unanswered-tab');
+              if(btn){ new bootstrap.Tab(btn).show(); }
+            }
+            applyFilter();
+          });
+
+          // Sekme değişince filtreyi koru
+          document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(t=>{
+            t.addEventListener('shown.bs.tab', applyFilter);
+          });
+
+          applyFilter();
+        })();
+    </script>
+}

@@ -106,7 +106,7 @@ namespace FraoulaPT.WebUI
             //    }
             //}
             // SignalR Hub route
-            app.MapHub<ChatHub>("/chathub");
+
 
             // Middleware pipeline
             if (!app.Environment.IsDevelopment())
@@ -131,6 +131,9 @@ namespace FraoulaPT.WebUI
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}")
                 .WithStaticAssets();
+
+            app.MapHub<ChatHub>("/chathub");
+            app.MapHub<NotificationHub>("/notificationHub");
 
             app.Run();
         }

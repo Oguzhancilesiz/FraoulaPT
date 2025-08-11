@@ -1,0 +1,15 @@
+﻿@model dynamic
+@{
+    string icon = Model?.Icon ?? "bi-inbox";
+    string title = Model?.Title ?? "Kayıt bulunamadı";
+    string? actionText = Model?.ActionText;
+    string? actionUrl = Model?.ActionUrl;
+}
+<div class="text-center p-5 my-4 border rounded-3 ring" style="background:var(--panel-2)">
+    <div class="display-6 mb-2"><i class="bi @icon"></i></div>
+    <h5 class="mb-2">@title</h5>
+    @if (!string.IsNullOrWhiteSpace(actionText) && !string.IsNullOrWhiteSpace(actionUrl))
+    {
+        <a href="@actionUrl" class="btn btn-brand mt-2"><i class="bi bi-plus-circle me-2"></i>@actionText</a>
+    }
+</div>

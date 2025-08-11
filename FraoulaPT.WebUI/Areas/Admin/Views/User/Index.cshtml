@@ -1,40 +1,248 @@
 ﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.AccountViewModels
+@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
+@model List<AdminUserListVM>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Kullanıcılar";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM
+            {
+                Title = "Kullanıcılar",
+                Subtitle = "Rolleri yönet, durumlarını değiştir, detaylara git",
+                Breadcrumbs = new(){
+            new(){ Text = "Dashboard", Url = Url.Action("Index","Dashboard", new{ area="Admin" }) },
+            new(){ Text = "Kullanıcılar" }
+        }
+            };
+
+    // Tablodaki rol filtresi için benzersiz rol seti
+    var roleSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    foreach (var u in Model ?? Enumerable.Empty<AdminUserListVM>())
+    {
+        if (!string.IsNullOrWhiteSpace(u.Roles))
+        {
+            foreach (var r in u.Roles.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                roleSet.Add(r);
+        }
+    }
 }
 
-@model List<AdminUserListVM>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Kullanıcı Adı</th>
-            <th>İsim</th>
-            <th>Email</th>
-            <th>Roller</th>
-            <th>Durum</th>
-            <th>İşlemler</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var user in Model)
-        {
-            <tr>
-                <td>@user.UserName</td>
-                <td>@user.FullName</td>
-                <td>@user.Email</td>
-                <td>@user.Roles</td>
-                <td>@(user.IsActive ? "Aktif" : "Pasif")</td>
-                <td>
-                    <a asp-action="Detail" asp-route-id="@user.Id" class="btn btn-info btn-sm">Detay</a>
-                    <a asp-action="RoleAssign" asp-route-id="@user.Id" class="btn btn-warning btn-sm">Rol Ata</a>
-                    <form asp-action="ChangeStatus" asp-route-id="@user.Id" method="post" style="display:inline">
-                        <button type="submit" class="btn btn-danger btn-sm">@((user.IsActive) ? "Pasif Yap" : "Aktif Yap")</button>
-                    </form>
-                    <a class="btn btn-sm btn-outline-primary" asp-area="Admin" asp-controller="Students" asp-action="Report" asp-route-userId="@user.Id">Rapor</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
+
+<style>
+    .bg-panel {
+        background: var(--panel);
+    }
+
+    .ring {
+        border: 1px solid var(--border);
+    }
+
+    .chip {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: .2rem .55rem;
+        font-size: .75rem;
+        color: var(--text);
+    }
+
+    .table thead th {
+        font-size: .8rem;
+        letter-spacing: .02em;
+        color: var(--muted);
+    }
+
+    .btn-compact {
+        padding: .25rem .5rem;
+    }
+    /* mobilde gereksiz kolonları gizle */
+    @@media (max-width: 767.98px) {
+        .col-email, .col-roles
+
+    {
+        display: none;
+    }
+
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Filtre / Arama -->
+    <div class="card bg-panel ring mb-3">
+        <div class="card-body">
+            <form class="row g-2 align-items-end" onsubmit="return false;">
+                <div class="col-12 col-md-5">
+                    <label class="form-label small text-muted">Ara</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-transparent border-secondary"><i class="bi bi-search"></i></span>
+                        <input id="searchUsers" class="form-control bg-transparent border-secondary text-light" placeholder="kullanıcı adı, isim, e-posta, rol…">
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small text-muted">Rol</label>
+                    <select id="filterRole" class="form-select form-select-sm bg-transparent border-secondary text-light">
+                        <option value="">Hepsi</option>
+                        @foreach (var r in roleSet.OrderBy(x => x))
+                        {
+                            <option value="@r">@r</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small text-muted">Durum</label>
+                    <select id="filterStatus" class="form-select form-select-sm bg-transparent border-secondary text-light">
+                        <option value="">Hepsi</option>
+                        <option value="Aktif">Aktif</option>
+                        <option value="Pasif">Pasif</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2 d-flex gap-2">
+                    <button type="button" id="btnClearFilters" class="btn btn-sm btn-outline-secondary w-100">Temizle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste -->
+    <div class="card bg-panel ring">
+        <div class="table-responsive">
+            <table class="table align-middle table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Kullanıcı Adı</th>
+                        <th>İsim</th>
+                        <th class="col-email">Email</th>
+                        <th class="col-roles">Roller</th>
+                        <th>Durum</th>
+                        <th style="min-width:220px">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    @foreach (var user in Model ?? Enumerable.Empty<AdminUserListVM>())
+                    {
+                        var rolesRaw = user.Roles ?? "";
+                        var roleChips = rolesRaw
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .ToList();
+
+                        var statusText = user.IsActive ? "Aktif" : "Pasif";
+                        var filterText = $"{user.UserName} {user.FullName} {user.Email} {rolesRaw}".ToLowerInvariant();
+
+                        <tr data-text="@filterText" data-status="@statusText" data-roles="@rolesRaw.ToLowerInvariant()">
+                            <td class="fw-semibold">@user.UserName</td>
+                            <td>@user.FullName</td>
+                            <td class="col-email">@user.Email</td>
+                            <td class="col-roles">
+                                @if (roleChips.Any())
+                                {
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach (var r in roleChips)
+                                        {
+                                            <span class="chip">@r</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="badge text-bg-@(user.IsActive ? "success" : "secondary")">@statusText</span>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <a asp-action="Detail" asp-route-id="@user.Id" class="btn btn-sm btn-outline-info btn-compact">
+                                        <i class="bi bi-person-vcard"></i> Detay
+                                    </a>
+                                    <a asp-action="RoleAssign" asp-route-id="@user.Id" class="btn btn-sm btn-outline-warning btn-compact">
+                                        <i class="bi bi-shield-lock"></i> Rol Ata
+                                    </a>
+
+                                    <form asp-action="ChangeStatus" asp-route-id="@user.Id" method="post" class="d-inline status-form">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm @(user.IsActive ? "btn-danger" : "btn-success") btn-compact">
+                                            <i class="bi @(user.IsActive ? "bi-person-x" : "bi-person-check")"></i>
+                                            @(user.IsActive ? "Pasif Yap" : "Aktif Yap")
+                                        </button>
+                                    </form>
+
+                                    <a class="btn btn-sm btn-outline-primary btn-compact"
+                                       asp-area="Admin" asp-controller="Students" asp-action="Report" asp-route-userId="@user.Id">
+                                        <i class="bi bi-graph-up"></i> Rapor
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function(){
+          const $  = (s, r=document)=> r.querySelector(s);
+          const $$ = (s, r=document)=> Array.from(r.querySelectorAll(s));
+
+          const search = $("#searchUsers");
+          const role   = $("#filterRole");
+          const status = $("#filterStatus");
+          const body   = $("#userTableBody");
+          const clear  = $("#btnClearFilters");
+
+          function applyFilter(){
+            const q = (search?.value || "").toLowerCase();
+            const r = (role?.value || "").toLowerCase();
+            const st= (status?.value || "");
+
+            $$("#userTableBody tr").forEach(tr=>{
+              const txt = tr.getAttribute("data-text")  || "";
+              const rs  = tr.getAttribute("data-roles") || "";
+              const ts  = tr.getAttribute("data-status")|| "";
+
+              const okQ  = !q || txt.includes(q);
+              const okR  = !r || rs.split(",").map(x=>x.trim()).includes(r);
+              const okSt = !st || ts === st;
+
+              tr.style.display = (okQ && okR && okSt) ? "" : "none";
+            });
+          }
+
+          search?.addEventListener("input", applyFilter);
+          role?.addEventListener("change", applyFilter);
+          status?.addEventListener("change", applyFilter);
+          clear?.addEventListener("click", ()=>{
+            if(search) search.value="";
+            if(role)   role.value="";
+            if(status) status.value="";
+            applyFilter();
+          });
+
+          // Durum değiştir onayı (Swal varsa güzel, yoksa confirm)
+          $$(".status-form").forEach(f=>{
+            f.addEventListener("submit", function(e){
+              const go = window.Swal ? null : confirm("Durumu değiştirmek istiyor musunuz?");
+              if (go === false) { e.preventDefault(); return; }
+
+              if (window.Swal){
+                e.preventDefault();
+                Swal.fire({
+                  title:"Emin misiniz?",
+                  text:"Kullanıcının durumu değiştirilecek.",
+                  icon:"question",
+                  showCancelButton:true,
+                  confirmButtonText:"Evet",
+                  cancelButtonText:"İptal"
+                }).then(res=>{ if(res.isConfirmed) f.submit(); });
+              }
+            });
+          });
+
+        })();
+    </script>
+}

@@ -5,7 +5,8 @@
     ViewData["Title"] = "Program Detayı";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 
-    string GetDayName(int dayOfWeek) => dayOfWeek switch
+    // Pazar=0 olacak şekilde tutarlı isimler
+    Func<int, string> DayName = d => d switch
     {
         1 => "Pazartesi",
         2 => "Salı",
@@ -13,82 +14,83 @@
         4 => "Perşembe",
         5 => "Cuma",
         6 => "Cumartesi",
-        7 => "Pazar",
+        0 => "Pazar",
         _ => "Bilinmeyen"
     };
+
+    // Nullable güvenli tarih biçimleme
+    Func<DateTime?, string, string> fmtDate = (dt, f) => dt.HasValue ? dt.Value.ToString(f) : "-";
 }
+
+<style>
+    .ring {
+        border: 1px solid var(--border);
+    }
+
+    .card-soft {
+        background: var(--panel);
+        border: 1px solid var(--border);
+    }
+
+        .card-soft .card-header {
+            border-bottom: 1px solid var(--border);
+        }
+
+    .exercise-chip {
+        min-width: 260px;
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+    }
+</style>
+
 <!-- Program Bilgisi Kartı -->
-<div class="card shadow border-0 mb-4">
+<div class="card card-soft mb-4">
     <div class="card-body">
         <div class="row align-items-center">
-            <!-- Sol: Başlık ve Koç Notu -->
             <div class="col-md-8">
-                <h4 class="text-primary mb-1">
-                    <i class="bi bi-person-arms-up"></i> @Model.ProgramName
-                </h4>
-                <p class="text-muted mb-0">
-                    <i class="bi bi-chat-left-dots"></i> <strong>Koç Notu:</strong> @Model.CoachNote
-                </p>
+                <h4 class="mb-1"><i class="bi bi-person-arms-up me-1"></i> @Model.ProgramName</h4>
+                <p class="text-muted mb-0"><i class="bi bi-chat-left-dots me-1"></i><strong>Koç Notu:</strong> @Model.CoachNote</p>
             </div>
-
-            <!-- Sağ: Tarihler -->
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <span class="d-block text-secondary">
-                    📅 <strong>Oluşturulma:</strong> @Model.AssignedDate.ToString("dd.MM.yyyy")
-                </span>
-                <span class="d-block text-secondary">
-                    🔄 <strong>Güncelleme:</strong> @Model.UpdatedDate?.ToString("dd.MM.yyyy HH:mm")
-                </span>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0 small">
+                <div>📅 <strong>Oluşturulma:</strong> @fmtDate(Model.AssignedDate, "dd.MM.yyyy")</div>
+                <div>🔄 <strong>Güncelleme:</strong> @fmtDate(Model.UpdatedDate, "dd.MM.yyyy HH:mm")</div>
             </div>
         </div>
     </div>
 </div>
 
-<!--Kullanıcı bilgisi kartı-->
-<div class="accordion mb-4 shadow-sm" id="userInfoAccordion">
-    <div class="accordion-item">
+<!-- Kullanıcı Bilgisi Akordeon -->
+<div class="accordion mb-4" id="userInfoAccordion">
+    <div class="accordion-item card-soft">
         <h2 class="accordion-header" id="headingUserInfo">
-            <button class="accordion-button collapsed bg-white" type="button"
+            <button class="accordion-button collapsed" type="button"
                     data-bs-toggle="collapse" data-bs-target="#collapseUserInfo"
                     aria-expanded="false" aria-controls="collapseUserInfo">
-
                 <div class="d-flex align-items-center w-100">
-                    <!-- Profil Foto -->
                     <div class="me-3">
                         @if (!string.IsNullOrWhiteSpace(Model.User.Profile?.ProfilePhotoUrl))
                         {
-                            <img src="@Model.User.Profile.ProfilePhotoUrl"
-                                 class="rounded-circle shadow-sm"
-                                 width="60" height="60"
-                                 alt="Profil Foto" />
+                            <img src="@Model.User.Profile.ProfilePhotoUrl" class="rounded-circle ring" width="60" height="60" style="object-fit:cover" alt="Profil" />
                         }
                         else
                         {
-                            <div class="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center"
-                                 style="width: 60px; height: 60px;">
-                                <span class="fs-4">👤</span>
-                            </div>
+                            <div class="rounded-circle d-grid place-items-center ring" style="width:60px;height:60px;">👤</div>
                         }
                     </div>
-
-                    <!-- Temel Bilgiler -->
                     <div>
-                        <div class="fw-bold fs-5">@Model.User.FullName (@Model.User.UserName)</div>
+                        <div class="fw-bold">@Model.User.FullName (@Model.User.UserName)</div>
                         <div class="text-muted small">
-                            @Model.User.Profile?.BirthDate?.ToString("dd.MM.yyyy") doğumlu |
-                            @Model.User.Profile?.HeightCm cm / @Model.User.Profile?.WeightKg kg
+                            @fmtDate(Model.User.Profile?.BirthDate, "dd.MM.yyyy") doğumlu | @Model.User.Profile?.HeightCm cm / @Model.User.Profile?.WeightKg kg
                         </div>
                         <div class="text-muted small">📧 @Model.User.Email | 📱 @Model.User.PhoneNumber</div>
                     </div>
+                    <span class="badge bg-info text-dark ms-auto">Detaylar</span>
                 </div>
-                <span class="badge bg-info text-dark ms-auto">💬 Detaylar için tıkla</span>
-
             </button>
         </h2>
-
         <div id="collapseUserInfo" class="accordion-collapse collapse" aria-labelledby="headingUserInfo" data-bs-parent="#userInfoAccordion">
             <div class="accordion-body">
-                <!-- Detaylı Bilgiler -->
                 <div class="row g-3">
                     <div class="col-md-6">
                         <h6 class="text-primary">👤 Kişisel Bilgiler</h6>
@@ -96,35 +98,31 @@
                             <li class="list-group-item"><strong>Cinsiyet:</strong> @Model.User.Profile?.Gender</li>
                             <li class="list-group-item"><strong>Kan Grubu:</strong> @Model.User.Profile?.BloodType</li>
                             <li class="list-group-item"><strong>Vücut Tipi:</strong> @Model.User.Profile?.BodyType</li>
-                            <li class="list-group-item"><strong>Deneyim Seviyesi:</strong> @Model.User.Profile?.ExperienceLevel</li>
+                            <li class="list-group-item"><strong>Deneyim:</strong> @Model.User.Profile?.ExperienceLevel</li>
                             <li class="list-group-item"><strong>Meslek:</strong> @Model.User.Profile?.Occupation</li>
                             <li class="list-group-item"><strong>Favori Sporlar:</strong> @Model.User.Profile?.FavoriteSports</li>
-                            <li class="list-group-item"><strong>Beslenme Tipi:</strong> @Model.User.Profile?.DietType</li>
-                            <li class="list-group-item"><strong>Sigara / Alkol:</strong> @Model.User.Profile?.SmokingAlcohol</li>
+                            <li class="list-group-item"><strong>Beslenme:</strong> @Model.User.Profile?.DietType</li>
+                            <li class="list-group-item"><strong>Sigara/Alkol:</strong> @Model.User.Profile?.SmokingAlcohol</li>
                         </ul>
                     </div>
-
                     <div class="col-md-6">
-                        <h6 class="text-primary">🏥 Sağlık ve Acil Durum</h6>
+                        <h6 class="text-primary">🏥 Sağlık & Acil Durum</h6>
                         <ul class="list-group list-group-flush small">
                             <li class="list-group-item"><strong>Adres:</strong> @Model.User.Profile?.Address</li>
-                            <li class="list-group-item"><strong>Acil Kişi:</strong> @Model.User.Profile?.EmergencyContactName (@Model.User.Profile?.EmergencyContactPhone)</li>
-                            <li class="list-group-item"><strong>Kronik Hastalıklar:</strong> @Model.User.Profile?.ChronicDiseases</li>
-                            <li class="list-group-item"><strong>Geçmiş Sakatlıklar:</strong> @Model.User.Profile?.PastInjuries</li>
+                            <li class="list-group-item"><strong>Acil:</strong> @Model.User.Profile?.EmergencyContactName (@Model.User.Profile?.EmergencyContactPhone)</li>
+                            <li class="list-group-item"><strong>Kronik:</strong> @Model.User.Profile?.ChronicDiseases</li>
+                            <li class="list-group-item"><strong>Geçmiş Sakatlık:</strong> @Model.User.Profile?.PastInjuries</li>
                             <li class="list-group-item"><strong>Mevcut Ağrı:</strong> @Model.User.Profile?.CurrentPain</li>
                             <li class="list-group-item"><strong>İlaçlar:</strong> @Model.User.Profile?.CurrentMedications</li>
                             <li class="list-group-item"><strong>Alerjiler:</strong> @Model.User.Profile?.Allergies</li>
                             <li class="list-group-item"><strong>Tıbbi Geçmiş:</strong> @Model.User.Profile?.MedicalHistory</li>
                             <li class="list-group-item"><strong>Son Tahliller:</strong> @Model.User.Profile?.LastCheckResults</li>
-                            <li class="list-group-item"><strong>Hamilelik Durumu:</strong> @(Model.User.Profile?.PregnancyStatus == true ? "Evet" : "Hayır")</li>
+                            <li class="list-group-item"><strong>Hamilelik:</strong> @(Model.User.Profile?.PregnancyStatus == true ? "Evet" : "Hayır")</li>
                         </ul>
                     </div>
-
                     <div class="col-12">
                         <h6 class="text-primary">📝 Notlar</h6>
-                        <div class="alert alert-light border text-muted small">
-                            @Model.User.Profile?.Notes
-                        </div>
+                        <div class="alert alert-light border small m-0">@Model.User.Profile?.Notes</div>
                     </div>
                 </div>
             </div>
@@ -132,21 +130,19 @@
     </div>
 </div>
 
-<!--Program İşlemleri-->
+<!-- Program Günleri -->
 <div class="row g-4">
-    @for (int dayIndex = 1; dayIndex <= 7; dayIndex++)
+    @for (int dayIndex = 0; dayIndex <= 6; dayIndex++)  // Pazar=0 ... Cumartesi=6
     {
         var currentDay = Model.Days.FirstOrDefault(d => d.DayOfWeek == dayIndex);
         <div class="col-12">
-            <div class="card shadow border-dark">
+            <div class="card card-soft">
                 <div class="card-body d-flex flex-column flex-md-row align-items-start justify-content-between">
-                    <!-- Sol taraf: Gün bilgisi -->
                     <div class="me-4 mb-3 mb-md-0">
-                        <h5 class="text-dark mb-1">@GetDayName(dayIndex)</h5>
+                        <h5 class="mb-1">@DayName(dayIndex)</h5>
                         <span class="text-muted small">@(currentDay?.Description ?? "Off Day")</span>
                     </div>
 
-                    <!-- Sağ taraf: Egzersizler -->
                     <div class="flex-grow-1">
                         @if (currentDay != null && currentDay.Exercises.Any())
                         {
@@ -154,66 +150,75 @@
                                 @foreach (var ex in currentDay.Exercises)
                                 {
                                     var isDeleted = ex.Status == Status.Deleted;
-                                    <div class="position-relative border rounded p-2 small d-flex align-items-center gap-2 @(isDeleted ? "border-danger bg-light text-muted" : "border-success")" style="min-width: 250px;">
+                                    <div class="position-relative p-2 exercise-chip d-flex align-items-start gap-2 @(isDeleted ? "opacity-50" : "")">
+                                        @if (!string.IsNullOrWhiteSpace(ex.ImageUrls))
+                                        {
+                                            <img src="@ex.ImageUrls" class="img-thumbnail" style="width:50px;height:50px;object-fit:cover;border-radius:8px;" alt="Görsel" />
+                                        }
+                                        <div class="small">
+                                            <div class="fw-semibold">@ex.ExerciseName</div>
+                                            <div>@ex.SetCount x @ex.Repetition | @ex.Weight kg</div>
+                                            @if (!string.IsNullOrWhiteSpace(ex.Note))
+                                            {
+                                                <div class="text-muted">@ex.Note</div>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(ex.VideoUrl))
+                                            {
+                                                <a href="@ex.VideoUrl" target="_blank" class="badge bg-primary">Video</a>
+                                            }
+                                        </div>
 
                                         @if (!isDeleted)
                                         {
-                                            <button type="button"
-                                                    class="btn btn-sm btn-danger btn-delete-exercise position-absolute top-0 end-0 m-1 p-1"
-                                                    style="line-height: 1; font-size: 0.75rem;"
-                                                    data-id="@ex.Id"
-                                                    title="Sil">
-                                                ❌
-                                            </button>
+                                            <div class="ms-auto d-flex flex-column gap-1">
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-secondary btn-update-exercise"
+                                                        title="Güncelle"
+                                                        data-id="@ex.Id"
+                                                        data-day-id="@currentDay.Id"
+                                                        data-exercise-id="@ex.ExerciseName"
+                                                        data-set="@ex.SetCount"
+                                                        data-rep="@ex.Repetition"
+                                                        data-weight="@ex.Weight"
+                                                        data-rest="@ex.RestDurationInSeconds"
+                                                        data-note="@ex.Note">
+                                                    ✏️
+                                                </button>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-danger btn-delete-exercise"
+                                                        title="Sil"
+                                                        data-id="@ex.Id">
+                                                    🗑️
+                                                </button>
+                                            </div>
                                         }
-
-                                        @if (!string.IsNullOrWhiteSpace(ex.ImageUrls))
-                                        {
-                                            <img src="@ex.ImageUrls" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;" alt="Görsel" />
-                                        }
-
-                                        <div>
-                                            <div><strong>@ex.ExerciseName</strong></div>
-                                            <div>@ex.SetCount x @ex.Repetition | @ex.Weight kg</div>
-                                            <div>@ex.Note</div>
-                                            @if (!string.IsNullOrWhiteSpace(ex.VideoUrl))
-                                            {
-                                                <a href="@ex.VideoUrl" target="_blank" class="badge bg-primary text-white">Video</a>
-                                            }
-                                        </div>
                                     </div>
                                 }
 
-                                @if (currentDay != null)
-                                {
-                                    <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addExerciseModal" data-day-id="@currentDay.Id" data-day-name="@GetDayName(dayIndex)">
-                                        ➕ Hareket Ekle
-                                    </button>
-                                }
-                                else
-                                {
-                                    <form method="post" asp-action="AddDay" asp-controller="WorkoutProgram" asp-area="Admin">
-                                        <input type="hidden" name="WorkoutProgramId" value="@Model.Id" />
-                                        <input type="hidden" name="DayOfWeek" value="@dayIndex" />
-                                        <button type="submit" class="btn btn-sm btn-outline-primary">➕ Günü Programa Ekle</button>
-                                    </form>
-                                }
+                                <button class="btn btn-sm btn-outline-success"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#addExerciseModal"
+                                        data-day-id="@currentDay.Id"
+                                        data-day-name="@DayName(dayIndex)">
+                                    ➕ Hareket Ekle
+                                </button>
                             </div>
                         }
                         else if (currentDay != null)
                         {
-                            <span>
-                                Bu güne ait egzersiz yok    
-                               
-                            </span>
-                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#addExerciseModal" data-day-id="@currentDay.Id" data-day-name="@GetDayName(dayIndex)">
+                            <span>Bu güne ait egzersiz yok.</span>
+                            <button class="btn btn-sm btn-outline-success"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#addExerciseModal"
+                                    data-day-id="@currentDay.Id"
+                                    data-day-name="@DayName(dayIndex)">
                                 ➕ Hemen Ekle
                             </button>
                         }
                         else
                         {
                             <span>Off Day</span>
-                            <form method="post" asp-action="AddDay" asp-controller="WorkoutProgram" asp-area="Admin">
+                            <form method="post" asp-action="AddDay" asp-controller="WorkoutProgram" asp-area="Admin" class="d-inline">
                                 <input type="hidden" name="WorkoutProgramId" value="@Model.Id" />
                                 <input type="hidden" name="DayOfWeek" value="@dayIndex" />
                                 <button type="submit" class="btn btn-sm btn-outline-primary">➕ Günü Programa Ekle</button>
@@ -236,9 +241,8 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" id="workoutDayId" name="WorkoutDayId" />
-
                 <div class="mb-3">
-                    <label for="ExerciseId" class="form-label">Egzersiz Seç</label>
+                    <label class="form-label">Egzersiz Seç</label>
                     <select id="ExerciseId" name="ExerciseId" class="form-select" required>
                         <option value="">-- Seçiniz --</option>
                         @foreach (var ex in Model.Exercises)
@@ -247,18 +251,16 @@
                         }
                     </select>
                 </div>
-
                 <div class="row g-2">
                     <div class="col">
                         <label class="form-label">Set</label>
-                        <input type="number" class="form-control" name="SetCount" required />
+                        <input type="number" class="form-control" name="SetCount" min="1" required />
                     </div>
                     <div class="col">
                         <label class="form-label">Tekrar</label>
-                        <input type="number" class="form-control" name="Repetition" required />
+                        <input type="number" class="form-control" name="Repetition" min="1" required />
                     </div>
                 </div>
-
                 <div class="row g-2 mt-2">
                     <div class="col">
                         <label class="form-label">Ağırlık (kg)</label>
@@ -266,10 +268,9 @@
                     </div>
                     <div class="col">
                         <label class="form-label">Dinlenme (sn)</label>
-                        <input type="number" class="form-control" name="RestDurationInSeconds" />
+                        <input type="number" class="form-control" name="RestDurationInSeconds" min="0" />
                     </div>
                 </div>
-
                 <div class="mt-2">
                     <label class="form-label">Koç Notu</label>
                     <textarea class="form-control" name="Note" rows="2"></textarea>
@@ -282,6 +283,7 @@
     </div>
 </div>
 
+<!-- Egzersiz Güncelle Modal -->
 <div class="modal fade" id="updateExerciseModal" tabindex="-1" aria-labelledby="updateExerciseModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <form id="updateExerciseForm" class="modal-content">
@@ -292,9 +294,8 @@
             <div class="modal-body">
                 <input type="hidden" name="Id" id="updateId" />
                 <input type="hidden" name="WorkoutDayId" id="updateWorkoutDayId" />
-
                 <div class="mb-3">
-                    <label for="updateExerciseId" class="form-label">Egzersiz</label>
+                    <label class="form-label">Egzersiz</label>
                     <select name="ExerciseId" id="updateExerciseId" class="form-select" required>
                         @foreach (var ex in Model.Exercises)
                         {
@@ -302,29 +303,26 @@
                         }
                     </select>
                 </div>
-
                 <div class="row g-2">
                     <div class="col">
                         <label class="form-label">Set</label>
-                        <input type="number" class="form-control" name="SetCount" id="updateSetCount" required />
+                        <input type="number" class="form-control" name="SetCount" id="updateSetCount" min="1" required />
                     </div>
                     <div class="col">
                         <label class="form-label">Tekrar</label>
-                        <input type="number" class="form-control" name="Repetition" id="updateRepetition" required />
+                        <input type="number" class="form-control" name="Repetition" id="updateRepetition" min="1" required />
                     </div>
                 </div>
-
                 <div class="row g-2 mt-2">
                     <div class="col">
-                        <label class="form-label">Ağırlık</label>
+                        <label class="form-label">Ağırlık (kg)</label>
                         <input type="number" class="form-control" name="Weight" id="updateWeight" step="0.1" />
                     </div>
                     <div class="col">
-                        <label class="form-label">Dinlenme</label>
-                        <input type="number" class="form-control" name="RestDurationInSeconds" id="updateRestDuration" />
+                        <label class="form-label">Dinlenme (sn)</label>
+                        <input type="number" class="form-control" name="RestDurationInSeconds" id="updateRestDuration" min="0" />
                     </div>
                 </div>
-
                 <div class="mt-2">
                     <label class="form-label">Not</label>
                     <textarea class="form-control" name="Note" id="updateNote" rows="2"></textarea>
@@ -338,97 +336,62 @@
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        // Ekle modalını açarken gün ismini ve dayId'yi yerleştir
         $('#addExerciseModal').on('show.bs.modal', function (event) {
-            const button = $(event.relatedTarget);
-            const dayId = button.data('day-id');
-            const dayName = button.data('day-name');
-
-            $('#workoutDayId').val(dayId);
-            $('#exerciseModalDayName').text(dayName);
+          const button = $(event.relatedTarget);
+          $('#workoutDayId').val(button.data('day-id'));
+          $('#exerciseModalDayName').text(button.data('day-name'));
         });
 
+        // Egzersiz ekle
         $('#addExerciseForm').on('submit', function (e) {
-            e.preventDefault();
-            const formData = $(this).serialize();
+          e.preventDefault();
+          $.post('/Admin/WorkoutProgram/AddExercise', $(this).serialize())
+           .done(() => location.reload())
+           .fail(() => Swal.fire("Hata", "Egzersiz eklenemedi!", "error"));
+        });
 
-            $.post('/Admin/WorkoutProgram/AddExercise', formData)
-                .done(function () {
-                    location.reload();
-                })
-                .fail(function () {
-                    Swal.fire("Hata", "Egzersiz eklenemedi!", "error");
-                });
+        // Güncelle modalını doldur
+        $(document).on('click', '.btn-update-exercise', function () {
+          const b = $(this);
+          $('#updateId').val(b.data('id'));
+          $('#updateWorkoutDayId').val(b.data('day-id'));
+          $('#updateExerciseId').val(String(b.data('exercise-id')));
+          $('#updateSetCount').val(b.data('set'));
+          $('#updateRepetition').val(b.data('rep'));
+          $('#updateWeight').val(b.data('weight'));
+          $('#updateRestDuration').val(b.data('rest'));
+          $('#updateNote').val(b.data('note'));
+          $('#updateExerciseModal').modal('show');
+        });
+
+        // Egzersiz güncelle
+        $('#updateExerciseForm').on('submit', function(e){
+          e.preventDefault();
+          $.post('/Admin/WorkoutProgram/UpdateExercise', $(this).serialize())
+           .done(()=> location.reload())
+           .fail(()=> Swal.fire("Hata", "Güncelleme yapılamadı!", "error"));
+        });
+
+        // Egzersiz soft delete
+        $(document).on('click', '.btn-delete-exercise', function () {
+          const id = $(this).data('id');
+          Swal.fire({
+            title:'Emin misiniz?',
+            text:'Bu egzersiz silinecek (geri alınabilir)',
+            icon:'warning',
+            showCancelButton:true,
+            confirmButtonText:'Evet, sil',
+            cancelButtonText:'Vazgeç'
+          }).then(r=>{
+            if(!r.isConfirmed) return;
+            $.post('/Admin/WorkoutProgram/DeleteExercise', { id })
+              .done(()=> location.reload())
+              .fail(()=> Swal.fire("Hata","Silinemedi!","error"));
+          });
         });
     </script>
-
-
-    <script>
-        $(document).ready(function () {
-
-            // 🔁 Güncelle modalı aç
-            $('.btn-update-exercise').click(function () {
-                const btn = $(this);
-
-                $('#updateId').val(btn.data('id'));
-                $('#updateWorkoutDayId').val(btn.data('day-id'));
-                $('#updateExerciseId option').each(function () {
-                    if ($(this).val() === btn.data('exercise-id').toString()) {
-                        $(this).attr('selected', 'selected');
-                    } else {
-                        $(this).removeAttr('selected');
-                    }
-                });
-                $('#updateSetCount').val(btn.data('set'));
-                $('#updateRepetition').val(btn.data('rep'));
-                $('#updateWeight').val(btn.data('weight'));
-                $('#updateRestDuration').val(btn.data('rest'));
-                $('#updateNote').val(btn.data('note'));
-
-                $('#updateExerciseModal').modal('show');
-            });
-
-            // 🔁 Güncelle formunu gönder
-            $('#updateExerciseForm').submit(function (e) {
-                e.preventDefault();
-                const formData = $(this).serialize();
-
-                $.post('/Admin/WorkoutProgram/UpdateExercise', formData)
-                    .done(function () {
-                        location.reload();
-                    })
-                    .fail(function () {
-                        Swal.fire("Hata", "Güncelleme yapılamadı!", "error");
-                    });
-            });
-
-            // 🗑️ Egzersiz sil (soft delete)
-            $(document).on('click', '.btn-delete-exercise', function () {
-                const id = $(this).data('id');
-                console.log("Tıklanan ID:", id);
-                Swal.fire({
-                    title: 'Emin misiniz?',
-                    text: "Bu egzersiz silinecek (geri alınabilir)",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Evet, sil',
-                    cancelButtonText: 'Vazgeç'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.post('/Admin/WorkoutProgram/DeleteExercise', { id: id })
-                            .done(function () {
-                                location.reload();
-                            })
-                            .fail(function () {
-                                Swal.fire("Hata", "Silinemedi!", "error");
-                            });
-                    }
-                });
-            });
-
-        });
-    </script>
-
-
 }

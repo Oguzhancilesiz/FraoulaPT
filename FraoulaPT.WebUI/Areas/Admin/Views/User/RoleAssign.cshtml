@@ -1,24 +1,81 @@
 ﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels.AccountViewModels
-@{
-    ViewData["Title"] = "Rol Ata";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-}
-
+@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
 @model AdminUserRoleAssignVM
 
 @{
+    ViewData["Title"] = "Rol Ata";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM
+            {
+                Title = "Rol Ata",
+                Subtitle = $"{Model.UserName} kullanıcısına rol atayın",
+                Breadcrumbs = new(){
+            new(){ Text = "Dashboard", Url = Url.Action("Index","Dashboard", new{ area="Admin" }) },
+            new(){ Text = "Kullanıcılar", Url = Url.Action("Index","Account", new{ area="Admin" }) },
+            new(){ Text = "Rol Ata" }
+        }
+            };
 }
 
-<div class="container mt-4">
-    <div class="card shadow-lg mx-auto" style="max-width: 500px;">
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
+
+<style>
+    .bg-panel {
+        background: var(--panel);
+    }
+
+    .ring {
+        border: 1px solid var(--border);
+    }
+
+    .role-select {
+        background: var(--panel-2);
+        color: var(--text);
+        border: 1px solid var(--border);
+        min-height: 280px;
+    }
+
+        .role-select option {
+            padding: .35rem .5rem;
+        }
+
+    .muted {
+        color: var(--muted);
+    }
+
+    .chip {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: .2rem .55rem;
+        font-size: .8rem;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="card bg-panel ring shadow-sm mx-auto" style="max-width: 720px;">
         <div class="card-body">
-            <h4 class="mb-4">Kullanıcıya Rol Ata</h4>
-            <form asp-action="RoleAssign" method="post">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <div class="muted small">Kullanıcı</div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fw-semibold">@Model.UserName</span>
+                        <span class="chip">ID: @Model.UserId</span>
+                    </div>
+                </div>
+            </div>
+
+            <form asp-action="RoleAssign" method="post" autocomplete="off">
+                @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="UserId" />
 
-                <div class="mb-3">
-                    <label class="form-label">Kullanıcı</label>
-                    <input type="text" class="form-control" value="@Model.UserName" readonly />
+                <div class="mb-2">
+                    <label class="form-label small muted">Rol Ara</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-transparent border-secondary"><i class="bi bi-search"></i></span>
+                        <input id="roleSearch" class="form-control bg-transparent border-secondary text-light" placeholder="rol adı yazın…">
+                    </div>
                 </div>
 
                 <div class="mb-3">
@@ -26,16 +83,61 @@
                     <select asp-for="AssignedRoles"
                             asp-items="@(new MultiSelectList(Model.AllRoles))"
                             multiple
-                            class="form-select"
-                            size="6">
+                            size="10"
+                            class="form-select role-select"
+                            id="roleSelect">
                     </select>
+                    <span class="muted small d-block mt-1">Ctrl/Cmd ile çoklu seçim yapabilirsiniz.</span>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <button type="button" id="btnSelectAll" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-check2-all"></i> Tümünü Seç
+                    </button>
+                    <button type="button" id="btnClearSel" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-x-lg"></i> Seçimi Temizle
+                    </button>
                 </div>
 
                 <div class="text-end">
-                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Kaydet
+                    </button>
                     <a asp-action="Index" class="btn btn-secondary">İptal</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function(){
+          const search = document.getElementById("roleSearch");
+          const select = document.getElementById("roleSelect");
+          const btnAll = document.getElementById("btnSelectAll");
+          const btnClr = document.getElementById("btnClearSel");
+
+          // Basit filtre: option'ları gizle/göster
+          function filterRoles(){
+            const q = (search.value || "").toLowerCase();
+            Array.from(select.options).forEach(opt=>{
+              const txt = (opt.text || "").toLowerCase();
+              opt.hidden = q && !txt.includes(q);
+            });
+          }
+
+          // Tümünü seç
+          btnAll?.addEventListener("click", ()=>{
+            Array.from(select.options).forEach(opt=>{ if(!opt.hidden) opt.selected = true; });
+          });
+
+          // Seçimi temizle
+          btnClr?.addEventListener("click", ()=>{
+            Array.from(select.options).forEach(opt=> opt.selected = false);
+          });
+
+          search?.addEventListener("input", filterRoles);
+        })();
+    </script>
+}

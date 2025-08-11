@@ -1,0 +1,60 @@
+﻿@using System.Linq
+@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
+@model FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared.PageHeaderVM
+
+@{
+    // Breadcrumb tipini kendi projendeki adla kullanıyoruz: BreadcrumbItemVM
+    var crumbs = (Model?.Breadcrumbs ?? Enumerable.Empty<BreadcrumbItemVM>()).ToList();
+}
+
+<div class="container-fluid py-3 page-header">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+            @if (crumbs.Count > 0)
+            {
+                <nav class="small mb-1 page-breadcrumb" aria-label="breadcrumb">
+                    @for (int i = 0; i < crumbs.Count; i++)
+                    {
+                        var bc = crumbs[i];
+                        if (!string.IsNullOrWhiteSpace(bc.Url))
+                        {
+                            <a href="@bc.Url" class="text-decoration-none">@bc.Text</a>
+                        }
+                        else
+                        {
+                            @bc.Text
+                        }
+
+                        if (i < crumbs.Count - 1)
+                        {
+                            @: /
+                        }
+                    }
+                </nav>
+            }
+
+            <h2 class="m-0">@Model?.Title</h2>
+
+            @if (!string.IsNullOrWhiteSpace(Model?.Subtitle))
+            {
+                <div class="page-subtitle">@Model.Subtitle</div>
+            }
+        </div>
+
+        <div class="d-flex gap-2">
+            @if (Model?.Buttons?.Any() == true)
+            {
+                foreach (var b in Model.Buttons)
+                {
+                    var url = string.IsNullOrWhiteSpace(b.Url) ? "#" : b.Url;
+                    var color = string.IsNullOrWhiteSpace(b.ColorClass) ? "btn-outline-secondary" : b.ColorClass;
+                    var icon = string.IsNullOrWhiteSpace(b.Icon) ? "bi-plus" : b.Icon;
+
+                    <a href="@url" class="btn @color d-inline-flex align-items-center gap-2">
+                        <i class="bi @icon"></i><span>@b.Text</span>
+                    </a>
+                }
+            }
+        </div>
+    </div>
+</div>

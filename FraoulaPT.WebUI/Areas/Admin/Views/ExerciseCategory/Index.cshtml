@@ -1,59 +1,214 @@
-﻿@using FraoulaPT.DTOs.ExerciseCategoryDTOs
+﻿@using FraoulaPT.WebUI.Areas.Admin.Models.ViewModels._Shared
+@using FraoulaPT.DTOs.ExerciseCategoryDTOs
+@model List<ExerciseCategoryListDTO>
 
 @{
     ViewData["Title"] = "Kategoriler";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var header = new PageHeaderVM
+            {
+                Title = "Egzersiz Kategorileri",
+                Subtitle = "Kategorileri görüntüle, ara, sırala ve yönet",
+                Breadcrumbs = new(){
+            new(){ Text="Dashboard", Url=Url.Action("Index","Dashboard", new{ area="Admin" }) },
+            new(){ Text="Kategoriler" }
+        },
+                Buttons = new(){
+            new(){ Text="Yeni Kategori", Url=Url.Action("Create","ExerciseCategory", new{ area="Admin"}), Icon="bi-plus-circle", ColorClass="btn-brand" }
+        }
+            };
 }
 
-@model List<ExerciseCategoryListDTO>
+@await Html.PartialAsync("AdminPartials/_PageHeader", header)
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="fw-bold mb-0"><i class="bi bi-collection"></i> Kategoriler</h3>
-    <a asp-action="Create" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Yeni Kategori
-    </a>
+<div class="container-fluid">
+
+    <!-- Filtre / Sıralama -->
+    <div class="card ring mb-3">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-6">
+                    <label class="form-label small text-muted">Ara</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-transparent border-secondary"><i class="bi bi-search"></i></span>
+                        <input id="searchInput" class="form-control bg-transparent border-secondary text-light" placeholder="Kategori adına göre ara…" />
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label small text-muted">Sırala</label>
+                    <select id="sortSelect" class="form-select form-select-sm bg-transparent border-secondary text-light">
+                        <option value="name-asc">Ada göre (A-Z)</option>
+                        <option value="name-desc">Ada göre (Z-A)</option>
+                        <option value="count-desc">Hareket sayısı (çok → az)</option>
+                        <option value="count-asc">Hareket sayısı (az → çok)</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 d-flex gap-2">
+                    <a class="btn btn-sm btn-outline-secondary w-100" href="@Url.Action("Index","ExerciseCategory", new{ area="Admin"})">Temizle</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste -->
+    <div class="card ring">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr class="small text-muted">
+                        <th class="text-nowrap d-none d-md-table-cell" style="width:56px">#</th>
+                        <th>Kategori Adı</th>
+                        <th class="text-nowrap">Hareket Sayısı</th>
+                        <th class="text-nowrap" style="width:160px;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="catBody">
+                    @if (Model != null && Model.Any())
+                    {
+                        var i = 0;
+                        foreach (var c in Model)
+                        {
+                            <tr data-name="@c.Name" data-count="@c.ExerciseCount">
+                                <td class="d-none d-md-table-cell text-muted">@(++i)</td>
+                                <td class="fw-semibold">@c.Name</td>
+                                <td><span class="badge text-bg-info">@c.ExerciseCount</span></td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <a asp-area="Admin" asp-controller="ExerciseCategory" asp-action="Edit" asp-route-id="@c.Id"
+                                           class="btn btn-warning btn-sm">
+                                            <i class="bi bi-pencil"></i> Düzenle
+                                        </a>
+                                        <form asp-area="Admin" asp-controller="ExerciseCategory" asp-action="Delete" asp-route-id="@c.Id"
+                                              method="post" class="d-inline-block"
+                                              onsubmit="return confirm('Kategori silinsin mi?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="bi bi-trash"></i> Sil
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr class="empty-row"><td colspan="4" class="text-center text-muted py-4">Henüz hiç kategori eklenmemiş.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer d-flex justify-content-between align-items-center">
+            <div class="small text-muted">
+                <span id="rowInfo"></span>
+            </div>
+            <div class="small text-muted">
+                <span id="filterInfo"></span>
+            </div>
+        </div>
+    </div>
 </div>
 
-@if (!Model.Any())
-{
-    <div class="alert alert-info mt-4">
-        Henüz hiç kategori eklenmemiş.
-    </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-hover shadow-sm bg-white rounded align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>Kategori Adı</th>
-                    <th>Hareket Sayısı</th>
-                    <th style="width:140px;">İşlemler</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (int i = 0; i < Model.Count; i++)
-                {
-                    <tr>
-                        <td>@(i + 1)</td>
-                        <td class="fw-bold">@Model[i].Name</td>
-                        <td>
-                            <span class="badge bg-info">@Model[i].ExerciseCount</span>
-                        </td>
-                        <td>
-                            <a asp-action="Edit" asp-route-id="@Model[i].Id" class="btn btn-warning btn-sm me-1">
-                                <i class="bi bi-pencil"></i> Düzenle
-                            </a>
-                            <form asp-action="Delete" asp-route-id="@Model[i].Id" method="post" class="d-inline" onsubmit="return confirm('Kategori silinsin mi?');">
-                                <button type="submit" class="btn btn-danger btn-sm">
-                                    <i class="bi bi-trash"></i> Sil
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
+<style>
+    /* Küçük cihazlarda aksiyonlar sarılıp alta iner */
+    @@media (max-width: 575.98px) {
+        .btn-group-sm .btn, .btn.btn-sm
+
+    {
+        padding: .35rem .55rem;
+    }
+
+    }
+</style>
+
+@section Scripts {
+    <script>
+        (function(){
+          const $  = s => document.querySelector(s);
+          const $$ = s => Array.from(document.querySelectorAll(s));
+
+          const body = $("#catBody");
+          const searchEl = $("#searchInput");
+          const sortEl = $("#sortSelect");
+          const rowInfo = $("#rowInfo");
+          const filterInfo = $("#filterInfo");
+
+          let debounceTimer = null;
+
+          function apply(){
+            const q = (searchEl.value||"").toLowerCase().trim();
+            const sort = sortEl.value;
+            const rows = $$("#catBody tr[data-name]");
+
+            // filtrele
+            const filtered = rows.filter(tr => {
+              const name = (tr.dataset.name||"").toLowerCase();
+              const ok = !q || name.includes(q);
+              tr.style.display = ok ? "" : "none";
+              return ok;
+            });
+
+            // sırala
+            filtered.sort((a,b)=>{
+              const aN = (a.dataset.name||"").toLocaleLowerCase("tr-TR");
+              const bN = (b.dataset.name||"").toLocaleLowerCase("tr-TR");
+              const aC = parseInt(a.dataset.count||"0",10);
+              const bC = parseInt(b.dataset.count||"0",10);
+
+              switch(sort){
+                case "name-asc":  return aN.localeCompare(bN,"tr-TR");
+                case "name-desc": return bN.localeCompare(aN,"tr-TR");
+                case "count-asc": return aC - bC;
+                case "count-desc":return bC - aC;
+                default: return 0;
+              }
+            });
+
+            // DOM sırasını güncelle
+            filtered.forEach(tr => body.appendChild(tr));
+
+            // index sütununu baştan numarala (sadece görünürler)
+            let idx = 0;
+            filtered.forEach(tr=>{
+              const td = tr.querySelector("td:first-child");
+              if(td && td.classList.contains("d-none")===false){
+                td.textContent = (++idx);
+              }else{
+                // d-none d-md-table-cell ise de güncelleyelim:
+                const allTds = tr.querySelectorAll("td");
+                if(allTds.length){
+                  allTds[0].textContent = (++idx);
                 }
-            </tbody>
-        </table>
-    </div>
+              }
+            });
+
+            // boş state
+            const emptyRow = body.querySelector(".empty-row");
+            if(filtered.length===0){
+              if(!emptyRow){
+                const tr = document.createElement("tr");
+                tr.className = "empty-row";
+                tr.innerHTML = `<td colspan="4" class="text-center text-muted py-4">Kayıt bulunamadı.</td>`;
+                body.appendChild(tr);
+              }
+            }else{
+              emptyRow?.remove();
+            }
+
+            // info
+            rowInfo.textContent = `Toplam ${rows.length} kayıt`;
+            filterInfo.textContent = filtered.length === rows.length ? "" : `${filtered.length} sonuç görüntüleniyor`;
+          }
+
+          function debounced(){ clearTimeout(debounceTimer); debounceTimer = setTimeout(apply, 250); }
+
+          searchEl?.addEventListener("input", debounced);
+          sortEl?.addEventListener("change", apply);
+
+          // ilk render
+          apply();
+        })();
+    </script>
 }
